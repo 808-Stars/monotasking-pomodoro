@@ -79,7 +79,7 @@ export default function Tutorial() {
           <button
             onClick={startOnboarding}
             className="oto-btn"
-            style={{ background: '#d4b860' }}
+            style={{ background: '#e8e0d4' }}
           >
             <Icon name="play" size={14} /> 开始新手教程
           </button>
