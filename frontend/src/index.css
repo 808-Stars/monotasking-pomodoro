@@ -1,0 +1,1148 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════════════════════════ */
+html { scrollbar-gutter: stable; }
+* { box-sizing: border-box; }
+button, [role="button"], a { cursor: pointer; }
+.rounded-lg, .rounded-xl, .rounded-2xl, .rounded-full,
+.rounded, .rounded-md, .rounded-sm { border-radius: 0 !important; }
+
+/* ═══════════════════════════════════════════════════════════════
+   THEME — 📜 Octopath Traveler (八方旅人)
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  --oto-bg-main: #2a1018;
+  --oto-bg-card: #faf0e8;
+  --oto-bg-inset: #f0dcd0;
+  --oto-bg-sidebar: #f4e0d4;
+  --oto-bg-header: #f0d4c0;
+  --oto-bg-input: #faf0e8;
+  --oto-bg-hover: #f8e4d8;
+  --oto-text: #3a1818;
+  --oto-text-dim: #6a3830;
+  --oto-text-muted: #905848;
+  --oto-accent: #c8a040;
+  --oto-accent-alt: #a03038;
+  --oto-gold: #c8a040;
+  --oto-gold-light: #d4b860;
+  --oto-gold-dark: #907020;
+  --oto-blue: #304868;
+  --oto-red: #8a3030;
+  --oto-green: #386830;
+  --oto-purple: #504868;
+  --oto-yellow: #c8a040;
+  --oto-border: #c8a040;
+  --oto-border-light: #d4b860;
+  --oto-font-title: 'Source Han Serif SC Heavy', 'SimSun', 'Noto Serif SC', serif;
+  --oto-font-body: 'Noto Serif SC', 'STSong', 'SimSun', serif;
+  --oto-font-ui: 'Noto Serif SC', 'STSong', serif;
+  --oto-overlay-bg: rgba(18,6,10,0.75);
+  --oto-header-blue: #8898a8;
+  --oto-header-red: #a87880;
+  --oto-header-purple: #8880a0;
+  --oto-header-green: #88a088;
+  --oto-btn-blue-bg: #e8e0d8;
+  --oto-btn-green-bg: #dce0d0;
+  --oto-btn-red-bg: #e8d4d4;
+  --oto-btn-gray-bg: #e8dcd0;
+  --oto-page-header-blue: var(--oto-bg-card);
+  --oto-page-header-red: var(--oto-bg-card);
+}
+
+body::after {
+  content: '';
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 9999;
+}
+body::before {
+  content: '';
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    /* vignette */
+    radial-gradient(ellipse at center, transparent 35%, rgba(42,16,24,0.35) 100%);
+  pointer-events: none; z-index: 9998;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GLOBAL STYLES
+   ═══════════════════════════════════════════════════════════════ */
+body {
+  margin: 0;
+  font-family: var(--oto-font-body);
+  font-size: 18px;
+  background-color: var(--oto-bg-main);
+  background-image:
+    /* fabric cross-hatch */
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(180,130,110,0.02) 2px, rgba(180,130,110,0.02) 3px),
+    repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(180,130,110,0.02) 2px, rgba(180,130,110,0.02) 3px),
+    /* subtle diagonal twill */
+    repeating-linear-gradient(40deg, transparent, transparent 8px, rgba(200,160,120,0.015) 8px, rgba(200,160,120,0.015) 9px),
+    repeating-linear-gradient(-40deg, transparent, transparent 8px, rgba(200,160,120,0.015) 8px, rgba(200,160,120,0.015) 9px),
+    /* large-scale damask suggestion */
+    radial-gradient(ellipse at 15% 50%, rgba(180,130,100,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 50%, rgba(180,130,100,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 20%, rgba(180,130,100,0.03) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 80%, rgba(180,130,100,0.03) 0%, transparent 40%);
+  color: var(--oto-text);
+  letter-spacing: 0.01em;
+  line-height: 1.7;
+}
+
+h1, h2 {
+  font-family: var(--oto-font-title) !important;
+  font-size: 20px; font-weight: 700; letter-spacing: 0.05em;
+  color: var(--oto-text);
+}
+h3, h4 {
+  font-family: var(--oto-font-title) !important;
+  font-size: 17px; font-weight: 600; letter-spacing: 0.04em;
+  color: var(--oto-text);
+}
+h5, h6 {
+  font-family: var(--oto-font-ui) !important;
+  font-size: 15px; font-weight: 600; letter-spacing: 0.03em;
+  color: var(--oto-text-dim);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   WINDOW / CARD — ornate borders
+   ═══════════════════════════════════════════════════════════════ */
+.oto-window {
+  background: var(--oto-bg-card);
+  border: 2px solid var(--oto-gold-dark);
+  box-shadow:
+    0 0 0 1px var(--oto-bg-card),
+    0 0 0 3px var(--oto-gold),
+    0 0 0 4px var(--oto-gold-dark),
+    0 4px 16px rgba(0,0,0,0.3);
+}
+.oto-window::before { display: none; }
+
+.oto-inset {
+  background: var(--oto-bg-inset);
+  border: 2px solid var(--oto-border-light);
+  border-top-color: var(--oto-gold-dark);
+  border-left-color: var(--oto-gold-dark);
+  box-shadow: inset 2px 2px 6px rgba(0,0,0,0.12);
+}
+
+.oto-window-gold {
+  background: var(--oto-bg-card);
+  border: 3px solid var(--oto-gold);
+  box-shadow:
+    0 0 0 2px var(--oto-bg-card),
+    0 0 0 5px var(--oto-gold-dark),
+    0 0 0 6px var(--oto-gold),
+    0 6px 24px rgba(0,0,0,0.4);
+}
+
+.oto-page-header-blue {
+  border: 3px solid var(--oto-gold);
+  border-color: #304868;
+  box-shadow:
+    0 0 0 1px var(--oto-bg-card),
+    0 0 0 3px #506888,
+    0 0 0 4px #304868,
+    0 4px 16px rgba(0,0,0,0.3);
+}
+.oto-page-header-red {
+  border: 3px solid var(--oto-gold);
+  border-color: #8a3030;
+  box-shadow:
+    0 0 0 1px var(--oto-bg-card),
+    0 0 0 3px #b05050,
+    0 0 0 4px #8a3030,
+    0 4px 16px rgba(0,0,0,0.3);
+}
+
+/* ── Wood-grain frame ── */
+.oto-main-shell {
+  border: 14px solid #4a2818;
+  box-shadow:
+    inset 0 0 80px rgba(0,0,0,0.5),
+    0 0 0 2px #2a1008,
+    0 0 0 6px #5a3020,
+    0 0 0 8px #3a1a10,
+    0 0 0 12px #6a3a28,
+    0 0 0 14px #2a1008,
+    0 0 0 18px #7a4a30,
+    0 0 0 20px #2a1008,
+    0 0 0 24px #8a5a38,
+    0 0 0 26px #1a0800,
+    0 0 0 30px #c8a040;
+  background-image:
+    /* fine grain */
+    repeating-linear-gradient(2deg, transparent, transparent 1px, rgba(0,0,0,0.02) 1px, rgba(0,0,0,0.02) 2px),
+    repeating-linear-gradient(88deg, transparent, transparent 3px, rgba(255,255,255,0.015) 3px, rgba(255,255,255,0.015) 4px),
+    /* wider grain bands */
+    repeating-linear-gradient(0deg, transparent, transparent 12px, rgba(0,0,0,0.04) 12px, rgba(0,0,0,0.04) 13px),
+    repeating-linear-gradient(0deg, transparent, transparent 37px, rgba(139,90,43,0.06) 37px, rgba(139,90,43,0.06) 38px),
+    /* subtle knot / wave */
+    radial-gradient(ellipse at 30% 70%, rgba(139,90,43,0.08) 0%, transparent 40%),
+    radial-gradient(ellipse at 70% 30%, rgba(139,90,43,0.06) 0%, transparent 35%),
+    /* vignette */
+    radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.15) 100%);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BUTTONS
+   ═══════════════════════════════════════════════════════════════ */
+.oto-btn {
+  font-family: var(--oto-font-ui);
+  font-size: 13px; font-weight: 600; letter-spacing: 0.04em;
+  padding: 8px 18px;
+  background: var(--oto-btn-blue-bg);
+  color: var(--oto-text);
+  border-width: 2px;
+  border-style: solid;
+  border-top-color: var(--oto-gold-light);
+  border-left-color: var(--oto-gold-light);
+  border-right-color: var(--oto-gold-dark);
+  border-bottom-color: var(--oto-gold-dark);
+  box-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: filter 0.1s;
+}
+.oto-btn:hover { filter: brightness(1.1); }
+.oto-btn:active {
+  border-top-color: var(--oto-gold-dark);
+  border-left-color: var(--oto-gold-dark);
+  border-right-color: var(--oto-gold-light);
+  border-bottom-color: var(--oto-gold-light);
+  box-shadow: none;
+  transform: translateY(1px);
+}
+
+.oto-btn-sm {
+  font-family: var(--oto-font-ui);
+  font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
+  padding: 5px 12px;
+  background: var(--oto-btn-blue-bg);
+  color: var(--oto-text);
+  border-width: 2px;
+  border-style: solid;
+  border-top-color: var(--oto-gold-light);
+  border-left-color: var(--oto-gold-light);
+  border-right-color: var(--oto-gold-dark);
+  border-bottom-color: var(--oto-gold-dark);
+  box-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: filter 0.1s;
+}
+.oto-btn-sm:hover { filter: brightness(1.1); }
+.oto-btn-sm:active {
+  border-top-color: var(--oto-gold-dark);
+  border-left-color: var(--oto-gold-dark);
+  border-right-color: var(--oto-gold-light);
+  border-bottom-color: var(--oto-gold-light);
+  box-shadow: none;
+  transform: translateY(1px);
+}
+
+.oto-btn-green { background: var(--oto-btn-green-bg); }
+.oto-btn-blue  { background: var(--oto-btn-blue-bg); }
+.oto-btn-red   { background: var(--oto-btn-red-bg); }
+.oto-btn-gray  { background: var(--oto-btn-gray-bg); }
+
+/* ═══════════════════════════════════════════════════════════════
+   INPUT / SELECT / TEXTAREA
+   ═══════════════════════════════════════════════════════════════ */
+.oto-input,
+.oto-select,
+.oto-textarea {
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--oto-gold-dark);
+  box-shadow: inset 1px 1px 4px rgba(0,0,0,0.08), 0 0 0 1px var(--oto-gold);
+}
+.oto-input:focus,
+.oto-select:focus,
+.oto-textarea:focus {
+  border-color: var(--oto-gold);
+  box-shadow: inset 1px 1px 4px rgba(0,0,0,0.08), 0 0 0 2px var(--oto-gold-light);
+}
+
+.oto-input {
+  background: var(--oto-bg-input);
+  color: var(--oto-text);
+  font-family: var(--oto-font-body);
+  font-size: 16px;
+  padding: 8px 12px;
+  outline: none;
+}
+.oto-input::placeholder { color: var(--oto-text-muted); }
+
+.oto-select {
+  background: var(--oto-bg-input);
+  color: var(--oto-text);
+  font-family: var(--oto-font-body);
+  font-size: 16px;
+  padding: 8px 32px 8px 12px;
+  appearance: none; cursor: pointer; outline: none;
+}
+.oto-select option { background: var(--oto-bg-card); color: var(--oto-text); }
+
+/* Compact select: width matches placeholder, not longest option */
+.oto-select-fit {
+  field-sizing: content;
+  padding-right: 28px;
+  padding-left: 28px;
+}
+
+.oto-textarea {
+  background: var(--oto-bg-input);
+  color: var(--oto-text);
+  font-family: var(--oto-font-body);
+  font-size: 15px;
+  padding: 7px 10px;
+  outline: none; resize: vertical;
+}
+.oto-textarea::placeholder { color: var(--oto-text-muted); }
+
+/* ═══════════════════════════════════════════════════════════════
+   BADGE / TABLE / MODAL / PROGRESS / SIDEBAR / HEADERS
+   ═══════════════════════════════════════════════════════════════ */
+.oto-badge {
+  font-family: var(--oto-font-ui);
+  font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
+  padding: 3px 10px;
+  border: 1px solid var(--oto-gold-dark);
+  box-shadow: 0 0 0 1px var(--oto-gold);
+  background: var(--oto-bg-card);
+  color: var(--oto-text-dim);
+  display: inline-block;
+}
+
+.oto-table { border-collapse: collapse; }
+.oto-table th {
+  font-family: var(--oto-font-title);
+  font-size: 12px; font-weight: 700;
+  color: var(--oto-text-dim);
+  background: var(--oto-bg-inset);
+  border-bottom: 2px solid var(--oto-gold);
+  padding: 10px 12px;
+}
+.oto-table td {
+  border-bottom: 1px solid var(--oto-border-light);
+  font-family: var(--oto-font-body);
+  font-size: 16px; padding: 10px 12px;
+  color: var(--oto-text);
+}
+.oto-table tr:hover td { background: var(--oto-bg-hover); }
+
+.oto-overlay { background: var(--oto-overlay-bg); }
+.oto-modal {
+  background: var(--oto-bg-card);
+  border: 3px solid var(--oto-gold);
+  box-shadow:
+    0 0 0 2px var(--oto-bg-card),
+    0 0 0 5px var(--oto-gold-dark),
+    0 8px 32px rgba(0,0,0,0.5);
+}
+
+.oto-progress {
+  height: 16px;
+  background: var(--oto-bg-inset);
+  border: 2px solid var(--oto-gold-dark);
+  box-shadow: 0 0 0 1px var(--oto-gold), inset 1px 1px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+.oto-progress > div { height: 100%; transition: width 0.3s ease; }
+
+.oto-sidebar {
+  background: var(--oto-bg-sidebar);
+  border-right: 2px solid var(--oto-border);
+}
+
+.oto-header-blue   { background: var(--oto-header-blue);   border: 2px solid var(--oto-border); }
+.oto-header-red    { background: var(--oto-header-red);    border: 2px solid var(--oto-border); }
+.oto-header-purple { background: var(--oto-header-purple); border: 2px solid var(--oto-border); }
+.oto-header-green  { background: var(--oto-header-green);  border: 2px solid var(--oto-border); }
+
+/* ═══════════════════════════════════════════════════════════════
+   ORNAMENTAL
+   ═══════════════════════════════════════════════════════════════ */
+
+
+
+/* ── Card inner corner diamonds ── */
+.oto-inner-corners {
+  position: relative;
+}
+.oto-inner-corners::before {
+  content: '◆';
+  position: absolute;
+  top: 8px; left: 12px;
+  font-size: 7px;
+  color: var(--oto-gold);
+  opacity: 0.4;
+  pointer-events: none;
+}
+.oto-inner-corners::after {
+  content: '◆';
+  position: absolute;
+  bottom: 8px; right: 12px;
+  font-size: 7px;
+  color: var(--oto-gold);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ── Card shimmer sweep on hover ── */
+.oto-card-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.oto-card-shimmer::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(105deg,
+    transparent 40%, rgba(255,255,255,0.08) 45%,
+    rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.08) 55%,
+    transparent 60%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+.oto-card-shimmer:hover::after {
+  transform: translateX(100%);
+}
+
+/* ── Parchment edge weathering ── */
+.oto-weathered {
+  box-shadow:
+    inset 0 0 30px rgba(139,90,43,0.15),
+    inset 0 0 60px rgba(139,90,43,0.08),
+    0 0 0 1px var(--oto-bg-card),
+    0 0 0 3px var(--oto-gold),
+    0 0 0 4px var(--oto-gold-dark),
+    0 4px 16px rgba(0,0,0,0.3);
+}
+
+/* ── Magical rune border sweep ── */
+@keyframes oto-rune-sweep {
+  0%   { border-image-source: linear-gradient(0deg, var(--oto-gold-dark), var(--oto-gold), var(--oto-gold-dark)); border-image-slice: 1; }
+  50%  { border-image-source: linear-gradient(180deg, var(--oto-gold-dark), var(--oto-gold-light), var(--oto-gold-dark)); border-image-slice: 1; }
+  100% { border-image-source: linear-gradient(360deg, var(--oto-gold-dark), var(--oto-gold), var(--oto-gold-dark)); border-image-slice: 1; }
+}
+
+/* ── Decorative quote block ── */
+.oto-quote {
+  padding: 12px 16px 12px 20px;
+  border-left: 4px solid var(--oto-gold);
+  background: var(--oto-bg-inset);
+  font-style: italic;
+  position: relative;
+}
+.oto-quote::before {
+  content: '"';
+  position: absolute;
+  top: -6px; left: 6px;
+  font-family: var(--oto-font-title);
+  font-size: 28px;
+  color: var(--oto-gold);
+  opacity: 0.5;
+  line-height: 1;
+}
+
+/* ── Magic circle ring ── */
+.oto-magic-ring {
+  position: relative;
+}
+.oto-magic-ring::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 1px solid transparent;
+  border-radius: inherit;
+  background: conic-gradient(
+    var(--oto-gold), var(--oto-gold-light), var(--oto-gold-dark),
+    var(--oto-gold), var(--oto-gold-light), var(--oto-gold-dark),
+    var(--oto-gold)
+  ) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: oto-rune-sweep 3s linear infinite;
+  opacity: 0.3;
+}
+
+/* ── Success splash ── */
+@keyframes oto-splash {
+  0%   { transform: scale(0); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+.oto-splash-ring {
+  position: relative;
+}
+.oto-splash-ring::after {
+  content: '';
+  position: absolute; inset: -8px;
+  border: 2px solid #60d060;
+  border-radius: inherit;
+  animation: oto-splash 0.8s ease-out forwards;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SCROLLBAR / SELECTION / LINKS / DIVIDER
+   ═══════════════════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 12px; }
+::-webkit-scrollbar-track { background: var(--oto-bg-main); }
+::-webkit-scrollbar-thumb {
+  background: var(--oto-border);
+  border: 2px solid var(--oto-border-light);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--oto-border-light); }
+
+::selection { background: var(--oto-gold); color: var(--oto-bg-main); }
+
+a { color: var(--oto-accent); text-decoration: none; }
+a:hover { color: var(--oto-gold-light); text-decoration: underline; }
+
+.oto-divider {
+  border: none; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--oto-gold), transparent);
+  margin: 16px 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════════════════════════ */
+@keyframes oto-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+.animate-oto-pulse { animation: oto-pulse 1.5s ease-in-out infinite; }
+
+@keyframes oto-fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up { animation: oto-fade-in-up 0.35s ease-out both; }
+
+@keyframes oto-fade-in {
+  from { opacity: 0; } to { opacity: 1; }
+}
+.animate-fade-in { animation: oto-fade-in 0.3s ease-out both; }
+
+@keyframes oto-slide-in-right {
+  from { transform: translateX(100%); } to { transform: translateX(0); }
+}
+.animate-slide-in-right { animation: oto-slide-in-right 0.3s ease-out both; }
+
+@keyframes oto-scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.animate-scale-in { animation: oto-scale-in 0.25s ease-out both; }
+
+@keyframes oto-progress-pulse {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.15); }
+}
+.animate-progress-pulse { animation: oto-progress-pulse 2s ease-in-out infinite; }
+
+@keyframes oto-skeleton {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.oto-skeleton {
+  background: linear-gradient(90deg, var(--oto-bg-inset) 25%, var(--oto-bg-hover) 50%, var(--oto-bg-inset) 75%);
+  background-size: 200% 100%;
+  animation: oto-skeleton 1.5s ease-in-out infinite;
+}
+
+@keyframes oto-check-pop {
+  0%   { transform: scale(0); }
+  60%  { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+.animate-check-pop { animation: oto-check-pop 0.3s ease-out both; }
+
+@keyframes oto-glow-pulse {
+  0%, 100% { box-shadow: 0 0 4px var(--oto-gold); }
+  50%      { box-shadow: 0 0 12px var(--oto-gold-light); }
+}
+.animate-glow-pulse { animation: oto-glow-pulse 2s ease-in-out infinite; }
+
+@keyframes oto-sparkle {
+  0%   { opacity: 0; transform: scale(0) rotate(0deg); }
+  50%  { opacity: 1; transform: scale(1.2) rotate(180deg); }
+  100% { opacity: 0; transform: scale(0) rotate(360deg); }
+}
+.animate-sparkle { animation: oto-sparkle 1.2s ease-out infinite; }
+
+@keyframes oto-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+.animate-float { animation: oto-float 3s ease-in-out infinite; }
+
+@keyframes oto-border-glow {
+  0%, 100% { border-color: var(--oto-gold-dark); }
+  50%      { border-color: var(--oto-gold-light); }
+}
+.animate-border-glow { animation: oto-border-glow 2s ease-in-out infinite; }
+
+/* ═══════════════════════════════════════════════════════════════
+   INTERACTIVE ENHANCEMENTS
+   ═══════════════════════════════════════════════════════════════ */
+.oto-window {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+.oto-btn, .oto-btn-sm {
+  transition: filter 0.12s ease, transform 0.1s ease, box-shadow 0.12s ease;
+}
+.oto-btn:active, .oto-btn-sm:active {
+  transform: scale(0.97);
+}
+.oto-input, .oto-select, .oto-textarea {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.oto-input:focus, .oto-select:focus, .oto-textarea:focus {
+  box-shadow: inset 1px 1px 4px rgba(0,0,0,0.08), 0 0 0 2px var(--oto-gold-light), 0 0 12px rgba(200,160,64,0.25);
+}
+
+/* Card lift on hover */
+.oto-card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 0 1px var(--oto-bg-card),
+    0 0 0 3px var(--oto-gold),
+    0 0 0 4px var(--oto-gold-dark),
+    0 8px 24px rgba(0,0,0,0.35);
+}
+
+/* Table row transition */
+.oto-table tr { transition: background 0.12s ease; }
+
+/* Sidebar nav item */
+.oto-nav-item {
+  transition: background 0.12s ease, color 0.12s ease, padding-left 0.15s ease;
+  border-radius: 0;
+}
+.oto-nav-item:hover {
+  background: rgba(200,160,64,0.12);
+}
+.oto-nav-item.active {
+  background: rgba(200,160,64,0.18);
+  border-left: 3px solid var(--oto-gold);
+  padding-left: calc(0.75rem - 3px);
+}
+
+/* Page section stagger */
+.oto-stagger > * {
+  animation: oto-fade-in-up 0.35s ease-out both;
+}
+.oto-stagger > *:nth-child(1) { animation-delay: 0s; }
+.oto-stagger > *:nth-child(2) { animation-delay: 0.06s; }
+.oto-stagger > *:nth-child(3) { animation-delay: 0.12s; }
+.oto-stagger > *:nth-child(4) { animation-delay: 0.18s; }
+.oto-stagger > *:nth-child(5) { animation-delay: 0.24s; }
+.oto-stagger > *:nth-child(6) { animation-delay: 0.30s; }
+
+/* Modal backdrop */
+.oto-overlay {
+  animation: oto-fade-in 0.2s ease-out both;
+}
+.oto-modal {
+  animation: oto-scale-in 0.25s ease-out both;
+}
+
+/* Empty state */
+.oto-empty {
+  padding: 48px 24px;
+  text-align: center;
+  border: 2px dashed var(--oto-gold-dark);
+  background: var(--oto-bg-inset);
+}
+.oto-empty-icon {
+  opacity: 0.4;
+  margin-bottom: 12px;
+}
+.oto-empty p {
+  font-family: var(--oto-font-body);
+  font-size: 18px;
+  color: var(--oto-text-muted);
+}
+
+/* Stat emphasis */
+.oto-stat-number {
+  font-family: var(--oto-font-title);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.oto-stat-label {
+  font-family: var(--oto-font-body);
+  font-size: 11px;
+  color: var(--oto-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Progress bar animation */
+.oto-progress > div {
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Calendar day */
+.oto-cal-day {
+  transition: background 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;
+}
+.oto-cal-day:hover {
+  transform: scale(1.03);
+  z-index: 1;
+  box-shadow: 0 0 0 2px var(--oto-gold);
+}
+
+/* Filter bar grouping */
+.oto-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.oto-filter-group > * {
+  flex-shrink: 0;
+}
+
+/* Action button group */
+.oto-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+/* Color swatch */
+.oto-color-swatch {
+  transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.oto-color-swatch:hover {
+  transform: scale(1.15);
+}
+.oto-color-swatch.selected {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 2px var(--oto-gold), 0 0 8px rgba(200,160,64,0.4);
+}
+
+/* Section divider ornament */
+.oto-ornament-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+.oto-ornament-divider::before,
+.oto-ornament-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--oto-gold), transparent);
+}
+.oto-ornament-divider span {
+  font-family: var(--oto-font-title);
+  font-size: 11px;
+  color: var(--oto-text-muted);
+  white-space: nowrap;
+}
+
+/* Accordion transition */
+.oto-accordion-content {
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.25s ease, padding 0.25s ease;
+}
+
+/* Highlight today */
+.oto-today-glow {
+  animation: oto-glow-pulse 3s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DECORATIVE ENHANCEMENTS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Corner stamp ornament for cards ── */
+.oto-card-stamped {
+  position: relative;
+}
+.oto-card-stamped::before {
+  content: '◆';
+  position: absolute;
+  top: 6px; right: 10px;
+  font-size: 8px;
+  color: var(--oto-gold);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ── Title with gold underline flourish ── */
+.oto-title-flourish {
+  position: relative;
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+}
+.oto-title-flourish::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0;
+  width: 100%; height: 2px;
+  background: linear-gradient(90deg, var(--oto-gold), transparent);
+}
+
+/* ── Badge variants ── */
+.oto-badge-gold {
+  background: linear-gradient(135deg, #faf0e0, #f0dca0);
+  color: var(--oto-gold-dark);
+  border-color: var(--oto-gold);
+}
+.oto-badge-red {
+  background: linear-gradient(135deg, #f8e4e0, #f0c8c0);
+  color: #8a3030;
+  border-color: #b05050;
+}
+.oto-badge-blue {
+  background: linear-gradient(135deg, #e0e4f0, #c8d0e4);
+  color: #304868;
+  border-color: #6080a8;
+}
+.oto-badge-green {
+  background: linear-gradient(135deg, #e0ece0, #c8dcc8);
+  color: #386830;
+  border-color: #609060;
+}
+
+/* ── Select custom arrow ── */
+.oto-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23907020'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+}
+
+/* ── Table striped rows ── */
+.oto-table-striped tbody tr:nth-child(even) td {
+  background: rgba(200,160,64,0.03);
+}
+
+/* ── Sticky table header ── */
+.oto-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* ── Scrollbar enhancements ── */
+::-webkit-scrollbar-track {
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 4px, rgba(0,0,0,0.03) 4px, rgba(0,0,0,0.03) 5px);
+}
+::-webkit-scrollbar-thumb {
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+  transition: background 0.2s ease;
+}
+
+/* ── Page header decorative bar ── */
+.oto-page-bar {
+  height: 4px;
+  background: linear-gradient(90deg,
+    var(--oto-gold-dark), var(--oto-gold), var(--oto-gold-light),
+    var(--oto-gold), var(--oto-gold-dark)
+  );
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+/* ── Horizontal rule ornament ── */
+.oto-hr-ornament {
+  border: none;
+  height: 8px;
+  background:
+    radial-gradient(circle at 50% 50%, var(--oto-gold) 1px, transparent 2px),
+    linear-gradient(90deg, transparent 40%, var(--oto-gold-dark) 45%, var(--oto-gold) 50%, var(--oto-gold-dark) 55%, transparent 60%);
+  margin: 20px 0;
+}
+
+/* ── Pulsing dot indicator ── */
+.oto-dot-live {
+  display: inline-block;
+  width: 8px; height: 8px;
+  background: #60d060;
+  border-radius: 50%;
+  animation: oto-pulse 1.5s ease-in-out infinite;
+  box-shadow: 0 0 6px rgba(96,208,96,0.4);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GUILD BULLETIN BOARD — 勇者公会布告栏
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Iron rivets on the main frame ── */
+.oto-main-shell {
+  position: relative;
+}
+/* Top-left rivet */
+.oto-main-shell::before {
+  content: '';
+  position: absolute;
+  top: 6px; left: 6px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #8a8a8a, #3a3a3a);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.5),
+    inset 0 1px 1px rgba(255,255,255,0.3);
+  z-index: 10;
+  pointer-events: none;
+}
+/* After needs another element — use a wrapper trick or JS. Instead, use multiple box-shadows */
+.oto-board-frame {
+  position: relative;
+}
+.oto-board-frame::before {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 10;
+  background:
+    /* top-left */
+    radial-gradient(circle 5px at 9px 9px, #5a5a5a 0%, #2a2a2a 60%, transparent 62%),
+    /* top-right */
+    radial-gradient(circle 5px at calc(100% - 9px) 9px, #5a5a5a 0%, #2a2a2a 60%, transparent 62%),
+    /* bottom-left */
+    radial-gradient(circle 5px at 9px calc(100% - 9px), #5a5a5a 0%, #2a2a2a 60%, transparent 62%),
+    /* bottom-right */
+    radial-gradient(circle 5px at calc(100% - 9px) calc(100% - 9px), #5a5a5a 0%, #2a2a2a 60%, transparent 62%),
+    /* more rivets along edges */
+    radial-gradient(circle 5px at 50% 9px, #5a5a5a 0%, #2a2a2a 60%, transparent 62%),
+    radial-gradient(circle 5px at 50% calc(100% - 9px), #5a5a5a 0%, #2a2a2a 60%, transparent 62%),
+    radial-gradient(circle 5px at 9px 50%, #5a5a5a 0%, #2a2a2a 60%, transparent 62%),
+    radial-gradient(circle 5px at calc(100% - 9px) 50%, #5a5a5a 0%, #2a2a2a 60%, transparent 62%);
+}
+
+/* ── Push-pin on card corners ── */
+.oto-pinned {
+  position: relative;
+}
+.oto-pinned::before {
+  content: '';
+  position: absolute;
+  top: -6px; left: 14px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #e06050, #8a2020);
+  box-shadow:
+    0 1px 3px rgba(0,0,0,0.4),
+    inset 0 1px 1px rgba(255,255,255,0.3),
+    0 0 0 1px rgba(0,0,0,0.3);
+  z-index: 5;
+  pointer-events: none;
+}
+.oto-pinned::after {
+  content: '';
+  position: absolute;
+  top: -6px; left: 14px;
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.6);
+  z-index: 6;
+  pointer-events: none;
+}
+
+/* ── Quest marker "!" badge ── */
+.oto-quest-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px; height: 22px;
+  background: radial-gradient(circle at 35% 30%, #f0c840, #b08020);
+  border: 2px solid #6a4a10;
+  color: #3a2000;
+  font-family: var(--oto-font-title);
+  font-size: 13px;
+  font-weight: 900;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4), 0 0 8px rgba(200,160,64,0.3);
+  animation: oto-float 2.5s ease-in-out infinite;
+}
+
+/* ── Chain-link divider ── */
+.oto-chain-divider {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0;
+  opacity: 0.5;
+}
+.oto-chain-divider::before,
+.oto-chain-divider::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  background: repeating-linear-gradient(90deg,
+    var(--oto-gold) 0px, var(--oto-gold) 6px,
+    var(--oto-gold-dark) 6px, var(--oto-gold-dark) 8px,
+    transparent 8px, transparent 12px
+  );
+}
+.oto-chain-divider span {
+  font-size: 8px;
+  color: var(--oto-gold);
+}
+
+/* ── Board plank shadow lines ── */
+.oto-plank-lines {
+  background-image:
+    repeating-linear-gradient(0deg,
+      transparent, transparent 58px,
+      rgba(0,0,0,0.06) 58px, rgba(0,0,0,0.06) 60px
+    ),
+    repeating-linear-gradient(90deg,
+      transparent, transparent 100%,
+      rgba(0,0,0,0.03) 100%
+    );
+}
+
+/* ── Cross-stitch corner ── */
+.oto-stitch-corner {
+  position: relative;
+}
+.oto-stitch-corner::before {
+  content: '✚';
+  position: absolute;
+  top: 4px; left: 4px;
+  font-size: 8px;
+  color: var(--oto-gold);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.oto-stitch-corner::after {
+  content: '✚';
+  position: absolute;
+  bottom: 4px; right: 4px;
+  font-size: 8px;
+  color: var(--oto-gold);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ── Tacked note paper ── */
+.oto-tacked {
+  position: relative;
+  transform: rotate(-0.5deg);
+  transition: transform 0.2s ease;
+}
+.oto-tacked:hover {
+  transform: rotate(0deg);
+}
+.oto-tacked::before {
+  content: '';
+  position: absolute;
+  top: -7px; left: 50%;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #d47870, #702020);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  transform: translateX(-50%);
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Gacha (扭蛋) styles
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Pull button emphasis */
+.oto-gacha-pull {
+  position: relative;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.oto-gacha-pull:not(:disabled):hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 24px rgba(200, 160, 64, 0.35);
+}
+.oto-gacha-pull:not(:disabled):active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Pull result card entrance */
+.oto-gacha-result-card {
+  animation: oto-gacha-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.oto-gacha-result-card:nth-child(1) { animation-delay: 0s; }
+.oto-gacha-result-card:nth-child(2) { animation-delay: 0.06s; }
+.oto-gacha-result-card:nth-child(3) { animation-delay: 0.12s; }
+.oto-gacha-result-card:nth-child(4) { animation-delay: 0.18s; }
+.oto-gacha-result-card:nth-child(5) { animation-delay: 0.24s; }
+.oto-gacha-result-card:nth-child(6) { animation-delay: 0.30s; }
+.oto-gacha-result-card:nth-child(7) { animation-delay: 0.36s; }
+.oto-gacha-result-card:nth-child(8) { animation-delay: 0.42s; }
+.oto-gacha-result-card:nth-child(9) { animation-delay: 0.48s; }
+.oto-gacha-result-card:nth-child(10) { animation-delay: 0.54s; }
+
+@keyframes oto-gacha-pop {
+  0%   { opacity: 0; transform: scale(0.2) rotateY(90deg); }
+  60%  { opacity: 1; transform: scale(1.15) rotateY(-10deg); }
+  100% { opacity: 1; transform: scale(1) rotateY(0deg); }
+}
+
+/* SSR shine sweep */
+.oto-gacha-ssr-shine {
+  position: relative;
+  overflow: hidden;
+}
+.oto-gacha-ssr-shine::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,215,0,0.3), transparent);
+  transform: skewX(-20deg);
+  animation: oto-ssr-sweep 2.5s ease-in-out infinite;
+}
+@keyframes oto-ssr-sweep {
+  0%   { left: -100%; }
+  100% { left: 200%; }
+}
+
+/* Gacha item card rarity borders */
+.oto-gacha-border-ssr {
+  border-color: #e8a840 !important;
+  box-shadow: 0 0 16px rgba(232, 168, 64, 0.35), inset 0 0 16px rgba(232, 168, 64, 0.08);
+}
+.oto-gacha-border-sr {
+  border-color: #9b59b6 !important;
+  box-shadow: 0 0 10px rgba(155, 89, 182, 0.25);
+}
+.oto-gacha-border-r {
+  border-color: #4a90d9 !important;
+  box-shadow: 0 0 6px rgba(74, 144, 217, 0.2);
+}
+
+/* Collection locked/grayscale items */
+.oto-gacha-locked {
+  filter: grayscale(1);
+  opacity: 0.45;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Sidebar scrollbar — dark wine-red to match theme
+   ═══════════════════════════════════════════════════════════════ */
+.oto-sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: #8b4a4a #f4e0d4;
+}
+.oto-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+.oto-sidebar::-webkit-scrollbar-track {
+  background: #f4e0d4;
+}
+.oto-sidebar::-webkit-scrollbar-thumb {
+  background: #8b4a4a;
+  border-radius: 0;
+}
+.oto-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #a05858;
+}
