@@ -36,6 +36,7 @@ export interface PomodoroSession {
   id: string;
   task: string;
   task_name?: string;
+  tasks?: { name?: string } | null;
   start_time: string;
   end_time: string | null;
   duration_minutes: number;
@@ -54,6 +55,7 @@ export interface DailyPlan {
   core_task: string | null;
   core_task_name?: string;
   core_task_status?: string;
+  tasks?: { name?: string; status?: string } | null;
   status: 'UNPLANNED' | 'PLANNED' | 'COMPLETED' | 'FAILED' | 'REVIEWED';
   status_display?: string;
   morning_reflection: string;
