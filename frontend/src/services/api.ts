@@ -747,11 +747,19 @@ export async function gachaPull(count: 1 | 10) {
   try {
     const { data } = await supabase
       .from('gacha_ssr_targets')
-      .select('*, gacha_items(*)')
+      .select('*')
       .eq('user_id', user.id)
       .eq('consumed', false)
       .single()
-    if (data && data.year_month === ym) ssrTarget = data
+    if (data && data.year_month === ym) {
+      // 分步获取物品信息
+      const { data: item } = await supabase
+        .from('gacha_items')
+        .select('*')
+        .eq('id', data.target_item_id)
+        .single()
+      ssrTarget = { ...data, gacha_items: item }
+    }
   } catch { /* no target */ }
 
   for (let i = 0; i < count; i++) {
@@ -840,23 +848,28 @@ export async function getSSRTargetStatus() {
     try {
       const { data } = await supabase
         .from('gacha_ssr_targets')
-        .select('*, gacha_items(*)')
+        .select('*')
         .eq('user_id', user.id)
         .single()
       if (data) {
         if (data.year_month !== ym) {
-          // 跨月，删除旧目标
           await supabase.from('gacha_ssr_targets').delete().eq('id', data.id)
         } else if (data.consumed) {
           monthlyUsed = true
         } else {
+          // 分步获取物品信息
+          const { data: item } = await supabase
+            .from('gacha_items')
+            .select('name, emoji, rarity, job')
+            .eq('id', data.target_item_id)
+            .single()
           target = {
             id: data.id,
             target_item: data.target_item_id,
-            target_item_name: data.gacha_items?.name,
-            target_item_emoji: data.gacha_items?.emoji,
-            target_item_rarity: data.gacha_items?.rarity,
-            target_item_job: data.gacha_items?.job,
+            target_item_name: item?.name,
+            target_item_emoji: item?.emoji,
+            target_item_rarity: item?.rarity,
+            target_item_job: item?.job,
           }
         }
       }
