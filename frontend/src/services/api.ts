@@ -21,6 +21,12 @@ async function cached<T>(key: string, fetcher: () => Promise<T>, ttl = CACHE_TTL
   return data
 }
 
+/** 获取当前用户（读本地 session，无网络请求，比 getUser() 快 10 倍） */
+async function currentUser() {
+  const { data: { session } } = await supabase.auth.getSession()
+  return session?.user ?? null
+}
+
 /** 写操作后清除相关缓存（支持前缀匹配） */
 function invalidate(...keys: string[]) {
   if (keys.length === 0) { _cache.clear(); return }
@@ -55,7 +61,7 @@ function flattenRecord(r: any) {
 // ============================================================
 export async function fetchProjects() {
   return cached('projects', async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUser()
     if (!user) return []
     const { data } = await supabase
       .from('projects')
@@ -67,7 +73,7 @@ export async function fetchProjects() {
 }
 
 export async function createProject(project: { name: string; description?: string; color?: string; status?: string }) {
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await currentUser()
   if (!user) throw new Error('Not authenticated')
   const { data, error } = await supabase
     .from('projects')
@@ -102,7 +108,7 @@ export async function deleteProject(id: string) {
 // ============================================================
 export async function fetchTasks(filters?: { status?: string; priority?: string; project_id?: string; search?: string }) {
   return cached(`tasks:${JSON.stringify(filters || {})}`, async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUser()
     if (!user) return []
     let query = supabase
       .from('tasks')
@@ -119,7 +125,7 @@ export async function fetchTasks(filters?: { status?: string; priority?: string;
 }
 
 export async function createTask(task: { name: string; description?: string; priority?: string; status?: string; project_id?: string | null; estimated_pomodoros?: number; due_date?: string | null }) {
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await currentUser()
   if (!user) throw new Error('Not authenticated')
   const { data, error } = await supabase
     .from('tasks')
@@ -151,7 +157,7 @@ export async function deleteTask(id: string) {
 
 export async function getTodayCoreTasks() {
   return cached('today-core', async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUser()
     if (!user) return []
     const { data } = await supabase
       .from('tasks')
@@ -174,7 +180,7 @@ export async function getTodayCoreTasks() {
 // ============================================================
 export async function fetchPomodoroSessions(filters?: { task_id?: string; type?: string; status?: string }) {
   return cached(`pomo-sessions:${JSON.stringify(filters || {})}`, async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUser()
     if (!user) return []
     let query = supabase
       .from('pomodoro_sessions')
@@ -193,7 +199,7 @@ export async function createPomodoroSession(session: {
   task_id: string; start_time: string; end_time?: string;
   duration_minutes?: number; type?: string; status?: string; notes?: string
 }) {
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await currentUser()
   if (!user) throw new Error('Not authenticated')
   const { data, error } = await supabase
     .from('pomodoro_sessions')
@@ -228,7 +234,7 @@ export async function deletePomodoroSession(id: string) {
 
 export async function getPomodoroStats() {
   return cached('pomo-stats', async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUser()
     if (!user) return { today: 0, this_week: 0, this_month: 0, total: 0 }
 
     const todayStr = new Date().toISOString().slice(0, 10)
@@ -263,7 +269,7 @@ export async function getPomodoroStats() {
 // ============================================================
 export async function fetchTodayPlan() {
   return cached('today-plan', async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUser()
     if (!user) return null
     const todayStr = new Date().toISOString().slice(0, 10)
     let { data } = await supabase
@@ -286,7 +292,7 @@ export async function fetchTodayPlan() {
 
 export async function fetchDailyPlans() {
   return cached('daily-plans', async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUser()
     if (!user) return []
     const { data } = await supabase
       .from('daily_plans')
@@ -320,7 +326,7 @@ export async function deleteDailyPlan(id: string) {
 // ============================================================
 export async function fetchReviews(type?: string) {
   return cached(`reviews:${type || 'all'}`, async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUser()
     if (!user) return []
     let query = supabase
       .from('reviews')
@@ -334,7 +340,7 @@ export async function fetchReviews(type?: string) {
 }
 
 export async function createReview(review: { type?: string; date: string; content: string; completed_tasks_count?: number; total_pomodoros?: number }) {
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await currentUser()
   if (!user) throw new Error('Not authenticated')
   const { data, error } = await supabase
     .from('reviews')
@@ -369,7 +375,7 @@ export async function deleteReview(id: string) {
 // ============================================================
 export async function fetchQuickMemos() {
   return cached('quick-memos', async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUser()
     if (!user) return []
     const { data } = await supabase
       .from('quick_memos')
@@ -381,7 +387,7 @@ export async function fetchQuickMemos() {
 }
 
 export async function createQuickMemo(content: string) {
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await currentUser()
   if (!user) throw new Error('Not authenticated')
   const { data, error } = await supabase
     .from('quick_memos')
@@ -416,7 +422,7 @@ export async function deleteQuickMemo(id: string) {
 // ============================================================
 export async function getTokenBalance() {
   return cached('token-balance', async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUser()
     if (!user) return { balance: 0, total_earned: 0, total_spent: 0 }
     const ym = new Date().toISOString().slice(0, 7)
     const { data } = await supabase
@@ -433,7 +439,7 @@ export async function getTokenBalance() {
 }
 
 export async function addTokenRecord(amount: number, source: string, claimed = true, daily = false) {
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await currentUser()
   if (!user) throw new Error('Not authenticated')
 
   // 日任务限一次：同 source 今日已有记录则跳过
@@ -461,7 +467,7 @@ export async function addTokenRecord(amount: number, source: string, claimed = t
 
 export async function getDailyTasks() {
   return cached('daily-tasks', async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUser()
     if (!user) return { date: '', today_earned: 0, daily_target: 0, tasks: [] }
 
     const DAILY_TASK_SOURCES: Record<string, number> = {
@@ -507,7 +513,7 @@ export async function getDailyTasks() {
 
 export async function getTodayCounts() {
   return cached('today-counts', async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUser()
     if (!user) return {}
     const todayStr = new Date().toISOString().slice(0, 10)
     const { data } = await supabase
@@ -532,7 +538,7 @@ export async function getTodayCounts() {
 }
 
 export async function claimDailyTokens(source: string) {
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await currentUser()
   if (!user) return 0
   const todayStr = new Date().toISOString().slice(0, 10)
   const { data, error } = await supabase
@@ -550,7 +556,7 @@ export async function claimDailyTokens(source: string) {
 }
 
 export async function claimAllDailyTokens() {
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await currentUser()
   if (!user) return { claimed: 0, balance: 0 }
   const todayStr = new Date().toISOString().slice(0, 10)
   const { data, error } = await supabase
@@ -572,7 +578,7 @@ export async function claimAllDailyTokens() {
 // ============================================================
 export async function fetchGachaItems() {
   return cached('gacha-items', async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUser()
     const { data: items } = await supabase
       .from('gacha_items')
       .select('*')
@@ -598,7 +604,7 @@ export async function fetchGachaItems() {
 
 export async function fetchGachaRecords() {
   return cached('gacha-records', async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUser()
     if (!user) return []
     const { data } = await supabase
       .from('gacha_records')
@@ -610,7 +616,7 @@ export async function fetchGachaRecords() {
 }
 
 export async function gachaPull(count: 1 | 10) {
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await currentUser()
   if (!user) throw new Error('Not authenticated')
 
   const items = await fetchGachaItems()
@@ -774,7 +780,7 @@ export async function gachaPull(count: 1 | 10) {
 // ============================================================
 export async function getSSRTargetStatus() {
   return cached('ssr-target', async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUser()
     if (!user) return { target: null, total_pulls: 0, eligible: false, monthly_used: false }
 
     const ym = new Date().toISOString().slice(0, 7)
@@ -819,7 +825,7 @@ export async function getSSRTargetStatus() {
 }
 
 export async function setSSRTarget(targetItemId: string) {
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await currentUser()
   if (!user) throw new Error('Not authenticated')
 
   const ym = new Date().toISOString().slice(0, 7)
@@ -866,7 +872,7 @@ export async function setSSRTarget(targetItemId: string) {
 }
 
 export async function clearSSRTarget() {
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await currentUser()
   if (!user) return
   await supabase.from('gacha_ssr_targets').delete().eq('user_id', user.id)
   invalidate('ssr-target')
@@ -877,7 +883,7 @@ export async function clearSSRTarget() {
 // ============================================================
 export async function getWeeklyTasks() {
   return cached('weekly-tasks', async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUser()
     if (!user) return { tasks: [], week_start: '', week_earned: 0, week_target: 0 }
 
     const now = new Date(); const wsD = new Date(now); wsD.setDate(wsD.getDate() - wsD.getDay() + 1); const ws = wsD.toISOString().slice(0, 10)
@@ -965,7 +971,7 @@ export async function getWeeklyTasks() {
 }
 
 export async function claimWeeklyTask(taskKey: string) {
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await currentUser()
   if (!user) throw new Error('Not authenticated')
 
   const now = new Date(); const wsD = new Date(now); wsD.setDate(wsD.getDate() - wsD.getDay() + 1); const ws = wsD.toISOString().slice(0, 10)
@@ -1058,7 +1064,7 @@ export async function claimWeeklyTask(taskKey: string) {
 // ============================================================
 export async function getShowcaseCurrent() {
   return cached('showcase-current', async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUser()
     if (!user) return null
 
     const ym = new Date().toISOString().slice(0, 7)
@@ -1119,7 +1125,7 @@ export async function getShowcaseCurrent() {
 
 export async function getShowcaseSnapshots(year?: string) {
   return cached(`showcase-snapshots:${year || 'all'}`, async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUser()
     if (!user) return { snapshots: [], years: [] }
     let query = supabase.from('showcase_snapshots').select('*').eq('user_id', user.id)
     if (year) query = query.like('year_month', `${year}-%`)
@@ -1134,7 +1140,7 @@ export async function getShowcaseSnapshots(year?: string) {
 export async function snapshotShowcaseNow() {
   const current = await getShowcaseCurrent()
   if (!current) return { ok: false }
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await currentUser()
   if (!user) return { ok: false }
   const { data: snap } = await supabase.from('showcase_snapshots').upsert({
     user_id: user.id,
@@ -1155,7 +1161,7 @@ export async function snapshotShowcaseNow() {
 // ============================================================
 export async function getDashboardStats() {
   return cached('dashboard-stats', async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUser()
     if (!user) return null
 
     const todayStr = new Date().toISOString().slice(0, 10)
@@ -1200,7 +1206,7 @@ export async function getDashboardStats() {
 // ============================================================
 export async function getDailyEarned(month: string) {
   return cached(`daily-earned:${month}`, async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await currentUser()
     if (!user) return { month, days: {}, rarities: {}, pomodoros: {}, month_total: 0, month_pomodoros: 0 }
 
     const [year, m] = month.split('-').map(Number)
