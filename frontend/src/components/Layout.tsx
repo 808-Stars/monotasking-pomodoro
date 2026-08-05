@@ -1,10 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
 import Icon from './Icons';
 import type { IconName } from './Icons';
-import { useDevMode } from '../contexts/DevModeContext';
 import { useAuth } from '../contexts/AuthContext';
-import DevDatePicker from './DevDatePicker';
 
 /* ── Nav data ── */
 const sharedItems: { to: string; label: string; icon: IconName; desc: string; accent?: 'gold' | 'blue' | 'red'; end?: boolean }[] = [
@@ -92,39 +89,12 @@ function NavItem({ to, icon, label, desc, end, accent }: {
 }
 
 export default function Layout() {
-  const { isDev, unlock, lock } = useDevMode();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [devPromptOpen, setDevPromptOpen] = useState(false);
-  const [devKeyInput, setDevKeyInput] = useState('');
-  const [devError, setDevError] = useState('');
 
   const handleLogout = async () => {
     await signOut();
     navigate('/login', { replace: true });
-  };
-
-  const handleStarsDoubleClick = () => {
-    if (isDev) {
-      // 已开启 → 双击关闭（方便调试完退出）
-      if (confirm('已开启开发者模式，要关闭吗？')) {
-        lock();
-      }
-      return;
-    }
-    setDevKeyInput('');
-    setDevError('');
-    setDevPromptOpen(true);
-  };
-
-  const submitDevKey = () => {
-    if (unlock(devKeyInput)) {
-      setDevPromptOpen(false);
-      setDevKeyInput('');
-      setDevError('');
-    } else {
-      setDevError('密钥错误');
-    }
   };
 
   return (
@@ -283,9 +253,6 @@ export default function Layout() {
             }}>新手教程</span>
           </NavLink>
 
-          {/* 开发者模式日期穿越（仅 isDev 时显示） */}
-          {isDev && <DevDatePicker />}
-
           <div className="oto-ornament-divider" style={{ margin: '6px 0 2px' }}>
             <span style={{ fontSize: '9px' }}>单核定方向 · 番茄保执行</span>
           </div>
@@ -318,98 +285,14 @@ export default function Layout() {
           }}>
             <span className="mr-1">By</span>
             <span
-              onDoubleClick={handleStarsDoubleClick}
-              title={isDev ? '双击退出开发者模式' : '双击解锁开发者模式'}
               style={{
-                cursor: 'pointer',
+                cursor: 'default',
                 userSelect: 'none',
-                color: isDev ? 'var(--oto-accent-alt)' : undefined,
-                fontWeight: isDev ? 700 : undefined,
               }}
             >808-Stars</span>
-            {isDev && (
-              <span
-                onClick={() => { if (confirm('关闭开发者模式？')) lock(); }}
-                title="点击关闭开发者模式"
-                style={{
-                  marginLeft: 6, padding: '0 6px',
-                  fontSize: '9px', fontWeight: 700,
-                  background: 'var(--oto-accent-alt)',
-                  color: '#fff',
-                  border: '1px solid #5a0a18',
-                  borderRadius: 2,
-                  cursor: 'pointer',
-                  letterSpacing: '0.05em',
-                }}
-              >DEV</span>
-            )}
           </p>
         </div>
       </aside>
-
-      {/* ── 开发者模式密钥输入弹窗 ── */}
-      {devPromptOpen && (
-        <div
-          onClick={() => setDevPromptOpen(false)}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 100,
-            background: 'rgba(0,0,0,0.5)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            className="oto-window"
-            style={{
-              minWidth: 320, padding: 20,
-              borderColor: 'var(--oto-gold)',
-              background: 'var(--oto-bg-card)',
-            }}
-          >
-            <h3 style={{
-              fontFamily: 'var(--oto-font-title)', fontSize: '15px',
-              color: 'var(--oto-text)', marginBottom: 12,
-              display: 'flex', alignItems: 'center', gap: 8,
-            }}>
-              <Icon name="lock" size={16} /> 开发者模式
-            </h3>
-            <p style={{
-              fontFamily: 'var(--oto-font-body)', fontSize: '12px',
-              color: 'var(--oto-text-muted)', marginBottom: 12,
-            }}>
-              请输入管理员密钥以解锁调试功能。
-            </p>
-            <input
-              type="password"
-              autoFocus
-              value={devKeyInput}
-              onChange={e => { setDevKeyInput(e.target.value); setDevError(''); }}
-              onKeyDown={e => { if (e.key === 'Enter') submitDevKey(); if (e.key === 'Escape') setDevPromptOpen(false); }}
-              placeholder="输入密钥"
-              className="oto-input w-full"
-              style={{ marginBottom: 8 }}
-            />
-            {devError && (
-              <p style={{
-                fontFamily: 'var(--oto-font-body)', fontSize: '12px',
-                color: 'var(--oto-accent-alt)', marginBottom: 8,
-              }}>{devError}</p>
-            )}
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setDevPromptOpen(false)}
-                className="oto-btn oto-btn-sm oto-btn-gray"
-                style={{ fontSize: '12px' }}
-              >取消</button>
-              <button
-                onClick={submitDevKey}
-                className="oto-btn oto-btn-sm"
-                style={{ fontSize: '12px' }}
-              >解锁</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ═══ MAIN CONTENT ═══ */}
       <main className="oto-main-shell oto-board-frame flex-1 min-h-screen overflow-auto oto-plank-lines ml-8" style={{ background: 'var(--oto-bg-main)' }}>

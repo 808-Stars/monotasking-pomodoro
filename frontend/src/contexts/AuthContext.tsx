@@ -26,11 +26,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 监听认证状态变化
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
-      if (session?.user?.email) {
-        localStorage.setItem('oto-current-user', session.user.email)
-      } else {
-        localStorage.removeItem('oto-current-user')
-      }
     })
 
     return () => subscription.unsubscribe()

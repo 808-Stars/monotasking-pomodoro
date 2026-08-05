@@ -3,7 +3,6 @@ import { fetchReviews, createReview, updateReview, deleteReview, addTokenRecord 
 import type { Review } from '../types';
 import StatusBadge from '../components/StatusBadge';
 import Icon from '../components/Icons';
-import { useFakeDate } from '../contexts/DevModeContext';
 
 const REVIEW_TYPE_MAP: Record<string, string> = { DAILY: '日记', WEEKLY: '周记', MONTHLY: '月记' };
 // default date 改在组件初始化时按 fakeDate 计算
@@ -27,7 +26,7 @@ export default function Reviews() {
   useEffect(() => { load(); loadAll(); }, [filterType]);
 
   // fake-aware 今日日期（写新回顾时默认日期）
-  const fakeTodayStr = useFakeDate().toISOString().slice(0, 10);
+  const fakeTodayStr = new Date().toISOString().slice(0, 10);
 
   const counts = useMemo(() => {
     const daily = allReviews.filter(r => r.type === 'DAILY').length;

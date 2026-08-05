@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { PomodoroProvider } from './contexts/PomodoroContext'
-import { DevModeProvider } from './contexts/DevModeContext'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Layout from './components/Layout'
 import LoginPage from './pages/LoginPage'
@@ -26,7 +25,6 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <AuthProvider>
-      <DevModeProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route element={<ProtectedRoute><PomodoroProvider><Layout /></PomodoroProvider></ProtectedRoute>}>
@@ -43,7 +41,6 @@ export default function App() {
             <Route path="/showcase" element={<Showcase />} />
           </Route>
         </Routes>
-      </DevModeProvider>
     </AuthProvider>
   )
 }

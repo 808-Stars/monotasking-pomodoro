@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import Icon from '../components/Icons';
 import type { IconName } from '../components/Icons';
 import { supabase } from '../services/supabase';
-import { useDevMode } from '../contexts/DevModeContext';
 import {
   fetchGachaItems, fetchGachaRecords, gachaPull,
   getTokenBalance, addTokenRecord, getDailyTasks,
@@ -82,7 +81,6 @@ interface WeeklyTask {
 }
 
 export default function Gacha() {
-  const { isDev } = useDevMode();
   const [balance, setBalance] = useState<TokenBalance | null>(null);
   const [items, setItems] = useState<GachaItem[]>([]);
   const [records, setRecords] = useState<GachaRecord[]>([]);
@@ -329,36 +327,6 @@ export default function Gacha() {
             </div>
           </div>
           <div className="flex items-center gap-6 flex-wrap">
-            {/* 调试按钮：开发者模式专属 —— 放在单抽按钮左边 */}
-            {isDev && (
-              <button
-                onClick={async () => {
-                  await addTokenRecord(200, '调试加币', false, false);
-                  const balanceData = await getTokenBalance();
-                  setBalance(balanceData);
-                }}
-                className="oto-btn oto-btn-sm"
-                title="[DEV] 立即 +200 代币"
-                style={{
-                  ...pxSm, fontSize: '11px',
-                  background: 'var(--oto-accent-alt)',
-                  color: '#fff',
-                  borderColor: '#5a0a18',
-                  padding: '4px 10px',
-                  display: 'inline-flex', alignItems: 'center', gap: 4,
-                }}
-              >
-                +200币
-                <span style={{
-                  fontSize: '9px', fontWeight: 700,
-                  background: 'rgba(255,255,255,0.25)',
-                  border: '1px solid rgba(255,255,255,0.5)',
-                  borderRadius: 2,
-                  padding: '0 4px',
-                  letterSpacing: '0.05em',
-                }}>DEV</span>
-              </button>
-            )}
             <button
               className="oto-btn"
               disabled={!canSingle || pulling}

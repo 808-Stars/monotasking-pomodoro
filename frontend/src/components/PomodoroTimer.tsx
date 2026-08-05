@@ -1,5 +1,4 @@
 import { usePomodoro } from '../contexts/PomodoroContext';
-import { useDevMode } from '../contexts/DevModeContext';
 import Icon from './Icons';
 
 export default function PomodoroTimer() {
@@ -9,7 +8,6 @@ export default function PomodoroTimer() {
     toggleTimer, handleSkip, resetTimer, switchMode,
     setSelectedTask, setNotes, refreshTasks,
   } = usePomodoro();
-  const { isDev } = useDevMode();
 
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -145,17 +143,6 @@ export default function PomodoroTimer() {
         {phase !== 'idle' && (
           <>
             <button onClick={resetTimer} className="oto-btn"><Icon name="undo" size={14} /> 重置</button>
-            {isDev && (
-              <button onClick={handleSkip} className="oto-btn" title="[DEV] 快速结束当前番茄钟"
-                style={{ borderColor: 'var(--oto-accent-alt)', color: 'var(--oto-accent-alt)' }}>
-                <Icon name="play" size={14} /> 快进
-                <span style={{
-                  marginLeft: 4, fontSize: '9px', padding: '0 4px',
-                  background: 'var(--oto-accent-alt)', color: '#fff',
-                  borderRadius: 2, fontWeight: 700, letterSpacing: '0.05em',
-                }}>DEV</span>
-              </button>
-            )}
           </>
         )}
       </div>

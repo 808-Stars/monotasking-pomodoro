@@ -5,7 +5,6 @@ import { DAILY_PLAN_STATUS_MAP, TASK_STATUS_MAP, PRIORITY_MAP } from '../types';
 import StatusBadge from '../components/StatusBadge';
 import Icon from '../components/Icons';
 import type { IconName } from '../components/Icons';
-import { useFakeDate } from '../contexts/DevModeContext';
 
 const STATUS_DOT: Record<string, string> = { UNPLANNED: '#222', PLANNED: '#687898', COMPLETED: '#689050', FAILED: '#a03038', REVIEWED: '#786890' };
 const STATUS_BG: Record<string, string> = { UNPLANNED: 'transparent', PLANNED: '#e8e4f0', COMPLETED: '#e0ece0', FAILED: '#f0e0e0', REVIEWED: '#ece4f0' };
@@ -25,7 +24,7 @@ export default function DailyPlans() {
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const draftTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
-  const today = useFakeDate();
+  const today = new Date();
   const [calYear, setCalYear] = useState(today.getFullYear());
   const [calMonth, setCalMonth] = useState(today.getMonth());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
