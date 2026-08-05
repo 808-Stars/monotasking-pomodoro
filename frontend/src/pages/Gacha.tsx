@@ -111,6 +111,7 @@ export default function Gacha() {
   const [showSSRLock, setShowSSRLock] = useState(false);
   const [pullMeta, setPullMeta] = useState<{ ssr_target_consumed?: boolean; ssr_target_item?: any } | null>(null);
   const [todayTomatoCount, setTodayTomatoCount] = useState<number>(0);
+  const [todayCounts, setTodayCounts] = useState<Record<string, number>>({});
   const [settingSSRTarget, setSettingSSRTarget] = useState(false);
 
   const refreshDaily = useCallback(async () => {
@@ -139,6 +140,7 @@ export default function Gacha() {
 
     // Today tomato count for tier display
     const todayCounts = todayCountsData as Record<string, number>;
+    setTodayCounts(todayCounts);
     setTodayTomatoCount(todayCounts['番茄钟'] ?? 0);
 
     // Daily tasks
@@ -319,7 +321,7 @@ export default function Gacha() {
                 本月消费 <span style={{ color: 'var(--oto-accent-alt)' }}>-{balance?.total_spent ?? 0}</span>
               </span>
               <span style={{ color: 'var(--oto-text-muted)' }}>
-                本月抽取 <span style={{ color: 'var(--oto-gold-dark)', fontWeight: 'bold' }}>{ssrTargetStatus?.total_pulls ?? '...'}</span> 次
+                本月抽取 <span style={{ color: 'var(--oto-text-dim)' }}>{ssrTargetStatus?.total_pulls ?? '...'}</span> 次
               </span>
               <span style={{ color: 'var(--oto-text-muted)' }}>
                 !&nbsp;&nbsp;&nbsp;每月 1 号 0 点自动清零（用于藏品室结算）
@@ -327,6 +329,36 @@ export default function Gacha() {
             </div>
           </div>
           <div className="flex items-center gap-6 flex-wrap">
+            {/* 调试按钮：开发者模式专属 —— 放在单抽按钮左边 */}
+            {isDev && (
+              <button
+                onClick={async () => {
+                  await addTokenRecord(200, '调试加币', false, false);
+                  const balanceData = await getTokenBalance();
+                  setBalance(balanceData);
+                }}
+                className="oto-btn oto-btn-sm"
+                title="[DEV] 立即 +200 代币"
+                style={{
+                  ...pxSm, fontSize: '11px',
+                  background: 'var(--oto-accent-alt)',
+                  color: '#fff',
+                  borderColor: '#5a0a18',
+                  padding: '4px 10px',
+                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                }}
+              >
+                +200币
+                <span style={{
+                  fontSize: '9px', fontWeight: 700,
+                  background: 'rgba(255,255,255,0.25)',
+                  border: '1px solid rgba(255,255,255,0.5)',
+                  borderRadius: 2,
+                  padding: '0 4px',
+                  letterSpacing: '0.05em',
+                }}>DEV</span>
+              </button>
+            )}
             <button
               className="oto-btn"
               disabled={!canSingle || pulling}
@@ -353,16 +385,6 @@ export default function Gacha() {
               十连抽
               <span style={{ ...pxSm, display: 'block', marginTop: 2 }}>{COST_TEN} 币</span>
             </button>
-            {isDev && (
-              <button onClick={async () => {
-                await addTokenRecord(200, '调试加币', false);
-                const balanceData = await getTokenBalance();
-                setBalance(balanceData);
-              }} className="oto-btn oto-btn-sm" title="[DEV] +200 代币"
-                style={{ ...pxSm, fontSize: '11px', background: 'var(--oto-accent-alt)', color: '#fff', borderColor: '#5a0a18', padding: '4px 10px' }}>
-                +200币<span style={{ fontSize: '9px', fontWeight: 700, background: 'rgba(255,255,255,0.25)', border: '1px solid rgba(255,255,255,0.5)', borderRadius: 2, padding: '0 4px', letterSpacing: '0.05em' }}>DEV</span>
-              </button>
-            )}
           </div>
         </div>
         {pulling && (
@@ -473,48 +495,80 @@ export default function Gacha() {
         )}
       </div>
 
-      {/* Tomato Tier Rewards (番茄钟分级奖励) */}
+      {/* ── Earn Tokens (可多次完成) ── */}
       <div className="oto-window rounded-none! p-4">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between cursor-pointer"
+             onClick={() => { setShowRepeatable(!showRepeatable); if (!showRepeatable) getTodayCounts().then(setTodayCounts).catch(() => {}); }}>
           <h2 style={pxH3} className="m-0! flex items-center gap-2">
-            <Icon name="tomato" size={16} /> 番茄钟分级奖励
+            <Icon name="tomato" size={16} /> 番茄钟任务
           </h2>
-          <span style={{ ...pxSm, color: 'var(--oto-text-dim)' }}>
-            今日完成 <span style={{ color: '#8a3030', fontWeight: 'bold' }}>{todayTomatoCount}</span> 个番茄钟
-          </span>
+          <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{showRepeatable ? '▲ 收起' : '▼ 展开'}</span>
         </div>
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { tier: '入门', range: '1-4', min: 1, max: 4, amount: 40, color: '#4a8a4a' },
-            { tier: '进阶', range: '5-8', min: 5, max: 8, amount: 50, color: '#c89030' },
-            { tier: '大师', range: '9+', min: 9, max: Infinity, amount: 60, color: '#8a3030' },
-          ].map(t => {
-            const inTier = todayTomatoCount >= t.min && todayTomatoCount <= t.max;
-            const progress = todayTomatoCount >= t.min
-              ? t.max === Infinity
-                ? Math.min((todayTomatoCount - t.min + 1) / 1 * 100, 100)
-                : Math.min((todayTomatoCount - t.min + 1) / (t.max - t.min + 1) * 100, 100)
-              : 0;
-            return (
-              <div key={t.tier} className="oto-inset rounded-none! p-3 text-center"
-                   style={{ borderColor: inTier ? t.color : 'var(--oto-border)', opacity: inTier ? 1 : 0.6 }}>
-                <div style={{ fontSize: '20px', marginBottom: 2 }}>
-                  <Icon name="tomato" size={20} />
-                </div>
-                <div style={{ ...pxSm, fontWeight: 'bold', color: t.color }}>{t.tier}</div>
-                <div style={{ ...pxSm, fontSize: '10px', color: 'var(--oto-text-muted)' }}>{t.range} 个</div>
-                <div style={{ ...pxSm, color: 'var(--oto-gold-dark)', fontWeight: 'bold', marginTop: 4 }}>
-                  +{t.amount} 币/个
-                </div>
-                {inTier && (
-                  <div className="oto-progress mt-2" style={{ height: '4px' }}>
-                    <div style={{ height: '100%', width: `${progress}%`, background: t.color, transition: 'width 0.4s' }} />
+        {showRepeatable && (
+          <div className="mt-4 space-y-2">
+            <p style={{ ...pxSm, color: 'var(--oto-text-dim)' }}>
+              完成工作番茄钟即可获得代币，可无限次完成（代币分级奖励）
+            </p>
+            {(() => {
+              const src = EARN_SOURCES.find(s => !s.daily)!;
+              const done = todayCounts[src.desc] || 0;
+              const tiers = [
+                { name: '入门', range: '1-4', amount: 40, current: Math.min(done, 4), target: 4 },
+                { name: '进阶', range: '5-8', amount: 50, current: Math.max(0, Math.min(done - 4, 4)), target: 4 },
+                { name: '大师', range: '9+',  amount: 60, current: Math.max(0, done - 8), target: Infinity },
+              ];
+              return tiers.map((tier, idx) => {
+                const isComplete = tier.target === Infinity ? tier.current > 0 : tier.current >= tier.target;
+                const active = (idx === 0 && done > 0) || (idx === 1 && done > 4) || (idx === 2 && done > 8);
+                const pct = tier.target === Infinity ? Math.min(tier.current * 12.5, 100) : Math.min(tier.current / tier.target * 100, 100);
+                return (
+                  <div key={tier.name} className="oto-inset rounded-none! p-3"
+                       style={{ opacity: !active && idx > 0 ? 0.5 : 1 }}>
+                    <div className="flex items-center gap-3 mb-2">
+                      <Icon name={src.icon} size={20} />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span style={{ ...pxSm, fontWeight: 'bold' }}>
+                            番茄钟 · {tier.name}（第 {tier.range} 个）
+                          </span>
+                          <span style={{
+                            ...pxSm, fontWeight: 'bold',
+                            color: active ? 'var(--oto-gold-dark)' : 'var(--oto-text-muted)',
+                          }}>
+                            +{tier.amount} 币/个
+                          </span>
+                        </div>
+                        <p style={{ ...pxSm, color: 'var(--oto-text-muted)', marginTop: 2 }}>
+                          本档完成第 {tier.range} 个番茄钟时按此档奖励
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span style={{
+                          ...pxSm,
+                          color: isComplete ? 'var(--oto-green)' : 'var(--oto-text-dim)',
+                        }}>
+                          {tier.target === Infinity ? `${tier.current}/∞` : `${tier.current}/${tier.target}`}
+                        </span>
+                        {isComplete && idx < 2 && (
+                          <span style={{ ...pxSm, color: 'var(--oto-green)' }}><Icon name="check" size={14} /> 已达成</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="oto-progress" style={{ height: '6px' }}>
+                      <div style={{
+                        height: '100%', width: `${pct}%`,
+                        background: isComplete
+                          ? 'linear-gradient(90deg, #4a8a4a, #6aaa6a)'
+                          : 'linear-gradient(90deg, var(--oto-gold-dark), #d4b860)',
+                        transition: 'width 0.4s',
+                      }} />
+                    </div>
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                );
+              });
+            })()}
+          </div>
+        )}
       </div>
 
       {/* Weekly Tasks */}
@@ -689,39 +743,78 @@ export default function Gacha() {
                 <span style={{ ...pxSm, fontWeight: 'bold' }}>
                   <Icon name="lock" size={14} /> SSR 目标锁定
                 </span>
+                <span style={{ transform: 'translateY(-4px)' }}>
                 {ssrTargetStatus?.target ? (
-                  <span className="oto-badge" style={{ fontSize: '9px', padding: '0px 5px', background: `${RARITY_COLOR_MAP.SSR}22`, color: RARITY_COLOR_MAP.SSR, borderColor: RARITY_COLOR_MAP.SSR }}>已锁定</span>
+                  <span className="oto-badge" style={{
+                    fontSize: '9px', padding: '0px 5px',
+                    background: `${RARITY_COLOR_MAP.SSR}22`, color: RARITY_COLOR_MAP.SSR,
+                    borderColor: RARITY_COLOR_MAP.SSR,
+                  }}>已锁定</span>
                 ) : ssrTargetStatus?.eligible && !ssrTargetStatus?.monthly_used ? (
-                  <span className="oto-badge" style={{ fontSize: '9px', padding: '0px 5px', background: 'transparent', color: 'var(--oto-green)', borderColor: 'var(--oto-green)' }}>可锁定</span>
+                  <span className="oto-badge" style={{
+                    fontSize: '9px', padding: '0px 5px',
+                    background: 'transparent', color: 'var(--oto-green)',
+                    borderColor: 'var(--oto-green)',
+                  }}>可锁定</span>
                 ) : ssrTargetStatus?.monthly_used ? (
-                  <span className="oto-badge" style={{ fontSize: '9px', padding: '0px 5px', background: 'transparent', color: 'var(--oto-red)', borderColor: 'var(--oto-red)' }}>不可锁定</span>
+                  <span className="oto-badge" style={{
+                    fontSize: '9px', padding: '0px 5px',
+                    background: 'transparent', color: 'var(--oto-red)',
+                    borderColor: 'var(--oto-red)',
+                  }}>不可锁定</span>
                 ) : null}
+                </span>
               </div>
 
               {ssrTargetStatus?.eligible ? (
                 ssrTargetStatus.monthly_used && !ssrTargetStatus.target ? (
-                  <div style={{ ...pxSm, fontSize: '11px', color: 'var(--oto-text-dim)' }}>
-                    本月已使用过 SSR 锁定，下月刷新后可再次使用
+                  /* 本月已消费 — 不可锁定 */
+                  <div className="flex items-center justify-between">
+                    <span style={{ ...pxSm, fontSize: '11px', color: 'var(--oto-text-dim)' }}>
+                      本月已使用过 SSR 锁定，下月刷新后可再次使用
+                    </span>
+                    <span className="oto-btn oto-btn-sm" style={{
+                      ...pxSm, fontSize: '11px', padding: '1px 10px',
+                      opacity: 0.35, cursor: 'not-allowed',
+                    }}>选择目标</span>
                   </div>
                 ) : ssrTargetStatus.target ? (
+                  /* 已锁定 */
                   <div>
                     <div className="flex items-center gap-3 mb-2">
-                      <span style={{ fontSize: '1.5rem' }}>{ssrTargetStatus.target.target_item_emoji}</span>
+                      <span style={{ width: 28, height: 28, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <img src={itemImage({ rarity: 'SSR', job: ssrTargetStatus.target.target_item_job || 'CLERIC' })} alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+                      </span>
                       <span style={{ ...pxSm, color: RARITY_COLOR_MAP.SSR, fontWeight: 'bold' }}>
                         {ssrTargetStatus.target.target_item_name}
                       </span>
+                      {ssrTargetStatus.target.target_item_job_display && (
+                        <span style={{ ...pxSm, fontSize: '10px', color: 'var(--oto-text-muted)' }}>
+                          {ssrTargetStatus.target.target_item_job_display}
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
-                      <span style={{ ...pxSm, fontSize: '11px', color: 'var(--oto-text-muted)', flex: 1 }}>下次 SSR 必出此物品</span>
-                      <button onClick={async () => { await clearSSRTarget(); const d = await getSSRTargetStatus(); setSSRTargetStatus(d); }}
-                        className="oto-btn oto-btn-sm oto-btn-gray" style={{ ...pxSm, fontSize: '11px', padding: '1px 8px' }}>清除</button>
+                      <span style={{ ...pxSm, fontSize: '11px', color: 'var(--oto-text-muted)', flex: 1 }}>
+                        下次 SSR 必出此物品
+                      </span>
+                      <button
+                        onClick={async () => {
+                          await clearSSRTarget();
+                          const d = await getSSRTargetStatus();
+                          setSSRTargetStatus(d);
+                        }}
+                        className="oto-btn oto-btn-sm oto-btn-gray"
+                        style={{ ...pxSm, fontSize: '11px', padding: '1px 8px' }}
+                      >清除</button>
                     </div>
                   </div>
                 ) : showSSRLock ? (
                   <div>
                     <div className="grid grid-cols-8 gap-2 mb-3">
                       {items.filter(i => i.rarity === 'SSR').map(item => (
-                        <div key={item.id} className="oto-inset rounded-none! p-2 text-center cursor-pointer hover:brightness-105"
+                        <div key={item.id}
+                          className="oto-inset rounded-none! p-2 text-center cursor-pointer hover:brightness-105"
                           style={{ borderColor: `${RARITY_COLOR_MAP.SSR}33` }}
                           onClick={async () => {
                             if (settingSSRTarget) return;
@@ -733,8 +826,11 @@ export default function Gacha() {
                               setShowSSRLock(false);
                             } catch (e: any) { alert(e?.message || '设置失败'); }
                             finally { setSettingSSRTarget(false); }
-                          }}>
-                          <img src={itemImage(item)} alt={item.name} style={{ width: 32, height: 32, objectFit: 'contain', margin: '0 auto' }} />
+                          }}
+                        >
+                          <div style={{ width: 32, height: 32, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <img src={itemImage(item)} alt={item.name} style={{ width: 32, height: 32, objectFit: 'contain' }} />
+                          </div>
                           <div style={{ ...pxSm, fontSize: '10px', marginTop: 1 }}>{item.name}</div>
                         </div>
                       ))}
@@ -791,7 +887,7 @@ export default function Gacha() {
             </h3>
             <div className="grid grid-cols-[repeat(auto-fill,minmax(130px,1fr))] gap-3">
               {grouped[rarity].map(item => {
-                const owned = (item.owned_count ?? ownedCounts[item.id] ?? 0) > 0;
+                const owned = (item.owned_count ?? 0) > 0;
                 return (
                   <div key={item.id} className="oto-window rounded-none! p-3 text-center"
                        onClick={() => owned && setSelectedItem(item)}
@@ -808,7 +904,7 @@ export default function Gacha() {
                       {owned ? (
                         <img src={itemImage(item)} alt={item.name} style={{ width: 48, height: 48, objectFit: 'contain' }} />
                       ) : (
-                        <span style={{ fontSize: '2rem', color: 'var(--oto-text-muted)' }}>?</span>
+                        <span style={{ fontSize: '2rem', color: 'var(--oto-text-muted)' }}>{owned ? item.emoji : '?'}</span>
                       )}
                     </div>
                     <div style={{ ...pxSm, fontWeight: 'bold', marginTop: 4 }}>{owned ? item.name : '???'}</div>
@@ -826,7 +922,7 @@ export default function Gacha() {
                       {RARITY_MAP[item.rarity]}
                     </div>
                     {owned && <div style={{ ...pxSm, fontSize: '10px', color: 'var(--oto-text-muted)', marginTop: 2 }}>
-                      ×{item.owned_count ?? ownedCounts[item.id] ?? 0}
+                      ×{item.owned_count}
                     </div>}
                   </div>
                 );
@@ -869,7 +965,11 @@ export default function Gacha() {
                       <tr key={r.id}>
                         <td style={{ color: 'var(--oto-text-muted)' }}>{i + 1}</td>
                         <td style={{ width: 36, height: 36 }}>
-                          <img src={itemImage({ rarity: r.item_rarity || 'N', job: r.item_job || 'CLERIC' })} alt={r.item_name} style={{ width: 36, height: 36, objectFit: 'contain' }} />
+                          {r.item_image ? (
+                            <img src={r.item_image} alt={r.item_name} style={{ width: 36, height: 36, objectFit: 'contain' }} />
+                          ) : (
+                            <img src={itemImage({ rarity: r.item_rarity || 'N', job: r.item_job || 'CLERIC' })} alt={r.item_name} style={{ width: 36, height: 36, objectFit: 'contain' }} />
+                          )}
                         </td>
                         <td style={{ fontWeight: 'bold' }}>{r.item_name}
                           {r.item_job_display && <span style={{ ...pxSm, fontSize: '10px', color: 'var(--oto-text-muted)', marginLeft: 6 }}>{r.item_job_display}</span>}
@@ -917,8 +1017,12 @@ export default function Gacha() {
             {pullMeta?.ssr_target_consumed && pullMeta.ssr_target_item && (
               <div className="oto-window-gold rounded-none! p-4 mb-4 text-center"
                    style={{ borderColor: RARITY_COLOR_MAP.SSR, boxShadow: `0 0 24px ${RARITY_COLOR_MAP.SSR}44` }}>
-                <div style={{ fontSize: '3rem', margin: '0 auto' }}>
-                  {pullMeta.ssr_target_item.target_item_emoji || '⭐'}
+                <div style={{ width: 64, height: 64, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {pullMeta.ssr_target_item.target_item_image ? (
+                    <img src={pullMeta.ssr_target_item.target_item_image} alt="" style={{ width: 64, height: 64, objectFit: 'contain' }} />
+                  ) : (
+                    <span style={{ fontSize: '3rem' }}>{pullMeta.ssr_target_item.target_item_emoji || '⭐'}</span>
+                  )}
                 </div>
                 <div style={{ ...pxH3, color: RARITY_COLOR_MAP.SSR, fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                   <Icon name="target" size={20} /> 锁定目标达成！
@@ -943,7 +1047,11 @@ export default function Gacha() {
                        animationDelay: `${i * 0.08}s`,
                      }}>
                   <div style={{ width: pullResult.length === 1 ? 80 : 48, height: pullResult.length === 1 ? 80 : 48, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <img src={itemImage({ rarity: r.item_rarity || 'N', job: r.item_job || 'CLERIC' })} alt={r.item_name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    {r.item_image ? (
+                      <img src={r.item_image} alt={r.item_name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    ) : (
+                      <img src={itemImage({ rarity: r.item_rarity || 'N', job: r.item_job || 'CLERIC' })} alt={r.item_name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    )}
                   </div>
                   <div style={{ ...pxBody, fontWeight: 'bold', marginTop: 4 }}>{r.item_name}</div>
                   {r.item_job_display && (
@@ -981,7 +1089,11 @@ export default function Gacha() {
                style={{ borderColor: RARITY_COLOR_MAP[selectedItem.rarity] }}
                onClick={e => e.stopPropagation()}>
             <div style={{ width: 80, height: 80, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: '4rem' }}>{selectedItem.emoji}</span>
+              {selectedItem.image ? (
+                <img src={selectedItem.image} alt={selectedItem.name} style={{ width: 80, height: 80, objectFit: 'contain' }} />
+              ) : (
+                <span style={{ fontSize: '4rem' }}>{selectedItem.emoji}</span>
+              )}
             </div>
             <h3 style={{ ...pxH3, fontSize: '14px', color: 'var(--oto-text)', marginTop: 8 }}>{selectedItem.name}</h3>
             <div className="flex items-center justify-center gap-2 mt-2">
@@ -1001,7 +1113,7 @@ export default function Gacha() {
               {selectedItem.description}
             </p>
             <div style={{ ...pxSm, color: 'var(--oto-text-muted)', marginTop: 8 }}>
-              本月拥有 ×{selectedItem.owned_count ?? ownedCounts[selectedItem.id] ?? 0}
+              本月拥有 ×{selectedItem.owned_count ?? 0}
             </div>
             <button onClick={() => setSelectedItem(null)}
                     className="oto-btn w-full mt-4" style={pxSm}>
