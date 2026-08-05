@@ -162,12 +162,7 @@ export default function Tasks() {
                     <td className="px-4 py-3 whitespace-nowrap text-center"><StatusBadge label={PRIORITY_MAP[task.priority]} status={task.priority} /></td>
                     <td className="px-4 py-3 whitespace-nowrap text-center"><StatusBadge label={TASK_STATUS_MAP[task.status]} status={task.status} /></td>
                     <td className="px-4 py-3 whitespace-nowrap text-center" style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)' }}>
-                      <span>{task.completed_pomodoros}/{task.estimated_pomodoros} <Icon name="tomato" size={13} /></span>
-                      {task.today_pomodoros != null && (
-                        <div style={{ fontSize: '11px', color: 'var(--oto-text-muted)', marginTop: 2 }}>
-                          今日: {task.today_pomodoros}
-                        </div>
-                      )}
+                      {task.completed_pomodoros}/{task.estimated_pomodoros} <Icon name="tomato" size={13} />
                     </td>
                     <td className="px-4 py-3 text-xs whitespace-nowrap text-center" style={{ color: 'var(--oto-text-muted)' }}>{task.due_date || '-'}</td>
                     <td className="px-4 py-3">
@@ -180,7 +175,6 @@ export default function Tasks() {
                         {task.status === 'IN_PROGRESS' && (
                           <>
                             <button onClick={() => handleAction(task.id, 'complete')} className="oto-btn-sm oto-btn-green"><Icon name="check" size={12} /> 完成</button>
-                            <button onClick={() => handleAction(task.id, 'archive')} className="oto-btn-sm oto-btn-gray"><Icon name="archive" size={12} /> 归档</button>
                             <button onClick={() => handleRollback(task)} className="oto-btn-sm oto-btn-gray"><Icon name="undo" size={12} /> 回退</button>
                           </>
                         )}

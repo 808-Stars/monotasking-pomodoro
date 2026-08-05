@@ -495,83 +495,7 @@ export default function Gacha() {
         )}
       </div>
 
-      {/* ── Earn Tokens (可多次完成) ── */}
-      <div className="oto-window rounded-none! p-4">
-        <div className="flex items-center justify-between cursor-pointer"
-             onClick={() => { setShowRepeatable(!showRepeatable); if (!showRepeatable) getTodayCounts().then(setTodayCounts).catch(() => {}); }}>
-          <h2 style={pxH3} className="m-0! flex items-center gap-2">
-            <Icon name="tomato" size={16} /> 番茄钟任务
-          </h2>
-          <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{showRepeatable ? '▲ 收起' : '▼ 展开'}</span>
-        </div>
-        {showRepeatable && (
-          <div className="mt-4 space-y-2">
-            <p style={{ ...pxSm, color: 'var(--oto-text-dim)' }}>
-              完成工作番茄钟即可获得代币，可无限次完成（代币分级奖励）
-            </p>
-            {(() => {
-              const src = EARN_SOURCES.find(s => !s.daily)!;
-              const done = todayCounts[src.desc] || 0;
-              const tiers = [
-                { name: '入门', range: '1-4', amount: 40, current: Math.min(done, 4), target: 4 },
-                { name: '进阶', range: '5-8', amount: 50, current: Math.max(0, Math.min(done - 4, 4)), target: 4 },
-                { name: '大师', range: '9+',  amount: 60, current: Math.max(0, done - 8), target: Infinity },
-              ];
-              return tiers.map((tier, idx) => {
-                const isComplete = tier.target === Infinity ? tier.current > 0 : tier.current >= tier.target;
-                const active = (idx === 0 && done > 0) || (idx === 1 && done > 4) || (idx === 2 && done > 8);
-                const pct = tier.target === Infinity ? Math.min(tier.current * 12.5, 100) : Math.min(tier.current / tier.target * 100, 100);
-                return (
-                  <div key={tier.name} className="oto-inset rounded-none! p-3"
-                       style={{ opacity: !active && idx > 0 ? 0.5 : 1 }}>
-                    <div className="flex items-center gap-3 mb-2">
-                      <Icon name={src.icon} size={20} />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span style={{ ...pxSm, fontWeight: 'bold' }}>
-                            番茄钟 · {tier.name}（第 {tier.range} 个）
-                          </span>
-                          <span style={{
-                            ...pxSm, fontWeight: 'bold',
-                            color: active ? 'var(--oto-gold-dark)' : 'var(--oto-text-muted)',
-                          }}>
-                            +{tier.amount} 币/个
-                          </span>
-                        </div>
-                        <p style={{ ...pxSm, color: 'var(--oto-text-muted)', marginTop: 2 }}>
-                          本档完成第 {tier.range} 个番茄钟时按此档奖励
-                        </p>
-                      </div>
-                      <div className="flex flex-col items-end gap-1">
-                        <span style={{
-                          ...pxSm,
-                          color: isComplete ? 'var(--oto-green)' : 'var(--oto-text-dim)',
-                        }}>
-                          {tier.target === Infinity ? `${tier.current}/∞` : `${tier.current}/${tier.target}`}
-                        </span>
-                        {isComplete && idx < 2 && (
-                          <span style={{ ...pxSm, color: 'var(--oto-green)' }}><Icon name="check" size={14} /> 已达成</span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="oto-progress" style={{ height: '6px' }}>
-                      <div style={{
-                        height: '100%', width: `${pct}%`,
-                        background: isComplete
-                          ? 'linear-gradient(90deg, #4a8a4a, #6aaa6a)'
-                          : 'linear-gradient(90deg, var(--oto-gold-dark), #d4b860)',
-                        transition: 'width 0.4s',
-                      }} />
-                    </div>
-                  </div>
-                );
-              });
-            })()}
-          </div>
-        )}
-      </div>
-
-      {/* Weekly Tasks */}
+      {/* ── Weekly Tasks ── */}
       <div className="oto-window rounded-none! p-4">
         <div className="flex items-center justify-between cursor-pointer"
              onClick={() => setShowWeekly(!showWeekly)}>
@@ -645,6 +569,82 @@ export default function Gacha() {
                 </div>
               );
             })}
+          </div>
+        )}
+      </div>
+
+      {/* ── Earn Tokens (可多次完成) ── */}
+      <div className="oto-window rounded-none! p-4">
+        <div className="flex items-center justify-between cursor-pointer"
+             onClick={() => { setShowRepeatable(!showRepeatable); if (!showRepeatable) getTodayCounts().then(setTodayCounts).catch(() => {}); }}>
+          <h2 style={pxH3} className="m-0! flex items-center gap-2">
+            <Icon name="tomato" size={16} /> 番茄钟任务
+          </h2>
+          <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{showRepeatable ? '▲ 收起' : '▼ 展开'}</span>
+        </div>
+        {showRepeatable && (
+          <div className="mt-4 space-y-2">
+            <p style={{ ...pxSm, color: 'var(--oto-text-dim)' }}>
+              完成工作番茄钟即可获得代币，可无限次完成（代币分级奖励）
+            </p>
+            {(() => {
+              const src = EARN_SOURCES.find(s => !s.daily)!;
+              const done = todayCounts[src.desc] || 0;
+              const tiers = [
+                { name: '入门', range: '1-4', amount: 40, current: Math.min(done, 4), target: 4 },
+                { name: '进阶', range: '5-8', amount: 50, current: Math.max(0, Math.min(done - 4, 4)), target: 4 },
+                { name: '大师', range: '9+',  amount: 60, current: Math.max(0, done - 8), target: Infinity },
+              ];
+              return tiers.map((tier, idx) => {
+                const isComplete = tier.target === Infinity ? tier.current > 0 : tier.current >= tier.target;
+                const active = (idx === 0 && done > 0) || (idx === 1 && done > 4) || (idx === 2 && done > 8);
+                const pct = tier.target === Infinity ? Math.min(tier.current * 12.5, 100) : Math.min(tier.current / tier.target * 100, 100);
+                return (
+                  <div key={tier.name} className="oto-inset rounded-none! p-3"
+                       style={{ opacity: !active && idx > 0 ? 0.5 : 1 }}>
+                    <div className="flex items-center gap-3 mb-2">
+                      <Icon name={src.icon} size={20} />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span style={{ ...pxSm, fontWeight: 'bold' }}>
+                            番茄钟 · {tier.name}（第 {tier.range} 个）
+                          </span>
+                          <span style={{
+                            ...pxSm, fontWeight: 'bold',
+                            color: active ? 'var(--oto-gold-dark)' : 'var(--oto-text-muted)',
+                          }}>
+                            +{tier.amount} 币/个
+                          </span>
+                        </div>
+                        <p style={{ ...pxSm, color: 'var(--oto-text-muted)', marginTop: 2 }}>
+                          本档完成第 {tier.range} 个番茄钟时按此档奖励
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span style={{
+                          ...pxSm,
+                          color: isComplete ? 'var(--oto-green)' : 'var(--oto-text-dim)',
+                        }}>
+                          {tier.target === Infinity ? `${tier.current}/∞` : `${tier.current}/${tier.target}`}
+                        </span>
+                        {isComplete && idx < 2 && (
+                          <span style={{ ...pxSm, color: 'var(--oto-green)' }}><Icon name="check" size={14} /> 已达成</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="oto-progress" style={{ height: '6px' }}>
+                      <div style={{
+                        height: '100%', width: `${pct}%`,
+                        background: isComplete
+                          ? 'linear-gradient(90deg, #4a8a4a, #6aaa6a)'
+                          : 'linear-gradient(90deg, var(--oto-gold-dark), #d4b860)',
+                        transition: 'width 0.4s',
+                      }} />
+                    </div>
+                  </div>
+                );
+              });
+            })()}
           </div>
         )}
       </div>
