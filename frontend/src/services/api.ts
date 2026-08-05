@@ -21,6 +21,11 @@ async function cached<T>(key: string, fetcher: () => Promise<T>, ttl = CACHE_TTL
   return data
 }
 
+// 用户缓存
+let _cachedUser: any = null
+let _cachedUserTs = 0
+const USER_CACHE_TTL = 5 * 60 * 1000
+
 /** 从 localStorage 直接读取用户 ID，零网络请求 */
 function getUserIdFromStorage(): string | null {
   try {
