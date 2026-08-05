@@ -21,13 +21,36 @@ async function cached<T>(key: string, fetcher: () => Promise<T>, ttl = CACHE_TTL
   return data
 }
 
-/** 缓存用户信息（5 分钟），避免每次请求都验证 token */
-let _cachedUser: any = null
-let _cachedUserTs = 0
-const USER_CACHE_TTL = 5 * 60 * 1000
+/** 从 localStorage 直接读取用户 ID，零网络请求 */
+function getUserIdFromStorage(): string | null {
+  try {
+    // Supabase v2 存储 key 格式: sb-<ref>-auth-token
+    const keys = Object.keys(localStorage).filter(k => k.endsWith('-auth-token'))
+    for (const key of keys) {
+      const raw = localStorage.getItem(key)
+      if (!raw) continue
+      const data = JSON.parse(raw)
+      const token = data?.access_token || data?.currentSession?.access_token
+      if (!token) continue
+      // 解码 JWT payload (第二段)
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      if (payload.sub) return payload.sub
+    }
+  } catch { /* */ }
+  return null
+}
 
+/** 获取当前用户（优先从缓存/本地读取，无网络请求） */
 async function currentUser() {
   if (_cachedUser && Date.now() - _cachedUserTs < USER_CACHE_TTL) return _cachedUser
+  // 先尝试从 JWT 直接读取（瞬间完成）
+  const userId = getUserIdFromStorage()
+  if (userId) {
+    _cachedUser = { id: userId }
+    _cachedUserTs = Date.now()
+    return _cachedUser
+  }
+  // fallback: 兜底用 getSession（可能触发网络请求）
   const { data: { session } } = await supabase.auth.getSession()
   _cachedUser = session?.user ?? null
   _cachedUserTs = Date.now()
