@@ -898,8 +898,8 @@ export async function getWeeklyTasks() {
       progress = Math.min(daily.count ?? 0, 3) + Math.min(weekly.count ?? 0, 1)
     } else if (t.key === 'streak_7') {
       let streak = 0
-      const weekStartDate = new Date(weekStart)
-      const cursor = new Date(now)
+      const weekStartDate = new Date(getWeekStart() + 'T00:00:00')
+      const cursor = new Date(getToday() + 'T00:00:00')
       const startMs = weekStartDate.getTime()
       const endMs = cursor.getTime()
       for (let ms = endMs; ms >= startMs; ms -= 86400000) {
@@ -989,8 +989,8 @@ export async function claimWeeklyTask(taskKey: string) {
     progress = Math.min(daily.count ?? 0, 3) + Math.min(weekly.count ?? 0, 1)
   } else if (taskKey === 'streak_7') {
     let streak = 0
-    const weekStartDate = new Date(weekStart)
-    const cursor = new Date(now)
+    const weekStartDate = new Date(getWeekStart() + 'T00:00:00')
+    const cursor = new Date(getToday() + 'T00:00:00')
     const startMs = weekStartDate.getTime()
     const endMs = cursor.getTime()
     for (let ms = endMs; ms >= startMs; ms -= 86400000) {
@@ -1135,7 +1135,6 @@ export async function getDashboardStats() {
   ])
 
   const taskList = tasks.data ?? []
-  const todayStr = getToday()
   const weekStr = getWeekStart()
   const monthStr = getMonthStart()
   const doneTasks = taskList.filter(t => t.status === 'DONE')
