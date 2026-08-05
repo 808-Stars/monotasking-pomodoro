@@ -6,6 +6,59 @@ const JOBS_MAP: Record<string, string> = {
   DANCER: '舞者', APOTHECARY: '药师', THIEF: '盗贼', HUNTER: '猎人',
 }
 
+// ============================================================
+// 日期穿越：统一时钟源
+// 所有需要"今天"的逻辑都通过此函数获取，确保 fake date 生效
+// ============================================================
+function getFakeDate(): string | null {
+  try {
+    // 读取当前用户的 dev mode 状态
+    const email = localStorage.getItem('oto-current-user') || ''
+    if (!email) return null
+    if (localStorage.getItem(`oto-dev-mode-${email}`) !== 'on') return null
+    const fake = localStorage.getItem(`oto-dev-fake-date-${email}`)
+    if (fake && /^\d{4}-\d{2}-\d{2}$/.test(fake)) return fake
+  } catch { /* */ }
+  return null
+}
+
+/** 返回"今天"的日期字符串 YYYY-MM-DD（fake date 感知） */
+function getToday(): string {
+  const fake = getFakeDate()
+  if (fake) return fake
+  return new Date().toISOString().slice(0, 10)
+}
+
+/** 返回"现在"的 ISO 时间戳（fake date 感知，保留真实时分秒） */
+function getNow(): string {
+  const fake = getFakeDate()
+  if (!fake) return new Date().toISOString()
+  const real = new Date()
+  const [y, m, d] = fake.split('-').map(Number)
+  real.setFullYear(y, m - 1, d)
+  return real.toISOString()
+}
+
+/** 返回本周一日期 YYYY-MM-DD */
+function getWeekStart(): string {
+  const d = new Date(getToday() + 'T00:00:00')
+  const dow = d.getDay()
+  const diff = dow === 0 ? 6 : dow - 1
+  d.setDate(d.getDate() - diff)
+  return d.toISOString().slice(0, 10)
+}
+
+/** 返回本月第一天 YYYY-MM-DD */
+function getMonthStart(): string {
+  const t = getToday()
+  return t.slice(0, 7) + '-01'
+}
+
+/** 返回 YYYY-MM 字符串 */
+function getYearMonth(): string {
+  return getToday().slice(0, 7)
+}
+
 function flattenRecord(r: any) {
   const item = r.gacha_items
   return {
@@ -184,12 +237,10 @@ export async function getPomodoroStats() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { today: 0, this_week: 0, this_month: 0, total: 0 }
 
-  const now = new Date()
-  const todayStr = now.toISOString().slice(0, 10)
-  const weekStart = new Date(now)
-  weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1)
-  const weekStr = weekStart.toISOString().slice(0, 10)
-  const monthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
+  const now = getToday()
+  const todayStr = now
+  const weekStr = getWeekStart()
+  const monthStr = getMonthStart()
 
   const [today, week, month, total] = await Promise.all([
     supabase.from('pomodoro_sessions').select('*', { count: 'exact', head: true })
@@ -219,7 +270,7 @@ export async function getPomodoroStats() {
 export async function fetchTodayPlan() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
-  const todayStr = new Date().toISOString().slice(0, 10)
+  const todayStr = getToday()
   let { data } = await supabase
     .from('daily_plans')
     .select('*, tasks(name, status)')
@@ -356,8 +407,7 @@ export async function deleteQuickMemo(id: string) {
 export async function getTokenBalance() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { balance: 0, total_earned: 0, total_spent: 0 }
-  const now = new Date()
-  const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const ym = getYearMonth()
   const { data } = await supabase
     .from('token_records')
     .select('amount')
@@ -376,7 +426,7 @@ export async function addTokenRecord(amount: number, source: string, claimed = t
 
   // 日任务限一次：同 source 今日已有记录则跳过
   if (daily) {
-    const todayStr = new Date().toISOString().slice(0, 10)
+    const todayStr = getToday()
     const { data: existing } = await supabase
       .from('token_records')
       .select('id')
@@ -407,7 +457,7 @@ export async function getDailyTasks() {
     '完成清单': 20, '抽扭蛋': 40,
   }
 
-  const todayStr = new Date().toISOString().slice(0, 10)
+  const todayStr = getToday()
   const { data } = await supabase
     .from('token_records')
     .select('source, amount, claimed')
@@ -443,7 +493,7 @@ export async function getDailyTasks() {
 export async function getTodayCounts() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return {}
-  const todayStr = new Date().toISOString().slice(0, 10)
+  const todayStr = getToday()
   const { data } = await supabase
     .from('token_records')
     .select('source')
@@ -467,10 +517,10 @@ export async function getTodayCounts() {
 export async function claimDailyTokens(source: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return 0
-  const todayStr = new Date().toISOString().slice(0, 10)
+  const todayStr = getToday()
   const { data, error } = await supabase
     .from('token_records')
-    .update({ claimed: true, claimed_at: new Date().toISOString() })
+    .update({ claimed: true, claimed_at: getNow() })
     .eq('user_id', user.id)
     .eq('source', source)
     .eq('claimed', false)
@@ -484,10 +534,10 @@ export async function claimDailyTokens(source: string) {
 export async function claimAllDailyTokens() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { claimed: 0, balance: 0 }
-  const todayStr = new Date().toISOString().slice(0, 10)
+  const todayStr = getToday()
   const { data, error } = await supabase
     .from('token_records')
-    .update({ claimed: true, claimed_at: new Date().toISOString() })
+    .update({ claimed: true, claimed_at: getNow() })
     .eq('user_id', user.id)
     .eq('claimed', false)
     .gt('amount', 0)
@@ -510,8 +560,7 @@ export async function fetchGachaItems() {
   if (!items || items.length === 0) return []
   if (!user) return items.map(i => ({ ...i, owned_count: 0 }))
 
-  const now = new Date()
-  const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const ym = getYearMonth()
   const { data: records } = await supabase
     .from('gacha_records')
     .select('item_id')
@@ -544,9 +593,8 @@ export async function gachaPull(count: 1 | 10) {
   const items = await fetchGachaItems()
   if (items.length === 0) throw new Error('扭蛋池为空')
 
-  const now = new Date()
-  const todayStr = now.toISOString().slice(0, 10)
-  const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const todayStr = getToday()
+  const ym = getYearMonth()
 
   // 检查免费单抽
   let freePull = false
@@ -704,8 +752,7 @@ export async function getSSRTargetStatus() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { target: null, total_pulls: 0, eligible: false, monthly_used: false }
 
-  const now = new Date()
-  const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const ym = getYearMonth()
 
   const { count } = await supabase
     .from('gacha_records')
@@ -749,8 +796,7 @@ export async function setSSRTarget(targetItemId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
 
-  const now = new Date()
-  const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const ym = getYearMonth()
 
   // 检查 300 抽门槛
   const { count } = await supabase
@@ -805,13 +851,10 @@ export async function getWeeklyTasks() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { tasks: [], week_start: '', week_earned: 0, week_target: 0 }
 
-  const now = new Date()
-  const weekStart = new Date(now)
-  weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1)
-  const ws = weekStart.toISOString().slice(0, 10)
-  const weekEnd = new Date(weekStart)
-  weekEnd.setDate(weekEnd.getDate() + 7)
-  const we = weekEnd.toISOString().slice(0, 10)
+  const ws = getWeekStart()
+  const weDate = new Date(ws + 'T00:00:00')
+  weDate.setDate(weDate.getDate() + 7)
+  const we = weDate.toISOString().slice(0, 10)
 
   const WEEKLY_TASKS = [
     { key: 'core_5_days', name: '完成核心任务 5 天', desc: '本周至少 5 天完成核心任务', amount: 400, icon: 'target', target: 5 },
@@ -894,13 +937,10 @@ export async function claimWeeklyTask(taskKey: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
 
-  const now = new Date()
-  const weekStart = new Date(now)
-  weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1)
-  const ws = weekStart.toISOString().slice(0, 10)
-  const weekEnd = new Date(weekStart)
-  weekEnd.setDate(weekEnd.getDate() + 7)
-  const we = weekEnd.toISOString().slice(0, 10)
+  const ws = getWeekStart()
+  const weDate = new Date(ws + 'T00:00:00')
+  weDate.setDate(weDate.getDate() + 7)
+  const we = weDate.toISOString().slice(0, 10)
 
   const { data: existing } = await supabase
     .from('weekly_task_claims')
@@ -987,8 +1027,7 @@ export async function getShowcaseCurrent() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const now = new Date()
-  const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const ym = getYearMonth()
 
   const [balance, pomoCount, gachaData] = await Promise.all([
     getTokenBalance(),
@@ -1050,7 +1089,7 @@ export async function getShowcaseSnapshots(year?: string) {
   if (year) query = query.like('year_month', `${year}-%`)
   const { data } = await query.order('year_month', { ascending: false })
   const years = [...new Set(data?.map(s => s.year_month.slice(0, 4)) ?? [])]
-  const currentYear = String(new Date().getFullYear())
+  const currentYear = getToday().slice(0, 4)
   if (!years.includes(currentYear)) years.push(currentYear)
   return { snapshots: data ?? [], years }
 }
@@ -1080,7 +1119,7 @@ export async function getDashboardStats() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const todayStr = new Date().toISOString().slice(0, 10)
+  const todayStr = getToday()
 
   const [todayPlan, tasks, pomodoros, projects, todaySessions] = await Promise.all([
     fetchTodayPlan(),
@@ -1096,11 +1135,9 @@ export async function getDashboardStats() {
   ])
 
   const taskList = tasks.data ?? []
-  const now = new Date()
-  const weekStart = new Date(now)
-  weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1)
-  const weekStr = weekStart.toISOString().slice(0, 10)
-  const monthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
+  const todayStr = getToday()
+  const weekStr = getWeekStart()
+  const monthStr = getMonthStart()
   const doneTasks = taskList.filter(t => t.status === 'DONE')
   return {
     today_plan: todayPlan,
