@@ -106,6 +106,8 @@ export default function DevDatePicker() {
         <div style={{ display: 'flex', gap: 4, marginBottom: 4 }}>
           <input
             type="date"
+            lang="en"
+            placeholder="yyyy/mm/dd"
             value={inputVal}
             onChange={e => setInputVal(e.target.value)}
             style={{
