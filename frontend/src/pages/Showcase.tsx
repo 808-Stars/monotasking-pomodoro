@@ -56,13 +56,19 @@ interface ShowcaseCurrent {
   thresholds: { bounty: number[]; pomodoro: number[] };
 }
 
+const ITEM_FOLDER: Record<string, string> = { bounty: 'r1', pomodoro: 'r2', trophy: 'r3' };
+
 function ItemIcon({ kind, level, size = 80 }: { kind: string; level: number; size?: number }) {
-  const emojis = TIER_EMOJIS[kind] || TIER_EMOJIS.bounty;
-  const emoji = emojis[Math.max(0, Math.min(4, level))] || '-';
+  const prefix = ITEM_FOLDER[kind] || 'r1';
+  const tierIndex = Math.max(1, Math.min(5, level + 1));
   return (
-    <span style={{ fontSize: size * 0.7, display: 'block', textAlign: 'center', lineHeight: 1 }}>
-      {emoji}
-    </span>
+    <img
+      src={`/acc/${prefix}c${tierIndex}.webp`}
+      alt={TIER_NAMES[level]}
+      width={size}
+      height={size}
+      style={{ display: 'block' }}
+    />
   );
 }
 

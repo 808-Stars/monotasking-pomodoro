@@ -11,6 +11,15 @@ import {
 import type { GachaItem, GachaRecord, TokenBalance } from '../types';
 import { RARITY_MAP, RARITY_COLOR_MAP } from '../types';
 
+const RARITY_ROW: Record<string, number> = { SSR: 1, SR: 2, R: 3, N: 4 };
+const JOB_COL: Record<string, number> = { CLERIC: 1, SCHOLAR: 2, MERCHANT: 3, WARRIOR: 4, DANCER: 5, APOTHECARY: 6, THIEF: 7, HUNTER: 8 };
+
+function itemImage(item: { rarity: string; job: string }) {
+  const r = RARITY_ROW[item.rarity] || 1;
+  const c = JOB_COL[item.job] || 1;
+  return `/items/_r${r}c${c}.webp`;
+}
+
 const pxBody = { fontFamily: 'var(--oto-font-body)', fontSize: '18px' };
 const pxSm = { fontFamily: 'var(--oto-font-body)', fontSize: '12px', letterSpacing: '0' };
 const pxH2 = { fontFamily: 'var(--oto-font-title)', fontSize: '20px', lineHeight: '2' };
@@ -621,7 +630,11 @@ export default function Gacha() {
                        onMouseEnter={e => { if (owned) { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = `0 0 12px ${RARITY_COLOR_MAP[item.rarity]}44`; }}}
                        onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}>
                     <div style={{ width: 48, height: 48, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ fontSize: '2rem', color: owned ? 'inherit' : 'var(--oto-text-muted)' }}>{owned ? item.emoji : '?'}</span>
+                      {owned ? (
+                        <img src={itemImage(item)} alt={item.name} style={{ width: 48, height: 48, objectFit: 'contain' }} />
+                      ) : (
+                        <span style={{ fontSize: '2rem', color: 'var(--oto-text-muted)' }}>?</span>
+                      )}
                     </div>
                     <div style={{ ...pxSm, fontWeight: 'bold', marginTop: 4 }}>{owned ? item.name : '???'}</div>
                     {owned && item.job_display && (
@@ -681,7 +694,7 @@ export default function Gacha() {
                       <tr key={r.id}>
                         <td style={{ color: 'var(--oto-text-muted)' }}>{i + 1}</td>
                         <td style={{ width: 36, height: 36 }}>
-                          <span style={{ fontSize: '1.5rem' }}>{r.item_emoji ?? '?'}</span>
+                          <img src={itemImage({ rarity: r.item_rarity || 'N', job: r.item_job || 'CLERIC' })} alt={r.item_name} style={{ width: 36, height: 36, objectFit: 'contain' }} />
                         </td>
                         <td style={{ fontWeight: 'bold' }}>{r.item_name}
                           {r.item_job_display && <span style={{ ...pxSm, fontSize: '10px', color: 'var(--oto-text-muted)', marginLeft: 6 }}>{r.item_job_display}</span>}
@@ -739,7 +752,7 @@ export default function Gacha() {
                        animationDelay: `${i * 0.08}s`,
                      }}>
                   <div style={{ width: pullResult.length === 1 ? 80 : 48, height: pullResult.length === 1 ? 80 : 48, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontSize: pullResult.length === 1 ? '5rem' : '2.5rem' }}>{r.item_emoji ?? '?'}</span>
+                    <img src={itemImage({ rarity: r.item_rarity || 'N', job: r.item_job || 'CLERIC' })} alt={r.item_name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                   </div>
                   <div style={{ ...pxBody, fontWeight: 'bold', marginTop: 4 }}>{r.item_name}</div>
                   {r.item_job_display && (
