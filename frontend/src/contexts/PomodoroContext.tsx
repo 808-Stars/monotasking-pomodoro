@@ -113,14 +113,14 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
             notes: notesRef.current || '',
           });
           // 奖励代币
-          addTokenRecord(60, '首次番茄钟').catch(() => {});
+          addTokenRecord(60, '首次番茄钟', true, true).catch(() => {});
           addTokenRecord(40, '番茄钟').catch(() => {});
         } catch { /* proceed */ }
       }
       alert('番茄钟完成！休息一下吧~');
     } else {
       // 休息完成 → 奖励代币
-      addTokenRecord(20, '休息').catch(() => {});
+      addTokenRecord(20, '休息', true, true).catch(() => {});
     }
   }, [mode]);
 

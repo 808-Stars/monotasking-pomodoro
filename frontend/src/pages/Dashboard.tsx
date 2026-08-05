@@ -31,7 +31,7 @@ export default function Dashboard() {
     setTodayPlan(updated);
     if (stats) setStats({ ...stats, today_plan: { ...stats.today_plan, status: 'COMPLETED', status_display: '已完成' } });
     // Token reward for daily plan completion
-    addTokenRecord(60, '每日计划完成').catch(() => {});
+    addTokenRecord(60, '每日计划完成', true, true).catch(() => {});
   };
 
   if (loading) return (

@@ -19,12 +19,12 @@ export default function QuickMemos() {
     setInput('');
     const created = await createQuickMemo(trimmed);
     setMemos(prev => [created, ...prev]);
-    addTokenRecord(20, '创建清单').catch(() => {});
+    addTokenRecord(20, '创建清单', true, true).catch(() => {});
   };
   const handleToggle = async (memo: QuickMemo) => {
     const updated = await updateQuickMemo(memo.id, { is_done: !memo.is_done });
     setMemos(prev => prev.map(m => m.id === memo.id ? updated : m));
-    if (!memo.is_done) addTokenRecord(20, '完成清单').catch(() => {});
+    if (!memo.is_done) addTokenRecord(20, '完成清单', true, true).catch(() => {});
   };
   const handleDelete = async (id: string) => { await deleteQuickMemo(id); setMemos(prev => prev.filter(m => m.id !== id)); };
   const handleClearDone = async () => {

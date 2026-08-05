@@ -51,7 +51,7 @@ export default function DailyPlans() {
     if (!todayPlan) return; setSaving(true);
     await updateDailyPlan(todayPlan.id, { core_task: taskId });
     const updated = await fetchTodayPlan(); setTodayPlan(updated); load(); setSaving(false);
-    if (taskId) addTokenRecord(20, '确定核心任务').catch(() => {});
+    if (taskId) addTokenRecord(20, '确定核心任务', true, true).catch(() => {});
   };
   const handleUpdatePlan = async (field: string, value: string) => {
     if (!todayPlan) return; setSaving(true);
@@ -59,10 +59,10 @@ export default function DailyPlans() {
     const updated = await fetchTodayPlan(); setTodayPlan(updated); setSaving(false);
     setDrafts(prev => { const next = { ...prev }; delete next[field]; return next; });
     if (field === 'morning_reflection' && value.trim()) {
-      addTokenRecord(40, '晨间规划').catch(() => {});
+      addTokenRecord(40, '晨间规划', true, true).catch(() => {});
     }
     if (field === 'evening_review' && value.trim()) {
-      addTokenRecord(40, '晚间回顾').catch(() => {});
+      addTokenRecord(40, '晚间回顾', true, true).catch(() => {});
     }
   };
 
@@ -94,7 +94,7 @@ export default function DailyPlans() {
     if (!todayPlan) return;
     await updateDailyPlan(todayPlan.id, { status }); const updated = await fetchTodayPlan(); setTodayPlan(updated);
     if (status === 'COMPLETED') {
-      addTokenRecord(60, '每日计划完成').catch(() => {});
+      addTokenRecord(60, '每日计划完成', true, true).catch(() => {});
     }
   };
   const handleDelete = async (id: string) => { if (!confirm('确定删除此计划？')) return; await deleteDailyPlan(id); load(); };

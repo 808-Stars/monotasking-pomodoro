@@ -58,7 +58,7 @@ export default function Tasks() {
       await updateTask(editingTask.id, data);
     } else {
       await createTask(data);
-      addTokenRecord(20, '创建任务').catch(() => {});
+      addTokenRecord(20, '创建任务', true, true).catch(() => {});
     }
     setShowForm(false); load();
     // Broadcast: pomodoro page subscribes to this event to refresh task dropdown
@@ -67,7 +67,7 @@ export default function Tasks() {
   const handleDelete = async (id: string) => { if (!confirm('确定删除此任务？')) return; await deleteTask(id); load(); window.dispatchEvent(new Event('oto:tasks-changed')); };
   const handleAction = async (id: string, action: 'start' | 'complete' | 'archive') => {
     if (action === 'start') await updateTask(id, { status: 'IN_PROGRESS' });
-    else if (action === 'complete') { await updateTask(id, { status: 'DONE' }); addTokenRecord(20, '完成任务').catch(() => {}); }
+    else if (action === 'complete') { await updateTask(id, { status: 'DONE' }); addTokenRecord(20, '完成任务', true, true).catch(() => {}); }
     else await updateTask(id, { status: 'ARCHIVED' });
     load();
     window.dispatchEvent(new Event('oto:tasks-changed'));

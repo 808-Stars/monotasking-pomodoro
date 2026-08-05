@@ -365,9 +365,23 @@ export async function getTokenBalance() {
   return { balance: earned - spent, total_earned: earned, total_spent: spent }
 }
 
-export async function addTokenRecord(amount: number, source: string, claimed = true) {
+export async function addTokenRecord(amount: number, source: string, claimed = true, daily = false) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
+
+  // 日任务限一次：同 source 今日已有记录则跳过
+  if (daily) {
+    const todayStr = new Date().toISOString().slice(0, 10)
+    const { data: existing } = await supabase
+      .from('token_records')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('source', source)
+      .gte('created_at', todayStr)
+      .limit(1)
+    if (existing && existing.length > 0) return existing[0]
+  }
+
   const { data, error } = await supabase
     .from('token_records')
     .insert({ amount, source, claimed, user_id: user.id })

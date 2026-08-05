@@ -42,7 +42,7 @@ export default function Reviews() {
     if (!form.content?.trim()) { alert('请输入回顾内容'); return; }
     const data = { ...form, completed_tasks_count: Number(form.completed_tasks_count) || 0, total_pomodoros: Number(form.total_pomodoros) || 0 };
     if (editing?.id) { await updateReview(editing.id, data); }
-    else { await createReview(data as any); addTokenRecord(40, '写笔记').catch(() => {}); }
+    else { await createReview(data as any); addTokenRecord(40, '写笔记', true, true).catch(() => {}); }
     setShowForm(false); load(); loadAll();
   };
   const handleDelete = async (id: string) => { if (!confirm('确定删除？')) return; await deleteReview(id); load(); loadAll(); };

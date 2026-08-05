@@ -172,7 +172,7 @@ export default function Gacha() {
       setPullResult(result.results);
       setPitySsr(result.pity_ssr ?? 0);
       if (result.free_pull) setFreePullUsed(true);
-      addTokenRecord(40, '抽扭蛋').catch(() => {});
+      addTokenRecord(40, '抽扭蛋', true, true).catch(() => {});
       setShowResult(true);
       // Refresh balance, records, and owned counts
       const [balanceData, recordsData] = await Promise.all([
