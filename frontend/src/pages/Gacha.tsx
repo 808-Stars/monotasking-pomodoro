@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Icon from '../components/Icons';
 import type { IconName } from '../components/Icons';
 import { supabase } from '../services/supabase';
+import { useDevMode } from '../contexts/DevModeContext';
 import {
   fetchGachaItems, fetchGachaRecords, gachaPull,
   getTokenBalance, addTokenRecord, getDailyTasks,
@@ -81,6 +82,7 @@ interface WeeklyTask {
 }
 
 export default function Gacha() {
+  const { isDev } = useDevMode();
   const [balance, setBalance] = useState<TokenBalance | null>(null);
   const [items, setItems] = useState<GachaItem[]>([]);
   const [records, setRecords] = useState<GachaRecord[]>([]);
@@ -109,6 +111,7 @@ export default function Gacha() {
   const [showSSRLock, setShowSSRLock] = useState(false);
   const [pullMeta, setPullMeta] = useState<{ ssr_target_consumed?: boolean; ssr_target_item?: any } | null>(null);
   const [todayTomatoCount, setTodayTomatoCount] = useState<number>(0);
+  const [settingSSRTarget, setSettingSSRTarget] = useState(false);
 
   const refreshDaily = useCallback(async () => {
     try {
@@ -316,6 +319,9 @@ export default function Gacha() {
                 本月消费 <span style={{ color: 'var(--oto-accent-alt)' }}>-{balance?.total_spent ?? 0}</span>
               </span>
               <span style={{ color: 'var(--oto-text-muted)' }}>
+                本月抽取 <span style={{ color: 'var(--oto-gold-dark)', fontWeight: 'bold' }}>{ssrTargetStatus?.total_pulls ?? '...'}</span> 次
+              </span>
+              <span style={{ color: 'var(--oto-text-muted)' }}>
                 !&nbsp;&nbsp;&nbsp;每月 1 号 0 点自动清零（用于藏品室结算）
               </span>
             </div>
@@ -347,6 +353,16 @@ export default function Gacha() {
               十连抽
               <span style={{ ...pxSm, display: 'block', marginTop: 2 }}>{COST_TEN} 币</span>
             </button>
+            {isDev && (
+              <button onClick={async () => {
+                await addTokenRecord(200, '调试加币', false);
+                const balanceData = await getTokenBalance();
+                setBalance(balanceData);
+              }} className="oto-btn oto-btn-sm" title="[DEV] +200 代币"
+                style={{ ...pxSm, fontSize: '11px', background: 'var(--oto-accent-alt)', color: '#fff', borderColor: '#5a0a18', padding: '4px 10px' }}>
+                +200币<span style={{ fontSize: '9px', fontWeight: 700, background: 'rgba(255,255,255,0.25)', border: '1px solid rgba(255,255,255,0.5)', borderRadius: 2, padding: '0 4px', letterSpacing: '0.05em' }}>DEV</span>
+              </button>
+            )}
           </div>
         </div>
         {pulling && (
@@ -383,7 +399,7 @@ export default function Gacha() {
           <div className="mt-4 space-y-2">
             <div className="flex items-center justify-between">
               <p style={{ ...pxSm, color: 'var(--oto-text-dim)' }}>
-                今日已获得{' '}
+                今日 ({new Date().toISOString().slice(5, 10).replace('-', '/')}) 已获得{' '}
                 <span style={{
                   color: todayEarned >= dailyTarget ? 'var(--oto-green)' : 'var(--oto-gold-dark)',
                   fontWeight: 'bold',
@@ -590,7 +606,7 @@ export default function Gacha() {
         </div>
         {showMechanics && (
           <div className="mt-4 space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
               <div className="oto-inset rounded-none! p-3 text-center">
                 <div style={{ marginBottom: 4, color: 'var(--oto-green)' }}>
                     <Icon name="star" size={24} />
@@ -616,6 +632,15 @@ export default function Gacha() {
                 <div style={{ fontWeight: 'bold', color: '#4a90d9', marginBottom: 4 }}>十连保底</div>
                 <div style={{ ...pxSm, color: 'var(--oto-text-dim)', lineHeight: '1.6' }}>
                   十连不会全 N<br />至少包含 1 件 R+
+                </div>
+              </div>
+              <div className="oto-inset rounded-none! p-3 text-center">
+                <div style={{ marginBottom: 4, color: RARITY_COLOR_MAP.SSR }}>
+                  <Icon name="lock" size={24} />
+                </div>
+                <div style={{ fontWeight: 'bold', color: RARITY_COLOR_MAP.SSR, marginBottom: 4 }}>SSR 锁定</div>
+                <div style={{ ...pxSm, color: 'var(--oto-text-dim)', lineHeight: '1.6' }}>
+                  300 抽解锁·每月一次<br />锁定后下次 SSR 必出
                 </div>
               </div>
               <div className="oto-inset rounded-none! p-3 text-center">
@@ -668,6 +693,8 @@ export default function Gacha() {
                   <span className="oto-badge" style={{ fontSize: '9px', padding: '0px 5px', background: `${RARITY_COLOR_MAP.SSR}22`, color: RARITY_COLOR_MAP.SSR, borderColor: RARITY_COLOR_MAP.SSR }}>已锁定</span>
                 ) : ssrTargetStatus?.eligible && !ssrTargetStatus?.monthly_used ? (
                   <span className="oto-badge" style={{ fontSize: '9px', padding: '0px 5px', background: 'transparent', color: 'var(--oto-green)', borderColor: 'var(--oto-green)' }}>可锁定</span>
+                ) : ssrTargetStatus?.monthly_used ? (
+                  <span className="oto-badge" style={{ fontSize: '9px', padding: '0px 5px', background: 'transparent', color: 'var(--oto-red)', borderColor: 'var(--oto-red)' }}>不可锁定</span>
                 ) : null}
               </div>
 
@@ -692,17 +719,20 @@ export default function Gacha() {
                   </div>
                 ) : showSSRLock ? (
                   <div>
-                    <div className="grid grid-cols-4 gap-2 mb-3">
+                    <div className="grid grid-cols-8 gap-2 mb-3">
                       {items.filter(i => i.rarity === 'SSR').map(item => (
                         <div key={item.id} className="oto-inset rounded-none! p-2 text-center cursor-pointer hover:brightness-105"
                           style={{ borderColor: `${RARITY_COLOR_MAP.SSR}33` }}
                           onClick={async () => {
+                            if (settingSSRTarget) return;
                             try {
+                              setSettingSSRTarget(true);
                               await setSSRTarget(item.id);
                               const d = await getSSRTargetStatus();
                               setSSRTargetStatus(d);
                               setShowSSRLock(false);
                             } catch (e: any) { alert(e?.message || '设置失败'); }
+                            finally { setSettingSSRTarget(false); }
                           }}>
                           <img src={itemImage(item)} alt={item.name} style={{ width: 32, height: 32, objectFit: 'contain', margin: '0 auto' }} />
                           <div style={{ ...pxSm, fontSize: '10px', marginTop: 1 }}>{item.name}</div>
@@ -714,7 +744,7 @@ export default function Gacha() {
                 ) : (
                   <div className="flex items-center justify-between">
                     <span style={{ ...pxSm, fontSize: '11px', color: 'var(--oto-text-muted)' }}>可指定一个 SSR 为下次必出目标</span>
-                    <button onClick={() => setShowSSRLock(true)} className="oto-btn oto-btn-sm" style={{ ...pxSm, fontSize: '11px', padding: '1px 10px' }}>选择目标</button>
+                    <button onClick={() => setShowSSRLock(true)} disabled={settingSSRTarget} className="oto-btn oto-btn-sm" style={{ ...pxSm, fontSize: '11px', padding: '1px 10px', opacity: settingSSRTarget ? 0.5 : 1, cursor: settingSSRTarget ? 'not-allowed' : 'pointer' }}>选择目标</button>
                   </div>
                 )
               ) : (
@@ -796,7 +826,7 @@ export default function Gacha() {
                       {RARITY_MAP[item.rarity]}
                     </div>
                     {owned && <div style={{ ...pxSm, fontSize: '10px', color: 'var(--oto-text-muted)', marginTop: 2 }}>
-                      x{item.owned_count ?? ownedCounts[item.id] ?? 0}
+                      ×{item.owned_count ?? ownedCounts[item.id] ?? 0}
                     </div>}
                   </div>
                 );
@@ -971,7 +1001,7 @@ export default function Gacha() {
               {selectedItem.description}
             </p>
             <div style={{ ...pxSm, color: 'var(--oto-text-muted)', marginTop: 8 }}>
-              本月拥有 x{selectedItem.owned_count ?? ownedCounts[selectedItem.id] ?? 0}
+              本月拥有 ×{selectedItem.owned_count ?? ownedCounts[selectedItem.id] ?? 0}
             </div>
             <button onClick={() => setSelectedItem(null)}
                     className="oto-btn w-full mt-4" style={pxSm}>

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { createPomodoroSession, fetchTasks, addTokenRecord } from '../services/api';
+import { supabase } from '../services/supabase';
 import type { Task } from '../types';
 
 const WORK_TIME = 25 * 60;
@@ -114,7 +115,13 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
           });
           // 奖励代币
           addTokenRecord(60, '首次番茄钟', true, true).catch(() => {});
-          addTokenRecord(40, '番茄钟').catch(() => {});
+          // Get today's tomato count for tier calculation
+          const todayStr = new Date().toISOString().slice(0, 10);
+          const { count } = await supabase.from('token_records').select('*', { count: 'exact', head: true })
+            .eq('user_id', (await supabase.auth.getUser()).data.user?.id).eq('source', '番茄钟').gte('created_at', todayStr);
+          const done = (count ?? 0) + 1;
+          const tierAmount = done <= 4 ? 40 : done <= 8 ? 50 : 60;
+          addTokenRecord(tierAmount, '番茄钟').catch(() => {});
         } catch { /* proceed */ }
       }
       alert('番茄钟完成！休息一下吧~');

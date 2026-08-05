@@ -89,11 +89,12 @@ export function DevModeProvider({ children }: { children: ReactNode }) {
   const lock = useCallback(() => {
     setIsDev(false);
     setFakeDateState(null);
-    const u = localStorage.getItem('oto-current-user') || '_anon';
+    // Use the current username from state instead of localStorage
+    const u = username || '_anon';
     try { localStorage.removeItem(storageKey(u, 'dev-fake-date')); } catch { /* */ }
     try { localStorage.removeItem(storageKey(u, 'dev-mode')); } catch { /* */ }
     setTimeout(() => { window.location.reload(); }, 50);
-  }, []);
+  }, [username]);
 
   return (
     <DevModeContext.Provider value={{ isDev, fakeDate, setFakeDate, unlock, lock }}>

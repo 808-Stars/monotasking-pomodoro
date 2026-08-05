@@ -37,8 +37,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signUp = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password })
-    return { error: error?.message ?? null }
+    const { data, error } = await supabase.auth.signUp({ email, password })
+    if (error) return { error: error.message }
+    if (!data.session) return { error: '请检查邮箱并点击确认链接后登录' }
+    return { error: null }
   }, [])
 
   const signOut = useCallback(async () => {
