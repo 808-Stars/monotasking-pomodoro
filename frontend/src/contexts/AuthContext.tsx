@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
 import { supabase } from '../services/supabase'
+import { clearAuthCache } from '../services/api'
 import type { User } from '@supabase/supabase-js'
 
 interface AuthContextType {
@@ -44,6 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signOut = useCallback(async () => {
+    clearAuthCache()
     await supabase.auth.signOut()
   }, [])
 

@@ -21,10 +21,24 @@ async function cached<T>(key: string, fetcher: () => Promise<T>, ttl = CACHE_TTL
   return data
 }
 
-/** 获取当前用户（读本地 session，无网络请求，比 getUser() 快 10 倍） */
+/** 缓存用户信息（5 分钟），避免每次请求都验证 token */
+let _cachedUser: any = null
+let _cachedUserTs = 0
+const USER_CACHE_TTL = 5 * 60 * 1000
+
 async function currentUser() {
+  if (_cachedUser && Date.now() - _cachedUserTs < USER_CACHE_TTL) return _cachedUser
   const { data: { session } } = await supabase.auth.getSession()
-  return session?.user ?? null
+  _cachedUser = session?.user ?? null
+  _cachedUserTs = Date.now()
+  return _cachedUser
+}
+
+/** 登出时清除用户缓存 */
+export function clearAuthCache() {
+  _cachedUser = null
+  _cachedUserTs = 0
+  _cache.clear()
 }
 
 /** 写操作后清除相关缓存（支持前缀匹配） */
