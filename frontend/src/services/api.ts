@@ -488,13 +488,20 @@ export async function gachaPull(count: 1 | 10) {
   const cost = freePull ? 0 : count === 1 ? 50 : 500
   if (balanceData.balance < cost) throw new Error(`代币不足！需要 ${cost} 币，当前余额 ${balanceData.balance} 币`)
 
-  // 扣费
+  // 扣费（记录 ID 用于失败回滚）
+  let deductionId: string | null = null
   if (cost > 0) {
-    await addTokenRecord(-cost, '扭蛋消耗')
+    const { data: rec } = await supabase
+      .from('token_records')
+      .insert({ amount: -cost, source: '扭蛋消耗', claimed: true, user_id: user.id })
+      .select('id')
+      .single()
+    deductionId = rec?.id ?? null
   } else if (freePull) {
     await addTokenRecord(0, '每日首免', true)
   }
 
+  try {
   // 保底计数
   const { data: monthRecords } = await supabase
     .from('gacha_records')
@@ -505,9 +512,12 @@ export async function gachaPull(count: 1 | 10) {
 
   let dryCount = monthRecords?.length ?? 0
   const records = monthRecords ?? []
-  const lastSsr = records.find((r: any) => r.gacha_items?.rarity === 'SSR')
-  if (lastSsr) {
-    const lastSsrIdx = records.findIndex((r: any) => r.id === lastSsr.id)
+  // 从后往前找最后一个 SSR
+  let lastSsrIdx = -1
+  for (let i = records.length - 1; i >= 0; i--) {
+    if ((records[i] as any).gacha_items?.rarity === 'SSR') { lastSsrIdx = i; break }
+  }
+  if (lastSsrIdx >= 0) {
     dryCount = records.length - 1 - lastSsrIdx
   }
 
@@ -532,12 +542,36 @@ export async function gachaPull(count: 1 | 10) {
 
   // 抽取
   const results: any[] = []
+  let ssrTargetConsumed = false
+  let ssrTargetItemData: any = null
+
+  // 读取 SSR 锁定目标
+  let ssrTarget: any = null
+  try {
+    const { data } = await supabase
+      .from('gacha_ssr_targets')
+      .select('*, gacha_items(*)')
+      .eq('user_id', user.id)
+      .eq('consumed', false)
+      .single()
+    if (data && data.year_month === ym) ssrTarget = data
+  } catch { /* no target */ }
+
   for (let i = 0; i < count; i++) {
     dryCount++
     const rate = ssrRate(dryCount)
     let chosen
     if (Math.random() < rate) {
-      chosen = weightedRandom(ssrPool)
+      // SSR 出了！检查是否有锁定目标
+      if (ssrTarget && !ssrTargetConsumed) {
+        chosen = ssrTarget.gacha_items
+        ssrTargetConsumed = true
+        ssrTargetItemData = ssrTarget
+        // 标记已消耗
+        await supabase.from('gacha_ssr_targets').update({ consumed: true }).eq('id', ssrTarget.id)
+      } else {
+        chosen = weightedRandom(ssrPool)
+      }
       dryCount = 0
     } else {
       chosen = weightedRandom(nonSsrPool)
@@ -572,7 +606,118 @@ export async function gachaPull(count: 1 | 10) {
     cost,
     pity_ssr: dryCount,
     free_pull: freePull,
+    ssr_target_consumed: ssrTargetConsumed,
+    ssr_target_item: ssrTargetItemData,
   }
+
+  } catch (err) {
+    // 事务回滚：删除扣费记录
+    if (deductionId) {
+      await supabase.from('token_records').delete().eq('id', deductionId)
+    }
+    throw err
+  }
+}
+
+// ============================================================
+// SSR Target Lock
+// ============================================================
+export async function getSSRTargetStatus() {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { target: null, total_pulls: 0, eligible: false, monthly_used: false }
+
+  const now = new Date()
+  const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+
+  const { count } = await supabase
+    .from('gacha_records')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+    .gte('created_at', `${ym}-01`)
+  const totalPulls = count ?? 0
+  const eligible = totalPulls >= 300
+
+  let target: any = null
+  let monthlyUsed = false
+  try {
+    const { data } = await supabase
+      .from('gacha_ssr_targets')
+      .select('*, gacha_items(*)')
+      .eq('user_id', user.id)
+      .single()
+    if (data) {
+      if (data.year_month !== ym) {
+        // 跨月，删除旧目标
+        await supabase.from('gacha_ssr_targets').delete().eq('id', data.id)
+      } else if (data.consumed) {
+        monthlyUsed = true
+      } else {
+        target = {
+          id: data.id,
+          target_item: data.target_item_id,
+          target_item_name: data.gacha_items?.name,
+          target_item_emoji: data.gacha_items?.emoji,
+          target_item_rarity: data.gacha_items?.rarity,
+          target_item_job: data.gacha_items?.job,
+        }
+      }
+    }
+  } catch { /* no target */ }
+
+  return { target, total_pulls: totalPulls, eligible, monthly_used: monthlyUsed }
+}
+
+export async function setSSRTarget(targetItemId: string) {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const now = new Date()
+  const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+
+  // 检查 300 抽门槛
+  const { count } = await supabase
+    .from('gacha_records')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+    .gte('created_at', `${ym}-01`)
+  if ((count ?? 0) < 300) throw new Error(`本月累计需要 300 抽才能解锁（当前 ${count} 抽）`)
+
+  // 检查当月是否已消耗
+  const { data: existing } = await supabase
+    .from('gacha_ssr_targets')
+    .select('id, year_month, consumed')
+    .eq('user_id', user.id)
+    .single()
+  if (existing && existing.year_month === ym && existing.consumed) {
+    throw new Error('本月已使用过 SSR 锁定')
+  }
+
+  // 验证目标物品是 SSR
+  const { data: item } = await supabase
+    .from('gacha_items')
+    .select('id, rarity')
+    .eq('id', targetItemId)
+    .single()
+  if (!item || item.rarity !== 'SSR') throw new Error('只能锁定 SSR 物品')
+
+  // 设置或更新目标
+  if (existing) {
+    await supabase.from('gacha_ssr_targets').update({
+      target_item_id: targetItemId, year_month: ym, consumed: false,
+    }).eq('id', existing.id)
+  } else {
+    await supabase.from('gacha_ssr_targets').insert({
+      user_id: user.id, target_item_id: targetItemId, year_month: ym, consumed: false,
+    })
+  }
+
+  return getSSRTargetStatus()
+}
+
+export async function clearSSRTarget() {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+  await supabase.from('gacha_ssr_targets').delete().eq('user_id', user.id)
 }
 
 // ============================================================
@@ -631,20 +776,22 @@ export async function getWeeklyTasks() {
       ])
       progress = Math.min(daily.count ?? 0, 3) + Math.min(weekly.count ?? 0, 1)
     } else if (t.key === 'streak_7') {
-      // 简化：检查本周每天是否有代币记录
       let streak = 0
       const cursor = new Date(now)
       for (let i = 0; i < 7; i++) {
         const d = new Date(cursor)
         d.setDate(d.getDate() - i)
         const ds = d.toISOString().slice(0, 10)
+        const nextDay = new Date(d)
+        nextDay.setDate(nextDay.getDate() + 1)
+        const ns = nextDay.toISOString().slice(0, 10)
         const { count } = await supabase
           .from('token_records')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id)
           .gt('amount', 0)
           .gte('created_at', ds)
-          .lt('created_at', `${ds}T23:59:59`)
+          .lt('created_at', ns)
         if ((count ?? 0) > 0) streak++
         else break
       }
@@ -721,11 +868,17 @@ export async function getShowcaseCurrent() {
   const rarityOrder = ['N', 'R', 'SR', 'SSR']
   const collected = new Set(gachaData.data?.map((r: any) => r.gacha_items?.rarity) ?? [])
   let rarityCompletion = 0
-  for (const r of rarityOrder) {
+  let rarityValue = 0  // 最高已完整集齐的稀有度索引
+  for (let i = 0; i < rarityOrder.length; i++) {
+    const r = rarityOrder[i]
     const { count } = await supabase.from('gacha_items').select('*', { count: 'exact', head: true }).eq('rarity', r)
     const owned = gachaData.data?.filter((rec: any) => rec.gacha_items?.rarity === r).length ?? 0
-    if (owned >= (count ?? 8)) rarityCompletion++
-    else break
+    if (owned >= (count ?? 8)) {
+      rarityCompletion++
+      rarityValue = i
+    } else {
+      break
+    }
   }
 
   function calcLevel(total: number, thresholds: number[]) {
@@ -743,7 +896,7 @@ export async function getShowcaseCurrent() {
     trophy_level: Math.min(rarityCompletion, 4),
     bounty_value: bountyTotal,
     pomodoro_value: pomodoroTotal,
-    trophy_value: rarityCompletion,
+    trophy_value: rarityValue,
     thresholds: { bounty: [0, 3000, 9800, 19800, 32800], pomodoro: [0, 30, 60, 120, 240] },
   }
 }

@@ -7,6 +7,7 @@ import {
   getTokenBalance, addTokenRecord, getDailyTasks,
   claimDailyTokens, claimAllDailyTokens,
   getWeeklyTasks, claimWeeklyTask,
+  getSSRTargetStatus, setSSRTarget, clearSSRTarget,
 } from '../services/api';
 import type { GachaItem, GachaRecord, TokenBalance } from '../types';
 import { RARITY_MAP, RARITY_COLOR_MAP } from '../types';
@@ -94,6 +95,9 @@ export default function Gacha() {
   const [weekStart, setWeekStart] = useState<string>('');
   const [weekEarned, setWeekEarned] = useState<number>(0);
   const [weekTarget, setWeekTarget] = useState<number>(0);
+  const [ssrTargetStatus, setSSRTargetStatus] = useState<any>(null);
+  const [showSSRLock, setShowSSRLock] = useState(false);
+  const [pullMeta, setPullMeta] = useState<{ ssr_target_consumed?: boolean; ssr_target_item?: any } | null>(null);
 
   const refreshDaily = useCallback(async () => {
     try {
@@ -105,16 +109,18 @@ export default function Gacha() {
   }, []);
 
   const load = useCallback(async () => {
-    const [itemsData, recordsData, balanceData, dailyData, weeklyData] = await Promise.all([
+    const [itemsData, recordsData, balanceData, dailyData, weeklyData, ssrData] = await Promise.all([
       fetchGachaItems(),
       fetchGachaRecords(),
       getTokenBalance(),
       getDailyTasks().catch(() => [] as DailyTaskStatus[]),
       getWeeklyTasks().catch(() => ({ tasks: [] as WeeklyTask[], week_start: '', week_earned: 0, week_target: 0 })),
+      getSSRTargetStatus().catch(() => ({ target: null, total_pulls: 0, eligible: false, monthly_used: false })),
     ]);
     setItems(itemsData);
     setRecords(recordsData);
     setBalance(balanceData);
+    setSSRTargetStatus(ssrData);
 
     // Daily tasks
     setDailyTasks(dailyData);
@@ -171,6 +177,10 @@ export default function Gacha() {
       const result = await gachaPull(count as 1 | 10);
       setPullResult(result.results);
       setPitySsr(result.pity_ssr ?? 0);
+      setPullMeta({ ssr_target_consumed: result.ssr_target_consumed, ssr_target_item: result.ssr_target_item });
+      if (result.ssr_target_consumed) {
+        setSSRTargetStatus((prev: any) => prev ? { ...prev, target: null } : null);
+      }
       if (result.free_pull) setFreePullUsed(true);
       addTokenRecord(40, '抽扭蛋', true, true).catch(() => {});
       setShowResult(true);
@@ -583,6 +593,80 @@ export default function Gacha() {
                     : '最近一次已出 SSR · 概率 2%'}
               </div>
             </div>
+
+            {/* SSR Target Lock */}
+            <div className="oto-inset rounded-none! p-3" style={{
+              borderColor: ssrTargetStatus?.eligible || ssrTargetStatus?.target
+                ? RARITY_COLOR_MAP.SSR : 'var(--oto-border)',
+            }}>
+              <div className="flex items-center mb-2" style={{ gap: '6px' }}>
+                <span style={{ ...pxSm, fontWeight: 'bold' }}>
+                  <Icon name="lock" size={14} /> SSR 目标锁定
+                </span>
+                {ssrTargetStatus?.target ? (
+                  <span className="oto-badge" style={{ fontSize: '9px', padding: '0px 5px', background: `${RARITY_COLOR_MAP.SSR}22`, color: RARITY_COLOR_MAP.SSR, borderColor: RARITY_COLOR_MAP.SSR }}>已锁定</span>
+                ) : ssrTargetStatus?.eligible && !ssrTargetStatus?.monthly_used ? (
+                  <span className="oto-badge" style={{ fontSize: '9px', padding: '0px 5px', background: 'transparent', color: 'var(--oto-green)', borderColor: 'var(--oto-green)' }}>可锁定</span>
+                ) : null}
+              </div>
+
+              {ssrTargetStatus?.eligible ? (
+                ssrTargetStatus.monthly_used && !ssrTargetStatus.target ? (
+                  <div style={{ ...pxSm, fontSize: '11px', color: 'var(--oto-text-dim)' }}>
+                    本月已使用过 SSR 锁定，下月刷新后可再次使用
+                  </div>
+                ) : ssrTargetStatus.target ? (
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <span style={{ fontSize: '1.5rem' }}>{ssrTargetStatus.target.target_item_emoji}</span>
+                      <span style={{ ...pxSm, color: RARITY_COLOR_MAP.SSR, fontWeight: 'bold' }}>
+                        {ssrTargetStatus.target.target_item_name}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span style={{ ...pxSm, fontSize: '11px', color: 'var(--oto-text-muted)', flex: 1 }}>下次 SSR 必出此物品</span>
+                      <button onClick={async () => { await clearSSRTarget(); const d = await getSSRTargetStatus(); setSSRTargetStatus(d); }}
+                        className="oto-btn oto-btn-sm oto-btn-gray" style={{ ...pxSm, fontSize: '11px', padding: '1px 8px' }}>清除</button>
+                    </div>
+                  </div>
+                ) : showSSRLock ? (
+                  <div>
+                    <div className="grid grid-cols-4 gap-2 mb-3">
+                      {items.filter(i => i.rarity === 'SSR').map(item => (
+                        <div key={item.id} className="oto-inset rounded-none! p-2 text-center cursor-pointer hover:brightness-105"
+                          style={{ borderColor: `${RARITY_COLOR_MAP.SSR}33` }}
+                          onClick={async () => {
+                            try {
+                              await setSSRTarget(item.id);
+                              const d = await getSSRTargetStatus();
+                              setSSRTargetStatus(d);
+                              setShowSSRLock(false);
+                            } catch (e: any) { alert(e?.message || '设置失败'); }
+                          }}>
+                          <img src={itemImage(item)} alt={item.name} style={{ width: 32, height: 32, objectFit: 'contain', margin: '0 auto' }} />
+                          <div style={{ ...pxSm, fontSize: '10px', marginTop: 1 }}>{item.name}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <button onClick={() => setShowSSRLock(false)} className="oto-btn oto-btn-sm oto-btn-gray" style={{ ...pxSm, fontSize: '11px', padding: '1px 8px', width: '100%' }}>收起</button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <span style={{ ...pxSm, fontSize: '11px', color: 'var(--oto-text-muted)' }}>可指定一个 SSR 为下次必出目标</span>
+                    <button onClick={() => setShowSSRLock(true)} className="oto-btn oto-btn-sm" style={{ ...pxSm, fontSize: '11px', padding: '1px 10px' }}>选择目标</button>
+                  </div>
+                )
+              ) : (
+                <div>
+                  <div className="oto-progress" style={{ height: '8px', marginBottom: 6 }}>
+                    <div style={{ height: '100%', width: `${Math.min((ssrTargetStatus?.total_pulls ?? 0) / 300 * 100, 100)}%`, background: 'linear-gradient(90deg, #a08040, #c8a040)', transition: 'width 0.4s' }} />
+                  </div>
+                  <div style={{ ...pxSm, fontSize: '11px', color: 'var(--oto-text-dim)', textAlign: 'center' }}>
+                    本月 {ssrTargetStatus?.total_pulls ?? 0} / 300 抽 · 还差 {300 - (ssrTargetStatus?.total_pulls ?? 0)} 抽解锁
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -737,6 +821,22 @@ export default function Gacha() {
                 <Icon name="close" size={14} />
               </button>
             </div>
+
+            {/* SSR 锁定目标达成横幅 */}
+            {pullMeta?.ssr_target_consumed && pullMeta.ssr_target_item && (
+              <div className="oto-window-gold rounded-none! p-4 mb-4 text-center"
+                   style={{ borderColor: RARITY_COLOR_MAP.SSR, boxShadow: `0 0 24px ${RARITY_COLOR_MAP.SSR}44` }}>
+                <div style={{ fontSize: '3rem', margin: '0 auto' }}>
+                  {pullMeta.ssr_target_item.target_item_emoji || '⭐'}
+                </div>
+                <div style={{ ...pxH3, color: RARITY_COLOR_MAP.SSR, fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                  <Icon name="target" size={20} /> 锁定目标达成！
+                </div>
+                <div style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>
+                  获得了 SSR 物品：{pullMeta.ssr_target_item.target_item_name}
+                </div>
+              </div>
+            )}
 
             <div className={pullResult.length === 1
               ? 'flex justify-center mb-4'

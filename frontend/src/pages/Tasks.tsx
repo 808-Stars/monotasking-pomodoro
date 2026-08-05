@@ -175,6 +175,7 @@ export default function Tasks() {
                         {task.status === 'IN_PROGRESS' && (
                           <>
                             <button onClick={() => handleAction(task.id, 'complete')} className="oto-btn-sm oto-btn-green"><Icon name="check" size={12} /> 完成</button>
+                            <button onClick={() => handleAction(task.id, 'archive')} className="oto-btn-sm oto-btn-gray"><Icon name="archive" size={12} /> 归档</button>
                             <button onClick={() => handleRollback(task)} className="oto-btn-sm oto-btn-gray"><Icon name="undo" size={12} /> 回退</button>
                           </>
                         )}
