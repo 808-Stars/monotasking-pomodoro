@@ -163,7 +163,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-3 gap-2 pt-3 mt-auto" style={{ borderTop: '2px solid #28181a' }}>
               {[
                 { k: 'today', v: stats.pomodoros.today, l: <><Icon name="tomato" size={12} /> 今日</> },
-                { k: 'week', v: stats.pomodoros.week, l: <><Icon name="tomato" size={12} /> 本周</> },
+                { k: 'this_week', v: stats.pomodoros.this_week, l: <><Icon name="tomato" size={12} /> 本周</> },
                 { k: 'total', v: stats.pomodoros.total, l: <><Icon name="tomato" size={12} /> 总计</> },
               ].map(s => (
                 <div key={s.k} className="text-center p-2 oto-inset">
@@ -240,8 +240,8 @@ export default function Dashboard() {
       {/* ── Summary rows ── */}
       {[
         { title: <><Icon name="sun" size={14} /> 本日摘要</>, tKey: 'today_completed' as const, pKey: 'today' as const, pMax: 8 },
-        { title: <><Icon name="bars" size={14} /> 本周摘要</>, tKey: 'week_completed' as const, pKey: 'week' as const, pMax: 40 },
-        { title: <><Icon name="bars" size={14} /> 本月摘要</>, tKey: 'month_completed' as const, pKey: 'month' as const, pMax: 160 },
+        { title: <><Icon name="bars" size={14} /> 本周摘要</>, tKey: 'week_completed' as const, pKey: 'this_week' as const, pMax: 40 },
+        { title: <><Icon name="bars" size={14} /> 本月摘要</>, tKey: 'month_completed' as const, pKey: 'this_month' as const, pMax: 160 },
       ].map(row => (
         <div key={row.pKey} className="oto-window p-5 oto-card-lift">
           <h3 style={{ ...pxH2, fontSize: '10px', color: 'var(--oto-text)', marginBottom: '12px' }}>{row.title}</h3>

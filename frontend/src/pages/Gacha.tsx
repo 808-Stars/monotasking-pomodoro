@@ -8,6 +8,7 @@ import {
   claimDailyTokens, claimAllDailyTokens,
   getWeeklyTasks, claimWeeklyTask,
   getSSRTargetStatus, setSSRTarget, clearSSRTarget,
+  getTodayCounts,
 } from '../services/api';
 import type { GachaItem, GachaRecord, TokenBalance } from '../types';
 import { RARITY_MAP, RARITY_COLOR_MAP } from '../types';
@@ -55,7 +56,16 @@ const EARN_SOURCES: EarnSource[] = [
 interface DailyTaskStatus {
   source: string;
   amount: number;
+  completed: boolean;
   claimed: boolean;
+  can_claim: boolean;
+}
+
+interface DailyTasksResponse {
+  date: string;
+  today_earned: number;
+  daily_target: number;
+  tasks: DailyTaskStatus[];
 }
 
 interface WeeklyTask {
@@ -98,34 +108,40 @@ export default function Gacha() {
   const [ssrTargetStatus, setSSRTargetStatus] = useState<any>(null);
   const [showSSRLock, setShowSSRLock] = useState(false);
   const [pullMeta, setPullMeta] = useState<{ ssr_target_consumed?: boolean; ssr_target_item?: any } | null>(null);
+  const [todayTomatoCount, setTodayTomatoCount] = useState<number>(0);
 
   const refreshDaily = useCallback(async () => {
     try {
-      const dt = await getDailyTasks();
-      setDailyTasks(dt);
-      const earned = dt.filter((r: DailyTaskStatus) => r.claimed).reduce((s: number, r: DailyTaskStatus) => s + r.amount, 0);
-      setTodayEarned(earned);
+      const dt: DailyTasksResponse = await getDailyTasks();
+      setDailyTasks(dt.tasks);
+      setTodayEarned(dt.today_earned);
+      setDailyTarget(dt.daily_target);
     } catch { /* */ }
   }, []);
 
   const load = useCallback(async () => {
-    const [itemsData, recordsData, balanceData, dailyData, weeklyData, ssrData] = await Promise.all([
+    const [itemsData, recordsData, balanceData, dailyData, weeklyData, ssrData, todayCountsData] = await Promise.all([
       fetchGachaItems(),
       fetchGachaRecords(),
       getTokenBalance(),
-      getDailyTasks().catch(() => [] as DailyTaskStatus[]),
+      getDailyTasks().catch(() => ({ date: '', today_earned: 0, daily_target: 400, tasks: [] as DailyTaskStatus[] } as DailyTasksResponse)),
       getWeeklyTasks().catch(() => ({ tasks: [] as WeeklyTask[], week_start: '', week_earned: 0, week_target: 0 })),
       getSSRTargetStatus().catch(() => ({ target: null, total_pulls: 0, eligible: false, monthly_used: false })),
+      getTodayCounts().catch(() => ({})),
     ]);
     setItems(itemsData);
     setRecords(recordsData);
     setBalance(balanceData);
     setSSRTargetStatus(ssrData);
 
+    // Today tomato count for tier display
+    const todayCounts = todayCountsData as Record<string, number>;
+    setTodayTomatoCount(todayCounts['番茄钟'] ?? 0);
+
     // Daily tasks
-    setDailyTasks(dailyData);
-    const earned = dailyData.filter((r: DailyTaskStatus) => r.claimed).reduce((s: number, r: DailyTaskStatus) => s + r.amount, 0);
-    setTodayEarned(earned);
+    setDailyTasks(dailyData.tasks);
+    setTodayEarned(dailyData.today_earned);
+    setDailyTarget(dailyData.daily_target);
 
     // Check if free pull already used today via token_records
     try {
@@ -226,9 +242,9 @@ export default function Gacha() {
       await claimDailyTokens(source);
       const [b, dt] = await Promise.all([getTokenBalance(), getDailyTasks()]);
       setBalance(b);
-      setDailyTasks(dt);
-      const earned = dt.filter((r: DailyTaskStatus) => r.claimed).reduce((s: number, r: DailyTaskStatus) => s + r.amount, 0);
-      setTodayEarned(earned);
+      setDailyTasks(dt.tasks);
+      setTodayEarned(dt.today_earned);
+      setDailyTarget(dt.daily_target);
     } catch (e: any) {
       alert(e?.message || '领取失败');
     }
@@ -239,9 +255,9 @@ export default function Gacha() {
       const count = await claimAllDailyTokens();
       const [b, dt] = await Promise.all([getTokenBalance(), getDailyTasks()]);
       setBalance(b);
-      setDailyTasks(dt);
-      const earned = dt.filter((r: DailyTaskStatus) => r.claimed).reduce((s: number, r: DailyTaskStatus) => s + r.amount, 0);
-      setTodayEarned(earned);
+      setDailyTasks(dt.tasks);
+      setTodayEarned(dt.today_earned);
+      setDailyTarget(dt.daily_target);
       alert(`一键领取 ${count} 项任务！`);
     } catch (e: any) {
       alert(e?.message || '领取失败');
@@ -347,7 +363,7 @@ export default function Gacha() {
              onClick={() => { setShowSources(!showSources); if (!showSources) refreshDaily(); }}>
           <h2 style={pxH3} className="m-0! flex items-center gap-2">
             <Icon name="sun" size={16} /> 日任务
-            {dailyTasks.some(t => !t.claimed && t.amount > 0) ? (
+            {dailyTasks.some(t => t.can_claim) ? (
               <span className="oto-badge" style={{
                 ...pxSm, fontSize: '10px', padding: '1px 8px',
                 background: 'var(--oto-gold)', color: '#fff',
@@ -375,7 +391,7 @@ export default function Gacha() {
                 /{dailyTarget} 币
                 {todayEarned >= dailyTarget && <span style={{ marginLeft: 2 }}><Icon name="check" size={14} /></span>}
               </p>
-              {dailyTasks.some(t => !t.claimed && t.amount > 0) && (
+              {dailyTasks.some(t => t.can_claim) && (
                 <button onClick={handleClaimAllDaily}
                         className="oto-btn oto-btn-sm"
                         style={{ ...pxSm, padding: '2px 10px' }}>
@@ -386,9 +402,10 @@ export default function Gacha() {
             {EARN_SOURCES.filter(s => s.daily).map(s => {
               const task = dailyTasks.find(t => t.source === s.desc);
               const isClaimed = task?.claimed ?? false;
-              const hasRecord = !!task;
-              const canClaim = hasRecord && !isClaimed && (task?.amount ?? 0) > 0;
-              const pct = isClaimed ? 100 : 0;
+              const isCompleted = task?.completed ?? false;
+              const canClaim = task?.can_claim ?? false;
+              const displayAmount = task?.amount ?? s.amount;
+              const pct = isClaimed ? 100 : isCompleted ? 50 : 0;
               return (
                 <div key={s.desc} className="oto-inset rounded-none! p-3"
                      style={{ opacity: isClaimed ? 0.5 : 1 }}>
@@ -398,7 +415,7 @@ export default function Gacha() {
                       <div className="flex items-center gap-2">
                         <span style={{ ...pxSm, fontWeight: 'bold' }}>{s.desc}</span>
                         <span style={{ ...pxSm, color: 'var(--oto-gold-dark)', fontWeight: 'bold' }}>
-                          +{s.amount} 币
+                          +{displayAmount} 币
                         </span>
                       </div>
                       <p style={{ ...pxSm, color: 'var(--oto-text-muted)', marginTop: 2 }}>
@@ -407,7 +424,7 @@ export default function Gacha() {
                     </div>
                     <div className="flex flex-col items-end gap-1">
                       <span style={{ ...pxSm, color: isClaimed ? 'var(--oto-green)' : canClaim ? 'var(--oto-gold-dark)' : 'var(--oto-text-dim)' }}>
-                        {isClaimed ? '1/1' : canClaim ? '0/1' : '0/1'}
+                        {isClaimed ? '1/1' : isCompleted ? '可领取' : '0/1'}
                       </span>
                       {isClaimed ? (
                         <span style={{ ...pxSm, color: 'var(--oto-green)' }}><Icon name="check" size={14} /> 已领取</span>
@@ -418,7 +435,7 @@ export default function Gacha() {
                           领取
                         </button>
                       ) : (
-                        <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>未完成</span>
+                        <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{isCompleted ? '已完成' : '未完成'}</span>
                       )}
                     </div>
                   </div>
@@ -438,6 +455,50 @@ export default function Gacha() {
             })}
           </div>
         )}
+      </div>
+
+      {/* Tomato Tier Rewards (番茄钟分级奖励) */}
+      <div className="oto-window rounded-none! p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h2 style={pxH3} className="m-0! flex items-center gap-2">
+            <Icon name="tomato" size={16} /> 番茄钟分级奖励
+          </h2>
+          <span style={{ ...pxSm, color: 'var(--oto-text-dim)' }}>
+            今日完成 <span style={{ color: '#8a3030', fontWeight: 'bold' }}>{todayTomatoCount}</span> 个番茄钟
+          </span>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { tier: '入门', range: '1-4', min: 1, max: 4, amount: 40, color: '#4a8a4a' },
+            { tier: '进阶', range: '5-8', min: 5, max: 8, amount: 50, color: '#c89030' },
+            { tier: '大师', range: '9+', min: 9, max: Infinity, amount: 60, color: '#8a3030' },
+          ].map(t => {
+            const inTier = todayTomatoCount >= t.min && todayTomatoCount <= t.max;
+            const progress = todayTomatoCount >= t.min
+              ? t.max === Infinity
+                ? Math.min((todayTomatoCount - t.min + 1) / 1 * 100, 100)
+                : Math.min((todayTomatoCount - t.min + 1) / (t.max - t.min + 1) * 100, 100)
+              : 0;
+            return (
+              <div key={t.tier} className="oto-inset rounded-none! p-3 text-center"
+                   style={{ borderColor: inTier ? t.color : 'var(--oto-border)', opacity: inTier ? 1 : 0.6 }}>
+                <div style={{ fontSize: '20px', marginBottom: 2 }}>
+                  <Icon name="tomato" size={20} />
+                </div>
+                <div style={{ ...pxSm, fontWeight: 'bold', color: t.color }}>{t.tier}</div>
+                <div style={{ ...pxSm, fontSize: '10px', color: 'var(--oto-text-muted)' }}>{t.range} 个</div>
+                <div style={{ ...pxSm, color: 'var(--oto-gold-dark)', fontWeight: 'bold', marginTop: 4 }}>
+                  +{t.amount} 币/个
+                </div>
+                {inTier && (
+                  <div className="oto-progress mt-2" style={{ height: '4px' }}>
+                    <div style={{ height: '100%', width: `${progress}%`, background: t.color, transition: 'width 0.4s' }} />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Weekly Tasks */}
@@ -700,7 +761,7 @@ export default function Gacha() {
             </h3>
             <div className="grid grid-cols-[repeat(auto-fill,minmax(130px,1fr))] gap-3">
               {grouped[rarity].map(item => {
-                const owned = (ownedCounts[item.id] ?? 0) > 0;
+                const owned = (item.owned_count ?? ownedCounts[item.id] ?? 0) > 0;
                 return (
                   <div key={item.id} className="oto-window rounded-none! p-3 text-center"
                        onClick={() => owned && setSelectedItem(item)}
@@ -735,7 +796,7 @@ export default function Gacha() {
                       {RARITY_MAP[item.rarity]}
                     </div>
                     {owned && <div style={{ ...pxSm, fontSize: '10px', color: 'var(--oto-text-muted)', marginTop: 2 }}>
-                      x{ownedCounts[item.id]}
+                      x{item.owned_count ?? ownedCounts[item.id] ?? 0}
                     </div>}
                   </div>
                 );
@@ -910,7 +971,7 @@ export default function Gacha() {
               {selectedItem.description}
             </p>
             <div style={{ ...pxSm, color: 'var(--oto-text-muted)', marginTop: 8 }}>
-              本月拥有 x{ownedCounts[selectedItem.id] ?? 0}
+              本月拥有 x{selectedItem.owned_count ?? ownedCounts[selectedItem.id] ?? 0}
             </div>
             <button onClick={() => setSelectedItem(null)}
                     className="oto-btn w-full mt-4" style={pxSm}>

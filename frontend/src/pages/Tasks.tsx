@@ -162,7 +162,12 @@ export default function Tasks() {
                     <td className="px-4 py-3 whitespace-nowrap text-center"><StatusBadge label={PRIORITY_MAP[task.priority]} status={task.priority} /></td>
                     <td className="px-4 py-3 whitespace-nowrap text-center"><StatusBadge label={TASK_STATUS_MAP[task.status]} status={task.status} /></td>
                     <td className="px-4 py-3 whitespace-nowrap text-center" style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)' }}>
-                      {task.completed_pomodoros}/{task.estimated_pomodoros} <Icon name="tomato" size={13} />
+                      <span>{task.completed_pomodoros}/{task.estimated_pomodoros} <Icon name="tomato" size={13} /></span>
+                      {task.today_pomodoros != null && (
+                        <div style={{ fontSize: '11px', color: 'var(--oto-text-muted)', marginTop: 2 }}>
+                          今日: {task.today_pomodoros}
+                        </div>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-xs whitespace-nowrap text-center" style={{ color: 'var(--oto-text-muted)' }}>{task.due_date || '-'}</td>
                     <td className="px-4 py-3">

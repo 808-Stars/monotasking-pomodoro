@@ -108,8 +108,8 @@ export interface DashboardStats {
   };
   pomodoros: {
     today: number;
-    week: number;
-    month: number;
+    this_week: number;
+    this_month: number;
     total: number;
   };
   projects: {
