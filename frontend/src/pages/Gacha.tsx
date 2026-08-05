@@ -421,7 +421,7 @@ export default function Gacha() {
           <div className="mt-4 space-y-2">
             <div className="flex items-center justify-between">
               <p style={{ ...pxSm, color: 'var(--oto-text-dim)' }}>
-                今日 ({new Date().toISOString().slice(5, 10).replace('-', '/')}) 已获得{' '}
+                今日 ({new Date().toISOString().slice(0, 10).replace(/-/g, '/')}) 已获得{' '}
                 <span style={{
                   color: todayEarned >= dailyTarget ? 'var(--oto-green)' : 'var(--oto-gold-dark)',
                   fontWeight: 'bold',
