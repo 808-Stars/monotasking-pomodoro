@@ -9,7 +9,15 @@ import Icon from './Icons';
    让所有数据按 fake 日期重新拉取。
    ═══════════════════════════════════════════════════════════════ */
 
-const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
+const ISO_RE = /^\d{4}[/-]\d{2}[/-]\d{2}$/;
+
+function toISO(s: string): string {
+  return s.replace(/\//g, '-');
+}
+
+function toDisplay(s: string): string {
+  return s.replace(/-/g, '/');
+}
 
 function isoOf(d: Date): string {
   const y = d.getFullYear();
@@ -62,8 +70,9 @@ export default function DevDatePicker() {
 
   const apply = (next: string) => {
     if (!ISO_RE.test(next)) return;
-    setInputVal(next);
-    setFakeDate(next);
+    const iso = toISO(next);
+    setInputVal(toDisplay(iso));
+    setFakeDate(iso);
   };
 
   const btnStyle: React.CSSProperties = {
@@ -92,9 +101,9 @@ export default function DevDatePicker() {
 
       <div style={{ marginTop: 6, fontSize: 11, fontFamily: 'var(--oto-font-body)', color: 'var(--oto-text)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-          <span>真实: {realToday}</span>
+          <span>真实: {toDisplay(realToday)}</span>
           <span style={{ color: 'var(--oto-text-muted)' }}>
-            {fakeDate ? `伪装: ${fakeDate}` : '未穿越'}
+            {fakeDate ? `伪装: ${toDisplay(fakeDate)}` : '未穿越'}
           </span>
         </div>
         {fakeDate && (
@@ -105,15 +114,16 @@ export default function DevDatePicker() {
 
         <div style={{ display: 'flex', gap: 4, marginBottom: 4 }}>
           <input
-            type="date"
-            lang="en"
+            type="text"
             placeholder="yyyy/mm/dd"
             value={inputVal}
             onChange={e => setInputVal(e.target.value)}
+            onFocus={e => { if (!inputVal) { const d = new Date(); setInputVal(`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`); } }}
             style={{
               flex: 1, padding: '2px 4px', fontSize: 11,
               border: '1px solid var(--oto-border)',
               borderRadius: 0, background: 'var(--oto-bg-card)',
+              fontFamily: 'var(--oto-font-body)',
             }}
           />
           <button onClick={() => inputVal && apply(inputVal)} style={btnStyle}>Go</button>
