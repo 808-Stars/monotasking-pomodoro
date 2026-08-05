@@ -10,6 +10,7 @@ function flattenRecord(r: any) {
   const item = r.gacha_items
   return {
     ...r,
+    item: r.item_id,  // 兼容前端类型（GachaRecord.item）
     item_name: item?.name,
     item_emoji: item?.emoji,
     item_rarity: item?.rarity,
