@@ -15,5 +15,5 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Local Netlify folder
+# Netlify build artifacts
 .netlify

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { getDashboardStats, fetchTodayPlan, updateDailyPlan, addTokenRecord } from '../services/api';
 import type { DashboardStats, DailyPlan } from '../types';
 import { TASK_STATUS_MAP, DAILY_PLAN_STATUS_MAP } from '../types';
@@ -100,7 +100,7 @@ export default function Dashboard() {
                   { key: 'notes' as const, label: <><Icon name="notebook" size={14} /> 备注</> },
                 ].map(({ key, label }, i) => {
                   return (
-                    <a key={key} href="/daily-plans" className={`block group cursor-pointer ${i > 0 ? 'mt-1.5' : 'mt-2'}`}>
+                    <Link key={key} to="/daily-plans" className={`block group cursor-pointer ${i > 0 ? 'mt-1.5' : 'mt-2'}`}>
                       <span className="text-xs mb-0.5" style={{ ...pxLabel, fontSize: '10px', color: 'var(--oto-text-muted)' }}>{label}</span>
                       <div className="p-3 oto-inset text-sm min-h-[68px]">
                         {todayPlan[key] ? (
@@ -111,7 +111,7 @@ export default function Dashboard() {
                           </span>
                         )}
                       </div>
-                    </a>
+                    </Link>
                   );
                 })}
                 {todayPlan?.core_task && (
@@ -125,7 +125,7 @@ export default function Dashboard() {
             ) : (
               <div className="p-4 oto-inset text-center" style={{ border: '2px dashed #333' }}>
                 <p style={{ ...pxBody, color: 'var(--oto-text-muted)' }}>尚未设定今日核心任务</p>
-                <a href="/daily-plans" className="text-blue-400 text-xs hover:underline mt-1 inline-block">前往每日计划 → 设定核心任务</a>
+                <Link to="/daily-plans" className="text-blue-400 text-xs hover:underline mt-1 inline-block">前往每日计划 → 设定核心任务</Link>
               </div>
             )}
             <div className="grid grid-cols-3 gap-3 pt-3 mt-auto" style={{ borderTop: '2px solid #1a2438' }}>
