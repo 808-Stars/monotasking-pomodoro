@@ -4,7 +4,9 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App'
 
-const BASENAME = '/monotasking-pomodoro'
+// BASE_URL 由 vite.config.ts 的 base 选项决定
+// Vercel: '/'，GitHub Pages: '/monotasking-pomodoro/'
+const basename = import.meta.env.BASE_URL.replace(/\/$/, '')
 
 // GitHub Pages 404.html 重定向：读取保存的路径并替换当前 URL
 const redirectPath = sessionStorage.getItem('gh-pages-redirect')
@@ -15,7 +17,7 @@ if (redirectPath) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter basename={BASENAME}>
+    <BrowserRouter basename={basename}>
       <App />
     </BrowserRouter>
   </StrictMode>,
