@@ -19,7 +19,7 @@ const JOB_COL: Record<string, number> = { CLERIC: 1, SCHOLAR: 2, MERCHANT: 3, WA
 function itemImage(item: { rarity: string; job: string }) {
   const r = RARITY_ROW[item.rarity] || 1;
   const c = JOB_COL[item.job] || 1;
-  return `${import.meta.env.BASE_URL}items/_r${r}c${c}.webp`;
+  return `/items/_r${r}c${c}.webp`;
 }
 
 const pxBody = { fontFamily: 'var(--oto-font-body)', fontSize: '18px' };

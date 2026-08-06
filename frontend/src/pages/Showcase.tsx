@@ -63,7 +63,7 @@ function ItemIcon({ kind, level, size = 80 }: { kind: string; level: number; siz
   const tierIndex = Math.max(1, Math.min(5, level + 1));
   return (
     <img
-      src={`${import.meta.env.BASE_URL}acc/${prefix}c${tierIndex}.webp`}
+      src={`/acc/${prefix}c${tierIndex}.webp`}
       alt={TIER_NAMES[level]}
       width={size}
       height={size}
