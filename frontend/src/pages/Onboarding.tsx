@@ -97,7 +97,7 @@ export default function Onboarding() {
         <div className="flex items-center justify-between">
           <div>
             <h2 style={{ ...pxH2, color: 'var(--oto-text)' }}><Icon name="graduate" size={20} /> 新手教程</h2>
-            <p style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>8 步走完核心功能，亲手体验单核 × 番茄工作法</p>
+            <p style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>8 步走完核心功能，亲手体验 monopomo</p>
           </div>
         </div>
       </div>

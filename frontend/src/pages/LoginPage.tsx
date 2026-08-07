@@ -34,7 +34,7 @@ export default function LoginPage() {
           color: 'var(--oto-gold-dark)', textAlign: 'center', marginBottom: '24px',
           letterSpacing: '0.15em',
         }}>
-          ◆ 单核 × 番茄
+          ◆ monopomo
         </h2>
         <div style={{ display: 'flex', marginBottom: '20px' }}>
           <button onClick={() => setMode('login')} style={{

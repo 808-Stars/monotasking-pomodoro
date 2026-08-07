@@ -442,7 +442,7 @@ export default function Guide() {
         <div className="flex items-center justify-between">
           <div>
             <h2 style={{ ...pxH2, color: 'var(--oto-text)' }}><Icon name="book" size={22} /> 操作指南</h2>
-            <p style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>从零开始，掌握单核 × 番茄工作法</p>
+            <p style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>从零开始，掌握 monopomo</p>
           </div>
         </div>
       </div>

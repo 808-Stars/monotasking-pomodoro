@@ -40,7 +40,7 @@ export default function Tutorial() {
         </h2>
         <h3 className="font-bold text-gray-300 mb-4"
           style={{ fontFamily: 'var(--oto-font-title)', fontSize: '13px', lineHeight: '1.8' }}>
-          单核×番茄 工作法
+          monopomo
         </h3>
         <p className="text-sm text-gray-500 mb-4" style={{ fontFamily: 'var(--oto-font-body)', fontSize: '17px' }}>
           ▸ 16-BIT 个人效率管理工具

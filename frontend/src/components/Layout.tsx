@@ -129,11 +129,10 @@ export default function Layout() {
                   <p style={{
                     fontFamily: 'var(--oto-font-title)', fontSize: '17px', fontWeight: 700,
                     color: 'var(--oto-text)', letterSpacing: '0.06em',
-                  }}>单核 × 番茄</p>
+                  }}>monopomo</p>
                   <p className="mt-0.5" style={{
                     fontFamily: 'var(--oto-font-ui)', fontSize: '10px', color: 'var(--oto-text-dim)',
                     letterSpacing: '0.06em',
-                  }}>MONOMIC × POMODORO</p>
                 </div>
               </div>
               <div style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.3))' }}>
