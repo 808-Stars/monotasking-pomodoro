@@ -13,6 +13,22 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
+function translateAuthError(msg: string): string {
+  const map: Record<string, string> = {
+    'Invalid login credentials': '邮箱或密码错误',
+    'User already registered': '该邮箱已注册',
+    'Password should be at least 6 characters': '密码至少需要 6 位',
+    'Unable to validate email address: invalid format': '邮箱格式不正确',
+    'Email not confirmed': '邮箱未验证，请先点击确认链接',
+    'Signup requires a valid password': '请输入有效的密码',
+    'User not found': '用户不存在',
+  }
+  for (const [en, zh] of Object.entries(map)) {
+    if (msg.toLowerCase().includes(en.toLowerCase())) return zh
+  }
+  return msg
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
@@ -34,12 +50,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
-    return { error: error?.message ?? null }
+    return { error: error ? translateAuthError(error.message) : null }
   }, [])
 
   const signUp = useCallback(async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signUp({ email, password })
-    if (error) return { error: error.message }
+    if (error) return { error: translateAuthError(error.message) }
     if (!data.session) return { error: '请检查邮箱并点击确认链接后登录' }
     return { error: null }
   }, [])
