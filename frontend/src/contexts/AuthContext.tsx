@@ -22,6 +22,8 @@ function translateAuthError(msg: string): string {
     'Email not confirmed': '邮箱未验证，请先点击确认链接',
     'Signup requires a valid password': '请输入有效的密码',
     'User not found': '用户不存在',
+    'rate limit': '操作过于频繁，请稍后再试',
+    'email rate limit': '邮件发送过于频繁，请稍后再试',
   }
   for (const [en, zh] of Object.entries(map)) {
     if (msg.toLowerCase().includes(en.toLowerCase())) return zh
