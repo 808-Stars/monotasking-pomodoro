@@ -71,7 +71,7 @@ export default function Tutorial() {
 
         <p className="text-gray-400 leading-relaxed mb-6"
           style={{ fontFamily: 'var(--oto-font-body)', fontSize: '17px' }}>
-          准备了一个 <strong className="text-purple-400">6步新手教程</strong>，
+          准备了一个 <strong className="text-purple-400">8步新手教程</strong>，
           带你亲手体验全部功能，约需 <strong className="text-yellow-400">3-5 分钟</strong>。
         </p>
 

@@ -88,7 +88,7 @@ function TierBar({ level, thresholds, current }: { level: number; thresholds: nu
             position: 'relative',
             overflow: 'hidden',
           }}>
-            {isCurrent && (
+            {isCurrent && i < 4 && (
               <div style={{
                 position: 'absolute',
                 inset: 0,
@@ -167,8 +167,8 @@ export default function Showcase() {
   const [loading, setLoading] = useState(true);
   const [snapshotting, setSnapshotting] = useState(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (isRefresh = false) => {
+    if (!isRefresh) setLoading(true);
     try {
       const [snap, cur] = await Promise.all([
         getShowcaseSnapshots(year),
@@ -185,13 +185,13 @@ export default function Showcase() {
 
   // Auto-refresh every 60 seconds
   useEffect(() => {
-    const t = setInterval(() => { load(); }, 60_000);
+    const t = setInterval(() => { load(true); }, 60_000);
     return () => clearInterval(t);
   }, [load]);
 
   // Listen for cross-component refresh events
   useEffect(() => {
-    const handler = () => { load(); };
+    const handler = () => { load(true); };
     window.addEventListener('oto:showcase-refresh', handler);
     window.addEventListener('oto:tokens-changed', handler);
     return () => {

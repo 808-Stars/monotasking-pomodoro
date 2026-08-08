@@ -175,8 +175,8 @@ export default function Guide() {
             { icon: 'search' as IconName, title: '筛选与搜索', desc: '按状态（待办/进行中/已完成/已归档）、优先级、项目筛选。支持关键词搜索。' },
             { icon: 'refresh' as IconName, title: '状态流转', desc: '待办→进行中→已完成→已归档。每步可回退。完成任务可获得 20 代币。' },
             { icon: 'tomato' as IconName, title: '番茄钟进度', desc: '每个任务显示「已完成/预估」番茄钟数。完成番茄钟时自动累加。' },
-            { icon: 'bars' as IconName, title: '表格布局', desc: '任务以卡片形式展示，显示优先级标签、状态标签、项目颜色条。支持拖拽排序（计划中）。' },
-            { icon: 'check' as IconName, title: '批量操作', desc: '支持多选任务进行批量状态变更、批量删除、批量移动项目等操作。' },
+            { icon: 'bars' as IconName, title: '表格布局', desc: '任务以表格形式展示，显示优先级标签、状态标签、项目颜色条。支持按优先级和状态筛选。' },
+            { icon: 'check' as IconName, title: '批量操作', desc: '支持批量状态变更、批量删除、批量移动项目等操作（开发中）。' },
           ].map(item => <Card key={item.title} {...item} />)}
         </div>
       ),
@@ -304,8 +304,8 @@ export default function Guide() {
       content: (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {[
-            { icon: 'notebook' as IconName, title: '日记（每日回顾）', desc: '记录每天的工作内容、心情和反思。写日记可获得 40 代币。支持富文本编辑和标签分类。', color: '#304868' },
-            { icon: 'bars' as IconName, title: '周记（每周总结）', desc: '每周总结工作成果和改进方向。写周记可获得 40 代币。系统会自动聚合本周的日记内容作为参考。', color: '#8a6820' },
+            { icon: 'notebook' as IconName, title: '日记（每日回顾）', desc: '记录每天的工作内容、心情和反思。写日记可获得 40 代币。', color: '#304868' },
+            { icon: 'bars' as IconName, title: '周记（每周总结）', desc: '每周总结工作成果和改进方向。写周记可获得 40 代币。', color: '#8a6820' },
             { icon: 'calendar' as IconName, title: '月记（月度复盘）', desc: '每月复盘目标完成情况和成长轨迹。系统自动关联当月的核心任务完成率和番茄钟数据。', color: '#504868' },
             { icon: 'search' as IconName, title: '筛选与统计', desc: '按类型（日记/周记/月记）、日期范围筛选。统计面板显示笔记总数、本月新增、连续写作天数。', color: '#305830' },
             { icon: 'check' as IconName, title: '编辑与删除', desc: '笔记创建后可随时编辑和修改。支持单项删除和批量删除。已删除的笔记无法恢复。', color: '#4a3020' },
@@ -333,7 +333,6 @@ export default function Guide() {
               { icon: 'clock' as IconName, title: '时间线显示', desc: '开始时间 → 结束时间，倒计时进度条。暂停时显示 --:--:--，继续后重新计算结束时间。' },
               { icon: 'task' as IconName, title: '关联任务', desc: '启动番茄钟前选择关联任务。完成后自动累加该任务的番茄钟进度。下拉框旁有 ↻ 刷新按钮。' },
               { icon: 'bars' as IconName, title: '统计面板', desc: '今日/本周/本月/总计番茄钟数。历史记录页可按时间筛选和删除。' },
-              { icon: 'forward' as IconName, title: '快进按钮', desc: '开发者模式下可用。快进视为完整时长完成，发放代币奖励，但不播放音效。' },
               { icon: 'star' as IconName, title: '代币奖励', desc: '每完成一个工作番茄钟获得代币（分级：1-4个 40 币 / 5-8个 50 币 / 9+个 60 币）。每日首次完成额外 60 币。', color: '#8a6820' },
             ].map(item => <Card key={item.title} {...item} />)}
           </div>

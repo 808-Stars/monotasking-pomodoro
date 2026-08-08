@@ -435,7 +435,6 @@ h5, h6 {
   padding: 12px 16px 12px 20px;
   border-left: 4px solid var(--oto-gold);
   background: var(--oto-bg-inset);
-  font-style: italic;
   position: relative;
 }
 .oto-quote::before {

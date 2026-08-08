@@ -129,8 +129,8 @@ export default function Tasks() {
             </colgroup>
             <thead>
               <tr className="text-center">
-                <th className="px-4 py-3 text-left">任务</th>
-                <th className="px-4 py-3">项目</th>
+                <th className="px-4 py-3 text-left" style={{ width: '35%' }}>任务</th>
+                <th className="px-4 py-3" style={{ width: '18%' }}>项目</th>
                 <th className="px-4 py-3">优先级</th>
                 <th className="px-4 py-3">状态</th>
                 <th className="px-4 py-3">番茄钟</th>
@@ -147,15 +147,15 @@ export default function Tasks() {
               ) : (
                 tasks.map(task => (
                   <tr key={task.id}>
-                    <td className="px-4 py-3 max-w-0 w-full">
+                    <td className="px-4 py-3 max-w-0" style={{ width: '35%' }}>
                       <p className="font-medium truncate" style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text)' }}>{task.name}</p>
                       {task.description && <p className="text-xs mt-0.5 truncate" style={{ ...pxBody, fontSize: '13px', color: 'var(--oto-text-muted)' }}>{task.description}</p>}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
+                    <td className="px-4 py-3" style={{ width: '18%' }}>
                       {(task as any).projects?.name ? (
-                        <span className="flex items-center gap-1.5">
+                        <span className="flex items-center gap-1.5 min-w-0">
                           <span className="w-2 h-2 flex-shrink-0" style={{ backgroundColor: (task as any).projects?.color }} />
-                          <span style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)' }}>{(task as any).projects?.name}</span>
+                          <span className="truncate" style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)' }}>{(task as any).projects?.name}</span>
                         </span>
                       ) : <span style={{ color: '#a08060' }}>-</span>}
                     </td>

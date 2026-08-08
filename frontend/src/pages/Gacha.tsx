@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Icon from '../components/Icons';
 import type { IconName } from '../components/Icons';
-import { supabase } from '../services/supabase';
+import { localDate } from '../utils/date';
 import {
   fetchGachaItems, fetchGachaRecords, gachaPull,
   getTokenBalance, addTokenRecord, getDailyTasks,
@@ -140,27 +140,12 @@ export default function Gacha() {
     const todayCounts = todayCountsData as Record<string, number>;
     setTodayCounts(todayCounts);
     setTodayTomatoCount(todayCounts['番茄钟'] ?? 0);
+    if (todayCounts['_free_pull_used']) setFreePullUsed(true);
 
     // Daily tasks
     setDailyTasks(dailyData.tasks);
     setTodayEarned(dailyData.today_earned);
     setDailyTarget(dailyData.daily_target);
-
-    // Check if free pull already used today via token_records
-    try {
-      const todayStr = new Date().toISOString().slice(0, 10);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: freeRec } = await supabase
-          .from('token_records')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('source', '每日首免')
-          .gte('created_at', todayStr)
-          .limit(1);
-        if (freeRec && freeRec.length > 0) setFreePullUsed(true);
-      }
-    } catch { /* */ }
 
     // Weekly tasks
     setWeeklyTasks(weeklyData.tasks);
@@ -189,6 +174,19 @@ export default function Gacha() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // 空格关闭抽取结果弹窗
+  useEffect(() => {
+    if (!showResult) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && e.target === document.body) {
+        e.preventDefault();
+        setShowResult(false);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [showResult]);
 
   const handlePull = async (count: number) => {
     setPulling(true);
@@ -322,7 +320,7 @@ export default function Gacha() {
                 本月抽取 <span style={{ color: 'var(--oto-text-dim)' }}>{ssrTargetStatus?.total_pulls ?? '...'}</span> 次
               </span>
               <span style={{ color: 'var(--oto-text-muted)' }}>
-                !&nbsp;&nbsp;&nbsp;每月 1 号 0 点自动清零（用于藏品室结算）
+                每月 1 号凌晨 4 点自动清零（用于藏品室结算）
               </span>
             </div>
           </div>
@@ -389,7 +387,7 @@ export default function Gacha() {
           <div className="mt-4 space-y-2">
             <div className="flex items-center justify-between">
               <p style={{ ...pxSm, color: 'var(--oto-text-dim)' }}>
-                今日 ({new Date().toISOString().slice(0, 10).replace(/-/g, '/')}) 已获得{' '}
+                今日 ({localDate().replace(/-/g, '/')}) 已获得{' '}
                 <span style={{
                   color: todayEarned >= dailyTarget ? 'var(--oto-green)' : 'var(--oto-gold-dark)',
                   fontWeight: 'bold',
@@ -986,11 +984,7 @@ export default function Gacha() {
               <div className="oto-window-gold rounded-none! p-4 mb-4 text-center"
                    style={{ borderColor: RARITY_COLOR_MAP.SSR, boxShadow: `0 0 24px ${RARITY_COLOR_MAP.SSR}44` }}>
                 <div style={{ width: 64, height: 64, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {pullMeta.ssr_target_item.target_item_image ? (
-                    <img src={pullMeta.ssr_target_item.target_item_image} alt="" style={{ width: 64, height: 64, objectFit: 'contain' }} />
-                  ) : (
-                    <span style={{ fontSize: '3rem' }}>{pullMeta.ssr_target_item.target_item_emoji || '⭐'}</span>
-                  )}
+                  <img src={itemImage({ rarity: pullMeta.ssr_target_item.target_item_rarity || 'SSR', job: pullMeta.ssr_target_item.target_item_job || 'CLERIC' })} alt="" style={{ width: 64, height: 64, objectFit: 'contain' }} />
                 </div>
                 <div style={{ ...pxH3, color: RARITY_COLOR_MAP.SSR, fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                   <Icon name="target" size={20} /> 锁定目标达成！
@@ -1057,11 +1051,7 @@ export default function Gacha() {
                style={{ borderColor: RARITY_COLOR_MAP[selectedItem.rarity] }}
                onClick={e => e.stopPropagation()}>
             <div style={{ width: 80, height: 80, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {selectedItem.image ? (
-                <img src={selectedItem.image} alt={selectedItem.name} style={{ width: 80, height: 80, objectFit: 'contain' }} />
-              ) : (
-                <span style={{ fontSize: '4rem' }}>{selectedItem.emoji}</span>
-              )}
+              <img src={itemImage(selectedItem)} alt={selectedItem.name} style={{ width: 80, height: 80, objectFit: 'contain' }} />
             </div>
             <h3 style={{ ...pxH3, fontSize: '14px', color: 'var(--oto-text)', marginTop: 8 }}>{selectedItem.name}</h3>
             <div className="flex items-center justify-center gap-2 mt-2">

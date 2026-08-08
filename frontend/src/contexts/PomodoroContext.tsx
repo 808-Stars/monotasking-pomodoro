@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { createPomodoroSession, fetchTasks, addTokenRecord } from '../services/api';
 import { supabase } from '../services/supabase';
+import { localDate } from '../utils/date';
 import type { Task } from '../types';
 
 const WORK_TIME = 25 * 60;
@@ -14,7 +15,7 @@ interface PomodoroContextType {
   phase: TimerPhase;
   mode: TimerMode;
   seconds: number;
-  selectedTask: number | null;
+  selectedTask: string | null;
   tasks: Task[];
   notes: string;
   startTime: Date | null;
@@ -25,7 +26,7 @@ interface PomodoroContextType {
   handleSkip: () => void;
   resetTimer: () => void;
   switchMode: (newMode: TimerMode) => void;
-  setSelectedTask: (id: number | null) => void;
+  setSelectedTask: (id: string | null) => void;
   setNotes: (notes: string) => void;
   refreshTasks: () => void;
 }
@@ -36,7 +37,7 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
   const [phase, setPhase] = useState<TimerPhase>('idle');
   const [mode, setMode] = useState<TimerMode>('WORK');
   const [seconds, setSeconds] = useState(WORK_TIME);
-  const [selectedTask, setSelectedTaskState] = useState<number | null>(null);
+  const [selectedTask, setSelectedTaskState] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [notes, setNotesState] = useState('');
   const [startTime, setStartTime] = useState<Date | null>(null);
@@ -116,7 +117,7 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
           // 奖励代币
           addTokenRecord(60, '首次番茄钟', true, true).catch(() => {});
           // Get today's tomato count for tier calculation
-          const todayStr = new Date().toISOString().slice(0, 10);
+          const todayStr = localDate();
           const { count } = await supabase.from('token_records').select('*', { count: 'exact', head: true })
             .eq('user_id', (await supabase.auth.getUser()).data.user?.id).eq('source', '番茄钟').gte('created_at', todayStr);
           const done = (count ?? 0) + 1;
@@ -128,6 +129,7 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
     } else {
       // 休息完成 → 奖励代币
       addTokenRecord(20, '休息', true, true).catch(() => {});
+      alert(mode === 'SHORT_BREAK' ? '短休息结束！准备开始工作吧~' : '长休息结束！精力充沛地继续吧~');
     }
   }, [mode]);
 
@@ -136,7 +138,7 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
       // 在 updater 外累加：StrictMode 下 updater 会被重复调用，放里面会重复计数
       elapsedRef.current += 1;
       setSeconds(prev => {
-        if (prev <= 1) { clearInterval(intervalRef.current!); setPhase('idle'); handleComplete(); return 0; }
+        if (prev <= 1) { clearInterval(intervalRef.current!); setPhase('idle'); handleComplete(); return totalSeconds; }
         return prev - 1;
       });
     };
@@ -195,7 +197,7 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
     elapsedRef.current = 0;
   }, []);
 
-  const setSelectedTask = useCallback((id: number | null) => {
+  const setSelectedTask = useCallback((id: string | null) => {
     setSelectedTaskState(id);
   }, []);
 

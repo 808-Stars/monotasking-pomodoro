@@ -43,10 +43,10 @@ export default function PomodoroHistory() {
       {/* Stats — 4 columns matching original */}
       {stats && (
         <div className="grid grid-cols-4 gap-4">
-          <StatsCard title="今日" value={stats.today} icon="sun" color="text-orange-400" />
-          <StatsCard title="本周" value={stats.this_week} icon="calendar" color="text-blue-400" />
+          <StatsCard title="今日" value={stats.today} icon="sun" color="text-blue-400" />
+          <StatsCard title="本周" value={stats.this_week} icon="calendar" color="text-yellow-400" />
           <StatsCard title="本月" value={stats.this_month} icon="chart" color="text-purple-400" />
-          <StatsCard title="总计" value={stats.total} icon="trophy" color="text-green-400" />
+          <StatsCard title="总计" value={stats.total} icon="trophy" color="text-red-400" />
         </div>
       )}
 

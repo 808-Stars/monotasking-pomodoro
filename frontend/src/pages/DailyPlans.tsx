@@ -20,6 +20,7 @@ export default function DailyPlans() {
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [saving, setSaving] = useState(false);
   const [taskDropdownOpen, setTaskDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   // 文本框本地草稿 + 防抖计时器，避免每次按键都发 PATCH
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const draftTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
@@ -36,6 +37,18 @@ export default function DailyPlans() {
   };
   useEffect(() => { load(); }, []);
 
+  // 点击外部关闭下拉
+  useEffect(() => {
+    if (!taskDropdownOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setTaskDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [taskDropdownOpen]);
+
   const planMap = useMemo(() => { const m: Record<string, DailyPlan> = {}; for (const p of plans) m[p.date] = p; return m; }, [plans]);
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
   const firstDayOfWeek = new Date(calYear, calMonth, 1).getDay();
@@ -48,7 +61,7 @@ export default function DailyPlans() {
 
   const handleSetCoreTask = async (taskId: string | null) => {
     if (!todayPlan) return; setSaving(true);
-    await updateDailyPlan(todayPlan.id, { core_task: taskId });
+    await updateDailyPlan(todayPlan.id, { core_task_id: taskId });
     const updated = await fetchTodayPlan(); setTodayPlan(updated); load(); setSaving(false);
     if (taskId) addTokenRecord(20, '确定核心任务', true, true).catch(() => {});
   };
@@ -126,12 +139,11 @@ export default function DailyPlans() {
           {allTasks.length === 0 ? (
             <p style={{ ...pxBody, color: 'var(--oto-text-muted)' }}>暂无可选任务，请先在任务管理中创建</p>
           ) : (
-            <div className="relative">
+            <div className="relative" ref={dropdownRef}>
               <button type="button" onClick={() => setTaskDropdownOpen(!taskDropdownOpen)}
-                onBlur={() => setTimeout(() => setTaskDropdownOpen(false), 150)}
                 className="oto-select w-full text-left flex items-center justify-between">
-                {todayPlan?.core_task ? (() => {
-                  const t = allTasks.find(x => x.id === todayPlan.core_task);
+                {todayPlan?.core_task_id ? (() => {
+                  const t = allTasks.find(x => x.id === todayPlan.core_task_id);
                   return (
                     <span className="flex items-center gap-2 min-w-0">
                       <span className="truncate font-medium" style={{ color: 'var(--oto-text)' }}>{todayPlan.tasks?.name}</span>
@@ -153,7 +165,7 @@ export default function DailyPlans() {
                   </button>
                   {allTasks.map(t => (
                     <button key={t.id} type="button" onMouseDown={() => { handleSetCoreTask(t.id); setTaskDropdownOpen(false); }}
-                      className={`w-full text-left px-3 py-2.5 text-sm hover:bg-blue-900/30 flex items-center justify-between gap-2 ${todayPlan?.core_task === t.id ? 'bg-blue-900/20' : ''}`}
+                      className={`w-full text-left px-3 py-2.5 text-sm hover:bg-blue-900/30 flex items-center justify-between gap-2 ${todayPlan?.core_task_id === t.id ? 'bg-blue-900/20' : ''}`}
                       style={pxBody}>
                       <span className="font-medium truncate" style={{ color: 'var(--oto-text)' }}>{t.name}</span>
                       <span className="flex items-center gap-1.5 flex-shrink-0">

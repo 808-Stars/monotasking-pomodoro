@@ -27,7 +27,7 @@ function buildQuests(): Quest[] {
       id: 'set-core-task', icon: 'target', title: '第 3 步：设定今日核心任务', subtitle: '每日计划 · 单核工作法',
       description: '单核工作法的核心动作：每天只选一个最重要的任务作为「核心任务」。\n\n去每日计划页面，从自定义下拉菜单中选一个核心任务（菜单中能看到优先级、状态和项目）。然后在「晨间规划」写下今天的目标。',
       actionLabel: '去设定核心任务', actionTo: '/daily-plans', color: '#687898', bg: '#e8e4f0',
-      checkFn: async () => { try { const plan = await fetchTodayPlan(); return !!(plan && plan.core_task && !(plan as any).tasks?.name?.startsWith('[示例]')); } catch { return false; } },
+      checkFn: async () => { try { const plan = await fetchTodayPlan(); return !!(plan && plan.core_task_id && !(plan as any).tasks?.name?.startsWith('[示例]')); } catch { return false; } },
     },
     {
       id: 'do-pomodoro', icon: 'tomato', title: '第 4 步：完成一个番茄钟', subtitle: '番茄钟 · 番茄工作法',

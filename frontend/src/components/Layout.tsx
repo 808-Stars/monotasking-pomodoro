@@ -115,31 +115,38 @@ export default function Layout() {
           background: 'linear-gradient(180deg, var(--oto-bg-header) 0%, #f0c8b0 100%)',
           borderBottom: '2px solid var(--oto-gold)',
         }}>
-          {/* Top ornament */}
-          <div className="absolute top-0 left-0 right-0 flex justify-center" style={{ marginTop: '-6px' }}>
-            <span style={{ fontSize: '8px', color: 'var(--oto-gold)', letterSpacing: '4px', paddingLeft: '4px' }}>◆◆◆</span>
-          </div>
+          {/* Sword watermark */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            backgroundImage: 'url(/sword.svg)',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'calc(50% - 5px) center',
+            backgroundSize: '40%',
+            opacity: 0.1,
+            filter: 'sepia(1) saturate(3) brightness(0.7)',
+            pointerEvents: 'none',
+          }} />
           <div className="px-4 pt-3 pb-4">
-            <div className="flex items-center justify-between relative" style={{ minHeight: '52px' }}>
-              <div style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.3))' }}>
-                <Icon name="target" size={26} />
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="text-center">
-                  <p style={{
-                    fontFamily: 'var(--oto-font-title)', fontSize: '17px', fontWeight: 700,
-                    color: 'var(--oto-text)', letterSpacing: '0.06em',
-                  }}>monopomo</p>
+            <div className="flex items-center justify-center">
+              <div className="text-center" style={{ lineHeight: 1.1 }}>
+                <div style={{
+                  fontFamily: 'var(--oto-font-title)', fontSize: '22px', fontWeight: 700,
+                  color: 'var(--oto-text)', letterSpacing: '0.5em',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1px',
+                  paddingLeft: '10px',
+                }}>
+                  <span style={{ position: 'relative', left: '-13px' }}>M</span><span style={{ display: 'inline-flex', verticalAlign: 'middle', marginLeft: '-13px', marginRight: '5px' }}><Icon name="target" size={20} /></span><span style={{ marginLeft: '8px' }}>N</span><span style={{ marginLeft: '4px' }}>O</span>
+                </div>
+                <div style={{
+                  fontFamily: 'var(--oto-font-title)', fontSize: '22px', fontWeight: 700,
+                  color: 'var(--oto-text)', letterSpacing: '0.5em',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1px',
+                  marginTop: '4px',
+                }}>
+                  <span style={{ position: 'relative', left: '-2px' }}>P</span><span style={{ position: 'relative', left: '3px' }}>O</span><span style={{ position: 'relative', left: '5px' }}>M</span><span style={{ display: 'inline-flex', verticalAlign: 'middle', marginLeft: '4px', marginRight: '6px' }}><Icon name="tomato" size={24} /></span>
                 </div>
               </div>
-              <div style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.3))' }}>
-                <Icon name="tomato" size={26} />
-              </div>
             </div>
-          </div>
-          {/* Bottom ornament */}
-          <div className="absolute bottom-0 left-0 right-0 flex justify-center" style={{ marginBottom: '-4px' }}>
-            <span style={{ fontSize: '8px', color: 'var(--oto-gold)' }}>―― ◆ ――</span>
           </div>
         </div>
 
@@ -218,17 +225,6 @@ export default function Layout() {
           borderTop: '2px solid var(--oto-gold)',
           background: 'linear-gradient(0deg, rgba(200,160,64,0.06) 0%, transparent 40%)',
         }}>
-          {/* Footer ornament */}
-          <div className="flex justify-center" style={{ marginTop: '-8px', marginBottom: '4px' }}>
-            <span style={{
-              background: 'var(--oto-bg-sidebar)',
-              padding: '0 8px',
-              fontSize: '7px',
-              color: 'var(--oto-gold)',
-              letterSpacing: '3px',
-            }}>◆ ◆ ◆</span>
-          </div>
-
           <NavLink to="/guide" className={({ isActive }) =>
             `oto-nav-item group flex items-center gap-3 px-3 py-1.5 ${isActive ? 'active' : ''}`
           }>
@@ -265,12 +261,13 @@ export default function Layout() {
             <Icon name="logout" size={16} />
             <span style={{
               fontFamily: 'var(--oto-font-body)', fontSize: '13px', fontWeight: 600,
-              color: 'var(--oto-text)',
+              color: 'var(--oto-text)', whiteSpace: 'nowrap', flexShrink: 0,
             }}>退出登录</span>
             {user && (
               <span style={{
                 marginLeft: 'auto', fontSize: '11px', color: 'var(--oto-text-dim)',
                 fontFamily: 'var(--oto-font-ui)',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
               }}>{user?.email}</span>
             )}
           </button>

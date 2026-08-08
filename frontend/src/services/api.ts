@@ -1,9 +1,15 @@
 import { supabase } from './supabase'
 import { RARITY_MAP } from '../types'
+import { localDate, localMonth } from '../utils/date'
 
 const JOBS_MAP: Record<string, string> = {
   CLERIC: '牧师', SCHOLAR: '学者', MERCHANT: '商人', WARRIOR: '战士',
   DANCER: '舞者', APOTHECARY: '药师', THIEF: '盗贼', HUNTER: '猎人',
+}
+
+const JOB_ORDER: Record<string, number> = {
+  CLERIC: 1, SCHOLAR: 2, MERCHANT: 3, WARRIOR: 4,
+  DANCER: 5, APOTHECARY: 6, THIEF: 7, HUNTER: 8,
 }
 
 // ============================================================
@@ -279,9 +285,9 @@ export async function getPomodoroStats() {
     const user = await currentUser()
     if (!user) return { today: 0, this_week: 0, this_month: 0, total: 0 }
 
-    const todayStr = new Date().toISOString().slice(0, 10)
+    const todayStr = localDate()
     const weekD = new Date(); weekD.setDate(weekD.getDate() - weekD.getDay() + 1); const weekStr = weekD.toISOString().slice(0, 10)
-    const monthStr = new Date().toISOString().slice(0, 7) + '-01'
+    const monthStr = localMonth() + '-01'
 
     const [today, week, month, total] = await Promise.all([
       supabase.from('pomodoro_sessions').select('*', { count: 'exact', head: true })
@@ -313,7 +319,7 @@ export async function fetchTodayPlan() {
   return cached('today-plan', async () => {
     const user = await currentUser()
     if (!user) return null
-    const todayStr = new Date().toISOString().slice(0, 10)
+    const todayStr = localDate()
     let { data } = await supabase
       .from('daily_plans')
       .select('*, tasks(name, status)')
@@ -466,7 +472,7 @@ export async function getTokenBalance() {
   return cached('token-balance', async () => {
     const user = await currentUser()
     if (!user) return { balance: 0, total_earned: 0, total_spent: 0 }
-    const ym = new Date().toISOString().slice(0, 7)
+    const ym = localMonth()
     const { data } = await supabase
       .from('token_records')
       .select('amount')
@@ -486,7 +492,7 @@ export async function addTokenRecord(amount: number, source: string, claimed = t
 
   // 日任务限一次：同 source 今日已有记录则跳过
   if (daily) {
-    const todayStr = new Date().toISOString().slice(0, 10)
+    const todayStr = localDate()
     const { data: existing } = await supabase
       .from('token_records')
       .select('id')
@@ -519,7 +525,7 @@ export async function getDailyTasks() {
       '完成清单': 20, '抽扭蛋': 40,
     }
 
-    const todayStr = new Date().toISOString().slice(0, 10)
+    const todayStr = localDate()
     const { data } = await supabase
       .from('token_records')
       .select('source, amount, claimed')
@@ -557,7 +563,7 @@ export async function getTodayCounts() {
   return cached('today-counts', async () => {
     const user = await currentUser()
     if (!user) return {}
-    const todayStr = new Date().toISOString().slice(0, 10)
+    const todayStr = localDate()
     const { data } = await supabase
       .from('token_records')
       .select('source')
@@ -582,7 +588,7 @@ export async function getTodayCounts() {
 export async function claimDailyTokens(source: string) {
   const user = await currentUser()
   if (!user) return 0
-  const todayStr = new Date().toISOString().slice(0, 10)
+  const todayStr = localDate()
   const { data, error } = await supabase
     .from('token_records')
     .update({ claimed: true, claimed_at: new Date().toISOString() })
@@ -600,7 +606,7 @@ export async function claimDailyTokens(source: string) {
 export async function claimAllDailyTokens() {
   const user = await currentUser()
   if (!user) return { claimed: 0, balance: 0 }
-  const todayStr = new Date().toISOString().slice(0, 10)
+  const todayStr = localDate()
   const { data, error } = await supabase
     .from('token_records')
     .update({ claimed: true, claimed_at: new Date().toISOString() })
@@ -628,7 +634,7 @@ export async function fetchGachaItems() {
     if (!items || items.length === 0) return []
     if (!user) return items.map(i => ({ ...i, owned_count: 0 }))
 
-    const ym = new Date().toISOString().slice(0, 7)
+    const ym = localMonth()
     const { data: records } = await supabase
       .from('gacha_records')
       .select('item_id')
@@ -640,7 +646,10 @@ export async function fetchGachaItems() {
       ownedMap[r.item_id] = (ownedMap[r.item_id] ?? 0) + 1
     })
 
-    return items.map(i => ({ ...i, owned_count: ownedMap[i.id] ?? 0 }))
+    // 同权重内按职业顺序排序
+    return items
+      .map(i => ({ ...i, owned_count: ownedMap[i.id] ?? 0 }))
+      .sort((a, b) => (a.weight !== b.weight ? b.weight - a.weight : (JOB_ORDER[a.job] ?? 99) - (JOB_ORDER[b.job] ?? 99)))
   })
 }
 
@@ -661,167 +670,30 @@ export async function gachaPull(count: 1 | 10) {
   const user = await currentUser()
   if (!user) throw new Error('Not authenticated')
 
-  const items = await fetchGachaItems()
-  if (items.length === 0) throw new Error('扭蛋池为空')
+  const { data, error } = await supabase.rpc('gacha_pull', {
+    p_user_id: user.id,
+    p_count: count,
+    p_today: localDate(),
+    p_ym: localMonth(),
+  })
+  if (error) throw new Error(error.message)
 
-  const todayStr = new Date().toISOString().slice(0, 10)
-  const ym = new Date().toISOString().slice(0, 7)
+  // RPC 返回的已经是扁平结构，不需要 flattenRecord
+  const results = ((data as any).results || []).map((r: any) => ({
+    ...r,
+    item: r.item_id,
+    item_job_display: r.item_job ? JOBS_MAP[r.item_job] : undefined,
+  }))
 
-  // 检查免费单抽
-  let freePull = false
-  if (count === 1) {
-    const { data: existing } = await supabase
-      .from('token_records')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('source', '每日首免')
-      .gte('created_at', todayStr)
-      .limit(1)
-    if (!existing || existing.length === 0) freePull = true
-  }
-
-  // 计算余额
-  const balanceData = await getTokenBalance()
-  const cost = freePull ? 0 : count === 1 ? 50 : 500
-  if (balanceData.balance < cost) throw new Error(`代币不足！需要 ${cost} 币，当前余额 ${balanceData.balance} 币`)
-
-  // 扣费（记录 ID 用于失败回滚）
-  let deductionId: string | null = null
-  if (cost > 0) {
-    const { data: rec } = await supabase
-      .from('token_records')
-      .insert({ amount: -cost, source: '扭蛋消耗', claimed: true, user_id: user.id })
-      .select('id')
-      .single()
-    deductionId = rec?.id ?? null
-  } else if (freePull) {
-    await addTokenRecord(0, '每日首免', true)
-  }
-
-  try {
-  // 保底计数
-  const { data: monthRecords } = await supabase
-    .from('gacha_records')
-    .select('id, gacha_items(rarity)')
-    .eq('user_id', user.id)
-    .gte('created_at', `${ym}-01`)
-    .order('created_at', { ascending: true })
-
-  let dryCount = monthRecords?.length ?? 0
-  const records = monthRecords ?? []
-  // 从后往前找最后一个 SSR
-  let lastSsrIdx = -1
-  for (let i = records.length - 1; i >= 0; i--) {
-    if ((records[i] as any).gacha_items?.rarity === 'SSR') { lastSsrIdx = i; break }
-  }
-  if (lastSsrIdx >= 0) {
-    dryCount = records.length - 1 - lastSsrIdx
-  }
-
-  const ssrPool = items.filter(i => i.rarity === 'SSR')
-  const nonSsrPool = items.filter(i => i.rarity !== 'SSR')
-  const rPlusPool = items.filter(i => ['R', 'SR', 'SSR'].includes(i.rarity))
-
-  function ssrRate(dry: number) {
-    if (dry < 50) return 0.02
-    return Math.min(2 + (dry - 49) * 2, 100) / 100
-  }
-
-  function weightedRandom(pool: typeof items) {
-    const totalWeight = pool.reduce((s, i) => s + i.weight, 0)
-    let r = Math.random() * totalWeight
-    for (const item of pool) {
-      r -= item.weight
-      if (r <= 0) return item
-    }
-    return pool[pool.length - 1]
-  }
-
-  // 抽取
-  const results: any[] = []
-  let ssrTargetConsumed = false
-  let ssrTargetItemData: any = null
-
-  // 读取 SSR 锁定目标
-  let ssrTarget: any = null
-  try {
-    const { data } = await supabase
-      .from('gacha_ssr_targets')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('consumed', false)
-      .single()
-    if (data && data.year_month === ym) {
-      // 分步获取物品信息
-      const { data: item } = await supabase
-        .from('gacha_items')
-        .select('*')
-        .eq('id', data.target_item_id)
-        .single()
-      ssrTarget = { ...data, gacha_items: item }
-    }
-  } catch { /* no target */ }
-
-  for (let i = 0; i < count; i++) {
-    dryCount++
-    const rate = ssrRate(dryCount)
-    let chosen
-    if (Math.random() < rate) {
-      // SSR 出了！检查是否有锁定目标
-      if (ssrTarget && !ssrTargetConsumed) {
-        chosen = ssrTarget.gacha_items
-        ssrTargetConsumed = true
-        ssrTargetItemData = ssrTarget
-        // 标记已消耗
-        await supabase.from('gacha_ssr_targets').update({ consumed: true }).eq('id', ssrTarget.id)
-      } else {
-        chosen = weightedRandom(ssrPool)
-      }
-      dryCount = 0
-    } else {
-      chosen = weightedRandom(nonSsrPool)
-    }
-    const { data: record } = await supabase
-      .from('gacha_records')
-      .insert({ user_id: user.id, item_id: chosen.id })
-      .select('*, gacha_items(name, description, rarity, job, emoji)')
-      .single()
-    results.push(record)
-  }
-
-  // 十连保底
-  if (count === 10) {
-    const rarities = results.map(r => r.gacha_items?.rarity)
-    if (!rarities.some(r => ['R', 'SR', 'SSR'].includes(r))) {
-      const chosen = weightedRandom(rPlusPool)
-      const lastId = results[results.length - 1].id
-      await supabase
-        .from('gacha_records')
-        .update({ item_id: chosen.id })
-        .eq('id', lastId)
-      results[results.length - 1] = { ...results[results.length - 1], gacha_items: chosen }
-      if (chosen.rarity === 'SSR') dryCount = 0
-    }
-  }
-
-  const newBalance = await getTokenBalance()
   invalidate('token-balance', 'gacha-items', 'gacha-records', 'ssr-target', 'showcase-current')
   return {
-    results: results.map(flattenRecord),
-    balance: newBalance.balance,
-    cost,
-    pity_ssr: dryCount,
-    free_pull: freePull,
-    ssr_target_consumed: ssrTargetConsumed,
-    ssr_target_item: ssrTargetItemData,
-  }
-
-  } catch (err) {
-    // 事务回滚：删除扣费记录
-    if (deductionId) {
-      await supabase.from('token_records').delete().eq('id', deductionId)
-    }
-    throw err
+    results,
+    balance: (data as any).balance,
+    cost: (data as any).cost,
+    pity_ssr: (data as any).pity_ssr,
+    free_pull: (data as any).free_pull,
+    ssr_target_consumed: (data as any).ssr_target_consumed,
+    ssr_target_item: (data as any).ssr_target_item,
   }
 }
 
@@ -833,7 +705,7 @@ export async function getSSRTargetStatus() {
     const user = await currentUser()
     if (!user) return { target: null, total_pulls: 0, eligible: false, monthly_used: false }
 
-    const ym = new Date().toISOString().slice(0, 7)
+    const ym = localMonth()
 
     const { count } = await supabase
       .from('gacha_records')
@@ -883,7 +755,7 @@ export async function setSSRTarget(targetItemId: string) {
   const user = await currentUser()
   if (!user) throw new Error('Not authenticated')
 
-  const ym = new Date().toISOString().slice(0, 7)
+  const ym = localMonth()
 
   // 检查 300 抽门槛
   const { count } = await supabase
@@ -990,7 +862,7 @@ export async function getWeeklyTasks() {
         let streak = 0
         const wsNow = new Date(); const wsDate = new Date(wsNow); wsDate.setDate(wsDate.getDate() - wsDate.getDay() + 1)
         const weekStartDate = new Date(wsDate.toISOString().slice(0, 10) + 'T00:00:00')
-        const cursor = new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00')
+        const cursor = new Date(localDate() + 'T00:00:00')
         const startMs = weekStartDate.getTime()
         const endMs = cursor.getTime()
         for (let ms = endMs; ms >= startMs; ms -= 86400000) {
@@ -1083,7 +955,7 @@ export async function claimWeeklyTask(taskKey: string) {
     let streak = 0
     const wsNow = new Date(); const wsDate = new Date(wsNow); wsDate.setDate(wsDate.getDate() - wsDate.getDay() + 1)
     const weekStartDate = new Date(wsDate.toISOString().slice(0, 10) + 'T00:00:00')
-    const cursor = new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00')
+    const cursor = new Date(localDate() + 'T00:00:00')
     const startMs = weekStartDate.getTime()
     const endMs = cursor.getTime()
     for (let ms = endMs; ms >= startMs; ms -= 86400000) {
@@ -1122,7 +994,7 @@ export async function getShowcaseCurrent() {
     const user = await currentUser()
     if (!user) return null
 
-    const ym = new Date().toISOString().slice(0, 7)
+    const ym = localMonth()
 
     const [balance, pomoCount, gachaData] = await Promise.all([
       getTokenBalance(),
@@ -1219,9 +1091,9 @@ export async function getDashboardStats() {
     const user = await currentUser()
     if (!user) return null
 
-    const todayStr = new Date().toISOString().slice(0, 10)
+    const todayStr = localDate()
 
-    const [todayPlan, tasks, pomodoros, projects, todaySessions] = await Promise.all([
+    const [todayPlan, tasks, pomodoros, projects, todaySessions, streak] = await Promise.all([
       fetchTodayPlan(),
       supabase.from('tasks').select('status, updated_at').eq('user_id', user.id),
       getPomodoroStats(),
@@ -1232,11 +1104,27 @@ export async function getDashboardStats() {
         .gte('start_time', todayStr)
         .order('start_time', { ascending: false })
         .limit(10),
+      // 连续打卡天数
+      (async () => {
+        let streak = 0
+        const cursor = new Date(localDate() + 'T00:00:00')
+        for (let i = 0; i < 365; i++) {
+          const ds = cursor.toISOString().slice(0, 10)
+          const next = new Date(cursor); next.setDate(next.getDate() + 1)
+          const ns = next.toISOString().slice(0, 10)
+          const { count } = await supabase.from('token_records').select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id).gt('amount', 0).gte('created_at', ds).lt('created_at', ns)
+          if ((count ?? 0) > 0) streak++
+          else break
+          cursor.setDate(cursor.getDate() - 1)
+        }
+        return streak
+      })(),
     ])
 
     const taskList = tasks.data ?? []
     const weekD = new Date(); weekD.setDate(weekD.getDate() - weekD.getDay() + 1); const weekStr = weekD.toISOString().slice(0, 10)
-    const monthStr = new Date().toISOString().slice(0, 7) + '-01'
+    const monthStr = localMonth() + '-01'
     const doneTasks = taskList.filter(t => t.status === 'DONE')
     return {
       today_plan: todayPlan,
@@ -1252,6 +1140,7 @@ export async function getDashboardStats() {
       pomodoros,
       projects: { active: projects.count ?? 0 },
       today_sessions: todaySessions.data ?? [],
+      streak,
     }
   })
 }

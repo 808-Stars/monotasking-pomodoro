@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { fetchReviews, createReview, updateReview, deleteReview, addTokenRecord } from '../services/api';
+import { localDate } from '../utils/date';
 import type { Review } from '../types';
 import StatusBadge from '../components/StatusBadge';
 import Icon from '../components/Icons';
@@ -26,7 +27,7 @@ export default function Reviews() {
   useEffect(() => { load(); loadAll(); }, [filterType]);
 
   // fake-aware 今日日期（写新回顾时默认日期）
-  const fakeTodayStr = new Date().toISOString().slice(0, 10);
+  const fakeTodayStr = localDate();
 
   const counts = useMemo(() => {
     const daily = allReviews.filter(r => r.type === 'DAILY').length;

@@ -1,5 +1,6 @@
 import { usePomodoro } from '../contexts/PomodoroContext';
 import Icon from './Icons';
+import { TASK_STATUS_MAP } from '../types';
 
 export default function PomodoroTimer() {
   const {
@@ -111,13 +112,13 @@ export default function PomodoroTimer() {
           </label>
           <select
             value={selectedTask || ''}
-            onChange={e => setSelectedTask(Number(e.target.value) || null)}
+            onChange={e => setSelectedTask(e.target.value || null)}
             className="oto-select w-full"
             disabled={phase !== 'idle'}
           >
             <option value="">{tasks.length === 0 ? '（暂无可用任务，请先去"任务管理"创建）' : '-- 选择任务 --'}</option>
             {tasks.map(t => (
-              <option key={t.id} value={t.id}>{t.name} ({t.status_display})</option>
+              <option key={t.id} value={t.id}>{t.name} ({TASK_STATUS_MAP[t.status] || t.status})</option>
             ))}
           </select>
         </div>

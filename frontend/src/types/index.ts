@@ -52,7 +52,7 @@ export interface PomodoroSession {
 export interface DailyPlan {
   id: string;
   date: string;
-  core_task: string | null;
+  core_task_id: string | null;
   core_task_name?: string;
   core_task_status?: string;
   tasks?: { name?: string; status?: string } | null;
@@ -124,6 +124,7 @@ export interface DashboardStats {
     start_time: string;
     end_time: string | null;
   }[];
+  streak: number;
 }
 
 export interface PomodoroStats {

@@ -67,7 +67,7 @@ export default function LoginPage() {
               密码
             </label>
             <input
-              type="password" autoComplete="current-password"
+              type="password" autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
               value={password} onChange={e => setPassword(e.target.value)}
               className="oto-input" style={{ width: '100%', boxSizing: 'border-box' }}
               placeholder="至少 6 位"

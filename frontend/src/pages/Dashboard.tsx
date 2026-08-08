@@ -17,6 +17,12 @@ export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [todayPlan, setTodayPlan] = useState<DailyPlan | null>(null);
   const [loading, setLoading] = useState(true);
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     Promise.all([
@@ -39,10 +45,6 @@ export default function Dashboard() {
       <div className="text-center animate-fade-in">
         <div className="animate-spin mb-4"><Icon name="loading" size={44} /></div>
         <p style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>加载看板数据...</p>
-        <div className="flex justify-center gap-3 mt-6">
-          <div className="oto-skeleton w-32 h-4" />
-          <div className="oto-skeleton w-20 h-4" />
-        </div>
       </div>
     </div>
   );
@@ -52,11 +54,22 @@ export default function Dashboard() {
     <div className="space-y-6 oto-stagger">
       {/* Page header */}
       <div className="oto-window rounded-none! p-4 flex items-center relative oto-card-stamped oto-weathered">
-        <h2 style={{ ...pxH2, color: 'var(--oto-text)' }}><Icon name="dashboard" size={20} /> 工作看板</h2>
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
+        <h2 style={{ ...pxH2, color: 'var(--oto-text)', margin: 0 }}><Icon name="dashboard" size={20} /> 工作看板</h2>
+        {stats && (
+          <span style={{ fontFamily: 'var(--oto-font-body)', fontSize: '13px', color: 'var(--oto-text-dim)', marginLeft: '12px' }}>
+            {stats.streak > 0 ? `已连续打卡 ${stats.streak} 天` : '今日未打卡'}
+          </span>
+        )}
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
+          <span style={{ fontFamily: 'var(--oto-font-body)', fontSize: '15px', color: 'var(--oto-text-dim)', width: '100px', textAlign: 'right', display: 'inline-block' }}>
+            {now.getFullYear()}/{String(now.getMonth() + 1).padStart(2, '0')}/{String(now.getDate()).padStart(2, '0')}
+          </span>
           <span className="oto-badge oto-badge-blue">单核定方向</span>
           <span className="text-xs" style={{ color: 'var(--oto-text-muted)' }}>+</span>
           <span className="oto-badge oto-badge-red">番茄保执行</span>
+          <span style={{ fontFamily: 'var(--oto-font-body)', fontSize: '15px', color: 'var(--oto-text-dim)', width: '100px', textAlign: 'left', display: 'inline-block' }}>
+            {String(now.getHours()).padStart(2, '0')}:{String(now.getMinutes()).padStart(2, '0')}:{String(now.getSeconds()).padStart(2, '0')}
+          </span>
         </div>
       </div>
 
@@ -80,15 +93,15 @@ export default function Dashboard() {
             <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color: '#304868', ...pxLabel }}>
               今日核心任务 · ONE Thing
             </label>
-            {todayPlan?.core_task ? (
+            {todayPlan?.core_task_id ? (
               <div className="p-4 oto-window flex flex-col flex-1">
                 <div className="flex items-start gap-3">
                   <Icon name="target" size={32} />
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-lg break-words" style={{ ...pxBody, fontSize: '18px', color: 'var(--oto-text)' }}>{todayPlan.core_task_name}</p>
+                    <p className="font-bold text-lg break-words" style={{ ...pxBody, fontSize: '18px', color: 'var(--oto-text)' }}>{todayPlan.tasks?.name || '未知任务'}</p>
                     <div className="flex items-center gap-3 mt-1">
                       <span style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-dim)' }}>
-                        状态: {TASK_STATUS_MAP[todayPlan.core_task_status || ''] || todayPlan.core_task_status}
+                        状态: {TASK_STATUS_MAP[todayPlan.tasks?.status || ''] || todayPlan.tasks?.status}
                       </span>
                       <StatusBadge label={DAILY_PLAN_STATUS_MAP[todayPlan.status] || todayPlan.status} status={todayPlan.status} />
                     </div>
@@ -114,7 +127,7 @@ export default function Dashboard() {
                     </Link>
                   );
                 })}
-                {todayPlan?.core_task && (
+                {todayPlan?.core_task_id && (
                   <div className="flex justify-center gap-2 mt-auto pt-3 mx-8 mb-3">
                     {todayPlan.status === 'PLANNED' && (
                       <button onClick={completePlan} className="oto-btn oto-btn-green"><Icon name="check" size={14} /> 完成核心任务</button>
@@ -167,7 +180,7 @@ export default function Dashboard() {
                 { k: 'total', v: stats.pomodoros.total, l: <><Icon name="tomato" size={12} /> 总计</> },
               ].map(s => (
                 <div key={s.k} className="text-center p-2 oto-inset">
-                  <p style={{ fontFamily: 'var(--oto-font-body)', fontSize: '20px', fontWeight: 'bold', color: '#8a3030' }}>{s.v}</p>
+                  <p style={{ fontFamily: 'var(--oto-font-body)', fontSize: '20px', fontWeight: 'bold', color: '#8a3030' }}>{s.v}<span style={{ fontSize: '11px', fontWeight: 'normal', color: '#a08060', marginLeft: '2px' }}>个</span></p>
                   <p style={{ ...pxLabel, fontSize: '10px', color: '#a08060' }}>{s.l}</p>
                 </div>
               ))}
