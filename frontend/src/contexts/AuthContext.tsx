@@ -66,10 +66,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (fakeDomains.includes(domain)) return { error: '请使用真实邮箱注册' }
     if (password.length < 6) return { error: '密码至少需要6个字符' }
     const { data, error } = await supabase.auth.signUp({ email, password })
-    console.log('[signUp] data:', data, 'error:', error)
+    console.log('[signUp] data:', data, 'error:', error, 'errorType:', typeof error, 'errorKeys:', error ? Object.keys(error) : 'null')
     if (error) {
-      console.error('[signUp] error details:', JSON.stringify(error))
-      return { error: translateAuthError(error.message || JSON.stringify(error)) }
+      const msg = error.message || (error as any).error_description || (error as any).msg || String(error)
+      console.error('[signUp] resolved message:', msg)
+      return { error: translateAuthError(msg) }
     }
     if (!data.session) return { error: '注册成功！请检查邮箱并点击确认链接后登录' }
     return { error: null }
