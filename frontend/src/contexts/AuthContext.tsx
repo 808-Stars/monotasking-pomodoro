@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.log('[signUp] data:', data, 'error:', error)
     if (error) {
       console.error('[signUp] error details:', JSON.stringify(error))
-      return { error: translateAuthError(error.message || error.msg || JSON.stringify(error)) }
+      return { error: translateAuthError(error.message || JSON.stringify(error)) }
     }
     if (!data.session) return { error: '注册成功！请检查邮箱并点击确认链接后登录' }
     return { error: null }

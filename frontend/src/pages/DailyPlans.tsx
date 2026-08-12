@@ -146,7 +146,7 @@ export default function DailyPlans() {
                   const t = allTasks.find(x => x.id === todayPlan.core_task_id);
                   return (
                     <span className="flex items-center gap-2 min-w-0">
-                      <span className="truncate font-medium" style={{ color: 'var(--oto-text)' }}>{todayPlan.tasks?.name?.length > 20 ? todayPlan.tasks?.name.slice(0, 20) + '…' : todayPlan.tasks?.name}</span>
+                      <span className="truncate font-medium" style={{ color: 'var(--oto-text)' }}>{(todayPlan.tasks?.name?.length ?? 0) > 20 ? todayPlan.tasks?.name?.slice(0, 20) + '…' : todayPlan.tasks?.name}</span>
                       {t && <span className="flex items-center gap-1 flex-shrink-0">
                         <StatusBadge label={PRIORITY_MAP[t.priority]} status={t.priority} />
                         <StatusBadge label={TASK_STATUS_MAP[t.status]} status={t.status} />
