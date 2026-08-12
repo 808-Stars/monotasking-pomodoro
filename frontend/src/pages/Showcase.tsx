@@ -116,15 +116,17 @@ function ItemCard({ kind, name, desc, level, value, thresholds, isTrophy }: {
   const isDiamond = level === 4;
 
   return (
-    <div className="oto-window rounded-none! p-3 flex flex-col sm:flex-row items-center sm:items-center gap-3"
+    <div className="oto-window rounded-none! p-3 relative"
          style={{
            borderColor: isDiamond ? 'transparent' : tierColor,
            minWidth: 0, borderWidth: 2,
            background: isDiamond ? TIER_GRADIENT : (TIER_BG[level] || 'var(--oto-bg-card)'),
            backgroundClip: 'padding-box',
          }}>
-      <ItemIcon kind={kind} level={level} size={80} />
-      <div className="flex-1 min-w-0 flex flex-col items-center sm:items-start text-center sm:text-left">
+      <div style={{ position: 'absolute', top: 8, right: 8 }}>
+        <ItemIcon kind={kind} level={level} size={90} />
+      </div>
+      <div className="flex-1 min-w-0 flex flex-col text-left" style={{ paddingRight: 40 }}>
         <div style={{ ...pxH3, marginBottom: 2 }}>{name}</div>
         <div style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{desc}</div>
         <div style={{
@@ -340,7 +342,6 @@ export default function Showcase() {
                   }}
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <Icon name="month" size={14} />
                     <span style={{ ...pxH3, color: 'var(--oto-text)', fontSize: 15 }}>
                       {parseInt(ym.slice(5))} 月
                     </span>
@@ -358,7 +359,11 @@ export default function Showcase() {
                               ...pxSm,
                               padding: '1px 6px',
                               lineHeight: 1.4,
-                              display: 'inline-block',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: '4em',
+                              height: '1.6em',
                               border: isLvDiamond
                                 ? '2px solid #7a92c0'
                                 : `1px solid ${TIER_COLORS[lv]}`,

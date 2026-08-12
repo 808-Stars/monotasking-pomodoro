@@ -270,6 +270,11 @@ export const IconClose = (p: IconProps) => <Svg {...p}>
   <path d="M18 6L6 18"/>
 </Svg>;
 
+// 汉堡菜单
+export const IconMenu = (p: IconProps) => <Svg {...p}>
+  <path d="M4 7h16M4 12h16M4 17h16"/>
+</Svg>;
+
 // 放大镜
 export const IconSearch = (p: IconProps) => <Svg {...p}>
   <circle cx="10.5" cy="10.5" r="6"/>
@@ -543,6 +548,7 @@ const icons = {
   trash:        IconTrash,         // 删除（垃圾桶）
   archive:      IconArchive,       // 归档
   close:        IconClose,         // 关闭（X）
+  menu:         IconMenu,          // 汉堡菜单
   search:       IconSearch,        // 搜索
   plus:         IconPlus,          // 加号
   minus:        IconMinus,         // 减号

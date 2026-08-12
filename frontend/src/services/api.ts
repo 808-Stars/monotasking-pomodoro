@@ -244,7 +244,7 @@ export async function fetchPomodoroSessions(filters?: { task_id?: string; type?:
 }
 
 export async function createPomodoroSession(session: {
-  task_id: string; start_time: string; end_time?: string;
+  task_id?: string | null; start_time: string; end_time?: string;
   duration_minutes?: number; type?: string; status?: string; notes?: string
 }) {
   const user = await currentUser()

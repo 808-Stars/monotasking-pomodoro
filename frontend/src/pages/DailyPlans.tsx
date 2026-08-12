@@ -33,7 +33,7 @@ export default function DailyPlans() {
   const load = () => {
     fetchDailyPlans().then(setPlans);
     fetchTodayPlan().then(setTodayPlan).catch(() => {});
-    fetchTasks().then(d => { const active = (Array.isArray(d) ? d : []).filter((t: any) => t.status !== 'ARCHIVED'); setAllTasks(active); }).catch(() => {});
+    fetchTasks().then(d => { const active = (Array.isArray(d) ? d : []).filter((t: any) => t.status === 'TODO' || t.status === 'IN_PROGRESS'); setAllTasks(active); }).catch(() => {});
   };
   useEffect(() => { load(); }, []);
 
@@ -140,24 +140,23 @@ export default function DailyPlans() {
             <p style={{ ...pxBody, color: 'var(--oto-text-muted)' }}>暂无可选任务，请先在任务管理中创建</p>
           ) : (
             <div className="relative" ref={dropdownRef}>
-              <button type="button" onClick={() => setTaskDropdownOpen(!taskDropdownOpen)}
-                className="oto-select w-full text-left flex items-center justify-between">
+              <button type="button" onClick={() => todayPlan?.status === 'UNPLANNED' && setTaskDropdownOpen(!taskDropdownOpen)}
+                className={`oto-select w-full text-left flex items-center justify-between ${todayPlan?.status !== 'UNPLANNED' ? 'opacity-70 cursor-default' : ''}`}>
                 {todayPlan?.core_task_id ? (() => {
                   const t = allTasks.find(x => x.id === todayPlan.core_task_id);
                   return (
                     <span className="flex items-center gap-2 min-w-0">
-                      <span className="truncate font-medium" style={{ color: 'var(--oto-text)' }}>{todayPlan.tasks?.name}</span>
+                      <span className="truncate font-medium" style={{ color: 'var(--oto-text)' }}>{todayPlan.tasks?.name?.length > 20 ? todayPlan.tasks?.name.slice(0, 20) + '…' : todayPlan.tasks?.name}</span>
                       {t && <span className="flex items-center gap-1 flex-shrink-0">
                         <StatusBadge label={PRIORITY_MAP[t.priority]} status={t.priority} />
                         <StatusBadge label={TASK_STATUS_MAP[t.status]} status={t.status} />
-                        {t.project_name && <span className="text-xs flex items-center gap-1" style={{ color: 'var(--oto-text-dim)' }}><span className="w-1.5 h-1.5" style={{ backgroundColor: t.project_color }} />{t.project_name}</span>}
+                        {t.project_name && <span className="text-xs flex items-center gap-1" style={{ color: 'var(--oto-text-dim)' }}><span className="w-1.5 h-1.5" style={{ backgroundColor: t.project_color }} />{t.project_name.length > 20 ? t.project_name.slice(0, 20) + '…' : t.project_name}</span>}
                       </span>}
                     </span>
                   );
                 })() : <span style={{ color: 'var(--oto-text-muted)' }}>-- 暂不设置核心任务 --</span>}
-                <span className={`transition-transform flex-shrink-0 ml-2 text-xs ${taskDropdownOpen ? 'rotate-180' : ''}`} style={{ color: 'var(--oto-text-dim)' }}>▼</span>
               </button>
-              {taskDropdownOpen && (
+              {taskDropdownOpen && todayPlan?.status === 'UNPLANNED' && (
                 <div className="absolute z-20 mt-1 w-full oto-window overflow-auto max-h-64" style={{ background: 'var(--oto-bg-card)' }}>
                   <button type="button" onMouseDown={() => { handleSetCoreTask(null); setTaskDropdownOpen(false); }}
                     className="w-full text-left px-3 py-2 text-sm hover:bg-gray-800" style={{ ...pxBody, color: 'var(--oto-text-dim)', borderBottom: '1px solid var(--oto-border-light)' }}>
@@ -167,11 +166,11 @@ export default function DailyPlans() {
                     <button key={t.id} type="button" onMouseDown={() => { handleSetCoreTask(t.id); setTaskDropdownOpen(false); }}
                       className={`w-full text-left px-3 py-2.5 text-sm hover:bg-blue-900/30 flex items-center justify-between gap-2 ${todayPlan?.core_task_id === t.id ? 'bg-blue-900/20' : ''}`}
                       style={pxBody}>
-                      <span className="font-medium truncate" style={{ color: 'var(--oto-text)' }}>{t.name}</span>
+                      <span className="font-medium truncate" style={{ color: 'var(--oto-text)' }}>{t.name.length > 20 ? t.name.slice(0, 20) + '…' : t.name}</span>
                       <span className="flex items-center gap-1.5 flex-shrink-0">
                         <StatusBadge label={PRIORITY_MAP[t.priority]} status={t.priority} />
                         <StatusBadge label={TASK_STATUS_MAP[t.status]} status={t.status} />
-                        {t.project_name && <span className="text-xs flex items-center gap-1" style={{ color: 'var(--oto-text-dim)' }}><span className="w-1.5 h-1.5" style={{ backgroundColor: t.project_color }} />{t.project_name}</span>}
+                        {t.project_name && <span className="text-xs flex items-center gap-1" style={{ color: 'var(--oto-text-dim)' }}><span className="w-1.5 h-1.5" style={{ backgroundColor: t.project_color }} />{t.project_name.length > 20 ? t.project_name.slice(0, 20) + '…' : t.project_name}</span>}
                       </span>
                     </button>
                   ))}

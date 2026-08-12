@@ -99,7 +99,7 @@ export default function PomodoroTimer() {
         <div className="mb-4">
           <label className="text-xs text-gray-500 block mb-1"
             style={{ fontFamily: 'var(--oto-font-body)', fontSize: '11px' }}>
-            ◆ 关联任务
+            ◆ 关联 进行中 的任务
             <button
               onClick={() => refreshTasks()}
               title="刷新任务列表"
@@ -114,11 +114,12 @@ export default function PomodoroTimer() {
             value={selectedTask || ''}
             onChange={e => setSelectedTask(e.target.value || null)}
             className="oto-select w-full"
+            style={{ maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}
             disabled={phase !== 'idle'}
           >
             <option value="">{tasks.length === 0 ? '（暂无可用任务，请先去"任务管理"创建）' : '-- 选择任务 --'}</option>
             {tasks.map(t => (
-              <option key={t.id} value={t.id}>{t.name} ({TASK_STATUS_MAP[t.status] || t.status})</option>
+              <option key={t.id} value={t.id}>{t.name.length > 20 ? t.name.slice(0, 20) + '…' : t.name}</option>
             ))}
           </select>
         </div>
@@ -130,7 +131,7 @@ export default function PomodoroTimer() {
           <input
             type="text" placeholder="备注（可选）"
             value={notes} onChange={e => setNotes(e.target.value)}
-            className="oto-input w-full" disabled={phase !== 'idle'}
+            className="oto-input w-full"
           />
         </div>
       )}

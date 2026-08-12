@@ -154,29 +154,28 @@ export default function Calendar() {
                   }}
                 >
                   {/* 标记点容器：纵向 */}
-                  <div className="absolute top-1 right-1 flex flex-col gap-0.5" style={{ alignItems: 'flex-end' }}>
+                  <div className="absolute top-0.5 right-0.5 flex flex-col gap-0.5 md:top-1 md:right-1 md:gap-1" style={{ alignItems: 'flex-end' }}>
                     {/* 代币方点 */}
                     {earned > 0 && (
-                      <span style={{
-                        width: 7, height: 7, borderRadius: 1,
+                      <span className="w-[5px] h-[5px] md:w-[8px] md:h-[8px]" style={{
+                        borderRadius: 1,
                         background: dotColor(earned),
                       }} title={`+${earned} 币`} />
                     )}
                     {/* 番茄钟圆点 */}
                     {pomoCount > 0 && (
-                      <span style={{
-                        width: 7, height: 7, borderRadius: '50%',
+                      <span className="w-[5px] h-[5px] md:w-[8px] md:h-[8px]" style={{
+                        borderRadius: '50%',
                         background: pomoColor(pomoCount),
                       }} title={`${pomoCount} 番茄钟`} />
                     )}
                     {/* 稀有度菱形 */}
                     {rarity && (
-                      <span style={{
-                        width: 7, height: 7,
+                      <span className="w-[5px] h-[5px] md:w-[8px] md:h-[8px]" style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
                       }} title={RARITY_MAP[rarity]}>
-                        <span style={{
-                          width: 6, height: 6, transform: 'rotate(45deg)',
+                        <span className="w-[4px] h-[4px] md:w-[6px] md:h-[6px]" style={{
+                          transform: 'rotate(45deg)',
                           background: RARITY_COLOR_MAP[rarity] || '#888',
                           marginRight: 0.5,
                         }} />
@@ -190,15 +189,15 @@ export default function Calendar() {
                     color: 'var(--oto-text)',
                   }}>{cell.day}</span>
 
-                  {/* 底部信息行：代币 / 番茄钟 / 稀有度 */}
+                  {/* 底部信息：手机端分行，桌面端一行 */}
                   {(earned > 0 || pomoCount > 0 || rarity) && (
-                    <div className="flex items-center gap-2 mt-0.5" style={{ fontSize: '8px' }}>
+                    <div className="flex flex-col md:flex-row items-center md:gap-2 mt-0.5 text-[7px] md:text-[10px]" style={{ lineHeight: 1.2 }}>
                       {earned > 0 && (
                         <span style={{ color: 'var(--oto-gold-dark)', fontWeight: 'bold' }}>+{earned}</span>
                       )}
                       {pomoCount > 0 && (
-                        <span style={{ color: 'var(--oto-red)', display: 'flex', alignItems: 'center', gap: 0 }}>
-                          <Icon name="tomato" size={10} />{pomoCount}
+                        <span style={{ color: 'var(--oto-red)' }}>
+                          <Icon name="tomato" size={8} className="md:hidden" /><Icon name="tomato" size={12} className="hidden md:inline" />{pomoCount}
                         </span>
                       )}
                       {rarity && (
@@ -244,47 +243,45 @@ export default function Calendar() {
           )}
 
           {/* 图例 */}
-          <div className="mt-3 flex justify-end">
-            <div className="flex items-center gap-12" style={{ ...pxSm }}>
-              {/* 代币方点 */}
-              <div className="flex items-center gap-2" style={{ color: 'var(--oto-text-muted)' }}>
-                <span style={{ fontWeight: 'bold', color: 'var(--oto-text)' }}>代币数</span>
-                {[100, 200, 400, 800].map((v, idx) => (
-                  <span key={v} className="flex items-center gap-1">
-                    <span style={{
-                      width: 10, height: 10, borderRadius: 1,
-                      background: `rgba(200,160,64,${0.35 + idx * 0.18})`,
-                    }} />
-                    <span>{v} 币</span>
-                  </span>
-                ))}
-              </div>
-              {/* 番茄钟圆点 */}
-              <div className="flex items-center gap-2" style={{ color: 'var(--oto-text-muted)' }}>
-                <span style={{ fontWeight: 'bold', color: 'var(--oto-text)' }}>番茄钟</span>
-                {[2, 4, 8, 12].map(v => (
-                  <span key={v} className="flex items-center gap-1">
-                    <span style={{
-                      width: 10, height: 10, borderRadius: '50%',
-                      background: pomoColor(v),
-                    }} />
-                    <span>{v} 个</span>
-                  </span>
-                ))}
-              </div>
-              {/* 稀有度菱形 */}
-              <div className="flex items-center gap-2" style={{ color: 'var(--oto-text-muted)' }}>
-                <span style={{ fontWeight: 'bold', color: 'var(--oto-text)' }}>稀有度</span>
-                {['N', 'R', 'SR', 'SSR'].map(r => (
-                  <span key={r} className="flex items-center gap-1">
-                    <span style={{
-                      width: 8, height: 8, transform: 'rotate(45deg)',
-                      background: RARITY_COLOR_MAP[r] || '#888',
-                    }} />
-                    <span>{RARITY_MAP[r]}</span>
-                  </span>
-                ))}
-              </div>
+          <div className="mt-3 flex flex-col md:flex-row md:justify-end gap-2 md:gap-0">
+            {/* 代币方点 */}
+            <div className="flex items-center gap-2 flex-wrap" style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>
+              <span style={{ fontWeight: 'bold', color: 'var(--oto-text)', minWidth: '3em' }}>代币数</span>
+              {[100, 200, 400, 800].map((v, idx) => (
+                <span key={v} className="flex items-center gap-1">
+                  <span style={{
+                    width: 8, height: 8, borderRadius: 1,
+                    background: `rgba(200,160,64,${0.35 + idx * 0.18})`,
+                  }} />
+                  <span>{v} 币</span>
+                </span>
+              ))}
+            </div>
+            {/* 番茄钟圆点 */}
+            <div className="flex items-center gap-2 flex-wrap md:ml-12" style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>
+              <span style={{ fontWeight: 'bold', color: 'var(--oto-text)', minWidth: '3em' }}>番茄钟</span>
+              {[2, 4, 8, 12].map(v => (
+                <span key={v} className="flex items-center gap-1">
+                  <span style={{
+                    width: 8, height: 8, borderRadius: '50%',
+                    background: pomoColor(v),
+                  }} />
+                  <span>{v} 个</span>
+                </span>
+              ))}
+            </div>
+            {/* 稀有度菱形 */}
+            <div className="flex items-center gap-2 flex-wrap md:ml-12" style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>
+              <span style={{ fontWeight: 'bold', color: 'var(--oto-text)', minWidth: '3em' }}>稀有度</span>
+              {['N', 'R', 'SR', 'SSR'].map(r => (
+                <span key={r} className="flex items-center gap-1">
+                  <span style={{
+                    width: 6, height: 6, transform: 'rotate(45deg)',
+                    background: RARITY_COLOR_MAP[r] || '#888',
+                  }} />
+                  <span>{RARITY_MAP[r]}</span>
+                </span>
+              ))}
             </div>
           </div>
         </>

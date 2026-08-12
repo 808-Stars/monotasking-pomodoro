@@ -20,9 +20,29 @@ export default function Projects() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [projectTasks, setProjectTasks] = useState<Task[]>([]);
   const [tasksLoading, setTasksLoading] = useState(false);
+  const [nameExpanded, setNameExpanded] = useState(false);
+  const [descExpanded, setDescExpanded] = useState(false);
+  const [showArchive, setShowArchive] = useState(false);
+  const [archivedProjects, setArchivedProjects] = useState<Project[]>([]);
+  const [sortBy, setSortBy] = useState<string>('created_at');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
-  const load = () => fetchProjects().then(d => { setProjects(d); setLoading(false); });
-  useEffect(() => { load(); }, []);
+  const load = () => fetchProjects().then(d => {
+    const all = Array.isArray(d) ? d : [];
+    const active = all.filter((p: any) => p.status !== 'ARCHIVED');
+    // Client-side sorting
+    const statusOrder: Record<string, number> = { ACTIVE: 0, COMPLETED: 1, ARCHIVED: 2 };
+    active.sort((a: any, b: any) => {
+      let cmp = 0;
+      if (sortBy === 'name') cmp = (a.name || '').localeCompare(b.name || '');
+      else if (sortBy === 'status') cmp = (statusOrder[a.status] ?? 9) - (statusOrder[b.status] ?? 9);
+      else if (sortBy === 'task_count') cmp = (a.task_count ?? 0) - (b.task_count ?? 0);
+      else cmp = (a.created_at || '').localeCompare(b.created_at || '');
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+    setProjects(active); setLoading(false);
+  });
+  useEffect(() => { load(); }, [sortBy, sortDir]);
 
   const openCreate = () => { setEditing(null); setForm({ ...EMPTY }); setShowForm(true); };
   const openEdit = (p: Project) => { setEditing(p); setForm({ ...p }); setShowForm(true); };
@@ -39,11 +59,23 @@ export default function Projects() {
     await updateProject(project.id, { name: project.name, description: project.description, color: project.color, status: newStatus }); load();
   };
   const openProjectDetail = async (p: Project) => {
-    setSelectedProject(p); setTasksLoading(true);
+    setSelectedProject(p); setTasksLoading(true); setNameExpanded(false); setDescExpanded(false);
     try { const data = await fetchTasks({ project_id: p.id }); setProjectTasks(data); }
     catch { setProjectTasks([]); } setTasksLoading(false);
   };
   const closeDetail = () => { setSelectedProject(null); setProjectTasks([]); };
+  const openArchive = async () => {
+    const d = await fetchProjects();
+    const all = Array.isArray(d) ? d : [];
+    const archived = all.filter((p: any) => p.status === 'ARCHIVED');
+    // Fetch real task counts for archived projects
+    const counts: Record<string, number> = {};
+    await Promise.all(archived.map(async (p: any) => {
+      try { const tasks = await fetchTasks({ project_id: p.id }); counts[p.id] = Array.isArray(tasks) ? tasks.length : 0; } catch { counts[p.id] = 0; }
+    }));
+    setArchivedProjects(archived.map((p: any) => ({ ...p, task_count: counts[p.id] ?? p.task_count ?? 0 })));
+    setShowArchive(true);
+  };
   const todoCount = projectTasks.filter(t => t.status === 'TODO').length;
   const progressCount = projectTasks.filter(t => t.status === 'IN_PROGRESS').length;
   const doneCount = projectTasks.filter(t => t.status === 'DONE').length;
@@ -52,7 +84,19 @@ export default function Projects() {
     <div className="space-y-6 oto-stagger">
       <div className="oto-window rounded-none! p-4 flex items-center justify-between oto-card-stamped">
         <h2 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '18px', lineHeight: '2', color: 'var(--oto-text)' }}><Icon name="folder" size={20} /> 项目管理</h2>
-        <button onClick={openCreate} className="oto-btn"><Icon name="plus" size={14} /> 新建项目</button>
+        <div className="flex items-center gap-2">
+          <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="oto-select text-xs" style={{ textIndent: 0 }}>
+            <option value="created_at">创建时间</option>
+            <option value="name">项目名称</option>
+            <option value="status">状态</option>
+            <option value="task_count">任务数量</option>
+          </select>
+          <button onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')} className="oto-btn oto-btn-gray flex-shrink-0" title={sortDir === 'asc' ? '升序' : '降序'}>
+            排序{sortDir === 'asc' ? '↑' : '↓'}
+          </button>
+          <button onClick={openArchive} className="oto-btn oto-btn-gray"><Icon name="archive" size={14} /> 已归档</button>
+          <button onClick={openCreate} className="oto-btn"><Icon name="plus" size={14} /> 新建项目</button>
+        </div>
       </div>
 
       {loading ? (
@@ -69,7 +113,7 @@ export default function Projects() {
               <div className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="min-w-0">
-                    <h3 className="font-medium break-words" style={{ ...pxBody, fontSize: '18px', color: 'var(--oto-text)' }}>{p.name}</h3>
+                    <h3 className="font-medium break-words line-clamp-1" style={{ ...pxBody, fontSize: '18px', color: 'var(--oto-text)' }}>{p.name}</h3>
                     <div className="mt-1"><StatusBadge label={PROJECT_STATUS_MAP[p.status]} status={p.status} /></div>
                   </div>
                 </div>
@@ -111,13 +155,13 @@ export default function Projects() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="w-3 h-3 flex-shrink-0" style={{ backgroundColor: selectedProject.color }} />
-                      <h3 className="font-bold break-words" style={{ ...pxBody, fontSize: '18px', color: 'var(--oto-text)' }}>{selectedProject.name}</h3>
+                      <h3 className={`font-bold break-words cursor-pointer ${nameExpanded ? '' : 'line-clamp-1'}`} style={{ ...pxBody, fontSize: '18px', color: 'var(--oto-text)' }} onClick={() => setNameExpanded(!nameExpanded)}>{selectedProject.name}</h3>
                     </div>
                     <StatusBadge label={PROJECT_STATUS_MAP[selectedProject.status]} status={selectedProject.status} />
                   </div>
                   <button onClick={closeDetail} className="oto-btn-sm oto-btn-gray"><Icon name="close" size={14} /></button>
                 </div>
-                {selectedProject.description && <p className="text-sm break-words" style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>{selectedProject.description}</p>}
+                {selectedProject.description && <p className={`text-sm break-words cursor-pointer ${descExpanded ? '' : 'line-clamp-2'}`} style={{ ...pxBody, color: 'var(--oto-text-dim)' }} onClick={() => setDescExpanded(!descExpanded)}>{selectedProject.description}</p>}
               </div>
               <div className="px-5 pb-3 flex gap-4 text-xs" style={{ ...pxBody, fontSize: '15px' }}>
                 <span style={{ color: 'var(--oto-text-dim)' }}>共 <strong style={{ color: '#4a3020' }}>{projectTasks.length}</strong> 个任务</span>
@@ -203,6 +247,40 @@ export default function Projects() {
               <button onClick={() => setShowForm(false)} className="oto-btn oto-btn-gray">取消</button>
               <button onClick={handleSave} className="oto-btn">保存</button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Archive Modal */}
+      {showArchive && (
+        <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(6,8,12,0.85)' }} onClick={() => setShowArchive(false)}>
+          <div className="oto-modal p-6 w-full max-h-[80vh] overflow-auto" style={{ maxWidth: '800px' }} onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '14px', lineHeight: '1.8', color: 'var(--oto-text)' }}>
+                <Icon name="archive" size={16} /> 已归档项目 · {archivedProjects.length} 项
+              </h3>
+              <button onClick={() => setShowArchive(false)} className="oto-btn-sm oto-btn-gray"><Icon name="close" size={14} /></button>
+            </div>
+            {archivedProjects.length === 0 ? (
+              <p className="text-center py-8" style={{ ...pxBody, color: 'var(--oto-text-muted)' }}>暂无归档项目</p>
+            ) : (
+              <div className="space-y-2">
+                {archivedProjects.map(p => (
+                  <div key={p.id} className="px-4 py-3 flex items-center justify-between gap-3 cursor-pointer hover:brightness-105 transition-all" style={{ borderLeft: `4px solid ${p.color}`, borderBottom: '1px solid var(--oto-border-light)' }} onClick={() => { setShowArchive(false); openProjectDetail(p); }}>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate" style={{ ...pxBody, fontSize: '16px', color: 'var(--oto-text)' }}>{p.name}</p>
+                      <div className="flex items-center gap-2 mt-1 text-xs" style={{ color: 'var(--oto-text-dim)' }}>
+                        <StatusBadge label={PROJECT_STATUS_MAP[p.status]} status={p.status} />
+                        <span>{p.task_count ?? 0} 个任务</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0" onClick={e => e.stopPropagation()}>
+                      <button onClick={() => { handleStatusChange(p, 'ACTIVE').then(() => { openArchive(); load(); }); }} className="oto-btn-sm oto-btn-gray"><Icon name="undo" size={12} /> 回退</button>
+                      <button onClick={() => { if (confirm('确定删除？')) deleteProject(p.id).then(() => { openArchive(); load(); }); }} className="oto-btn-sm oto-btn-red"><Icon name="trash" size={12} /></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

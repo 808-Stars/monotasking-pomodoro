@@ -1145,3 +1145,32 @@ a:hover { color: var(--oto-gold-light); text-decoration: underline; }
 .oto-sidebar::-webkit-scrollbar-thumb:hover {
   background: #a05858;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  html { font-size: 14px; }
+  body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+  .oto-sidebar { box-shadow: 4px 0 20px rgba(0,0,0,0.4) !important; height: 100dvh !important; }
+  .oto-window, .oto-window-gold { border-radius: 0 !important; }
+  .oto-page-bar { height: 0 !important; }
+  .pomodoro-digits { font-size: 3rem !important; }
+  select, input, textarea {
+    font-size: 16px !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  input[type="text"], input[type="email"], input[type="password"], textarea {
+    min-width: 0 !important;
+  }
+  .oto-badge { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .oto-nav-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  td { max-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  td p, td span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  h2, h3 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .oto-btn-sm { white-space: nowrap; flex-shrink: 0; }
+  p { overflow-wrap: break-word; word-break: break-word; }
+}

@@ -21,6 +21,7 @@ export default function Reviews() {
   const [form, setForm] = useState<Partial<Review>>({ ...EMPTY });
   const [filterType, setFilterType] = useState('');
   const [allReviews, setAllReviews] = useState<Review[]>([]);
+  const [viewingReview, setViewingReview] = useState<Review | null>(null);
 
   const load = () => { fetchReviews(filterType || undefined).then(d => { setReviews(d); setLoading(false); }); };
   const loadAll = () => { fetchReviews().then(setAllReviews); };
@@ -96,8 +97,8 @@ export default function Reviews() {
                     <span><Icon name="tomato" size={12} /> {r.total_pomodoros} 番茄钟</span>
                   </div>
                 </div>
-                <div className="oto-quote" style={{ fontSize: '16px' }}>
-                  <p className="whitespace-pre-wrap break-words" style={{ ...pxBody, fontSize: '16px', color: '#4a3020' }}>{r.content}</p>
+                <div className="oto-quote cursor-pointer" style={{ fontSize: '16px' }} onClick={() => setViewingReview(r)}>
+                  <p className="whitespace-pre-wrap break-words line-clamp-3" style={{ ...pxBody, fontSize: '16px', color: '#4a3020' }}>{r.content}</p>
                 </div>
                 <div className="flex gap-2 mt-3 pt-3" style={{ borderTop: '1px solid var(--oto-border-light)' }}>
                   <button onClick={() => openEdit(r)} className="oto-btn-sm oto-btn-gray"><Icon name="edit" size={12} /> 编辑</button>
@@ -144,6 +145,30 @@ export default function Reviews() {
             <div className="flex gap-3 justify-end mt-6">
               <button onClick={() => setShowForm(false)} className="oto-btn oto-btn-gray">取消</button>
               <button onClick={handleSave} className="oto-btn">保存</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Detail Modal */}
+      {viewingReview && (
+        <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(6,8,12,0.85)' }} onClick={() => setViewingReview(null)}>
+          <div className="oto-modal p-6 w-full max-h-[80vh] overflow-auto" style={{ maxWidth: '1000px' }} onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <h3 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '14px', lineHeight: '1.8', color: 'var(--oto-text)' }}>{viewingReview.date}</h3>
+                <StatusBadge label={REVIEW_TYPE_MAP[viewingReview.type] || viewingReview.type} status={viewingReview.type} />
+              </div>
+              <div className="flex gap-2 text-sm" style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-dim)' }}>
+                <span><Icon name="check" size={12} /> {viewingReview.completed_tasks_count} 任务</span>
+                <span><Icon name="tomato" size={12} /> {viewingReview.total_pomodoros} 番茄钟</span>
+              </div>
+            </div>
+            <div className="oto-quote" style={{ fontSize: '16px' }}>
+              <p className="whitespace-pre-wrap break-words" style={{ ...pxBody, fontSize: '16px', color: '#4a3020' }}>{viewingReview.content}</p>
+            </div>
+            <div className="flex gap-3 justify-end mt-6">
+              <button onClick={() => setViewingReview(null)} className="oto-btn oto-btn-gray">关闭</button>
+              <button onClick={() => { setViewingReview(null); openEdit(viewingReview); }} className="oto-btn oto-btn-blue"><Icon name="edit" size={14} /> 编辑</button>
             </div>
           </div>
         </div>

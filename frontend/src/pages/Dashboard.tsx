@@ -53,21 +53,23 @@ export default function Dashboard() {
   return (
     <div className="space-y-6 oto-stagger">
       {/* Page header */}
-      <div className="oto-window rounded-none! p-4 flex items-center relative oto-card-stamped oto-weathered">
-        <h2 style={{ ...pxH2, color: 'var(--oto-text)', margin: 0 }}><Icon name="dashboard" size={20} /> 工作看板</h2>
-        {stats && (
-          <span style={{ fontFamily: 'var(--oto-font-body)', fontSize: '13px', color: 'var(--oto-text-dim)', marginLeft: '12px' }}>
-            {stats.streak > 0 ? `已连续打卡 ${stats.streak} 天` : '今日未打卡'}
-          </span>
-        )}
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
-          <span style={{ fontFamily: 'var(--oto-font-body)', fontSize: '15px', color: 'var(--oto-text-dim)', width: '100px', textAlign: 'right', display: 'inline-block' }}>
+      <div className="oto-window rounded-none! p-3 md:p-4 flex flex-col md:flex-row items-center relative oto-card-stamped oto-weathered gap-2 md:gap-0">
+        <div className="flex flex-col md:flex-row items-center gap-1 md:gap-2">
+          <h2 style={{ ...pxH2, color: 'var(--oto-text)', margin: 0, fontSize: '18px' }}><Icon name="dashboard" size={18} /> 工作看板</h2>
+          {stats && (
+            <span style={{ fontFamily: 'var(--oto-font-body)', fontSize: '12px', color: 'var(--oto-text-dim)' }}>
+              {stats.streak > 0 ? `连续打卡 ${stats.streak} 天` : '今日未打卡'}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2 md:absolute md:left-1/2 md:-translate-x-1/2" style={{ marginLeft: '-6px' }}>
+          <span style={{ fontFamily: 'var(--oto-font-body)', fontSize: '13px', color: 'var(--oto-text-dim)', width: '85px', textAlign: 'right', display: 'inline-block', flexShrink: 0 }}>
             {now.getFullYear()}/{String(now.getMonth() + 1).padStart(2, '0')}/{String(now.getDate()).padStart(2, '0')}
           </span>
-          <span className="oto-badge oto-badge-blue">单核定方向</span>
+          <span className="oto-badge oto-badge-blue text-xs">单核</span>
           <span className="text-xs" style={{ color: 'var(--oto-text-muted)' }}>+</span>
-          <span className="oto-badge oto-badge-red">番茄保执行</span>
-          <span style={{ fontFamily: 'var(--oto-font-body)', fontSize: '15px', color: 'var(--oto-text-dim)', width: '100px', textAlign: 'left', display: 'inline-block' }}>
+          <span className="oto-badge oto-badge-red text-xs">番茄</span>
+          <span style={{ fontFamily: 'var(--oto-font-body)', fontSize: '13px', color: 'var(--oto-text-dim)', width: '70px', textAlign: 'left', display: 'inline-block', flexShrink: 0 }}>
             {String(now.getHours()).padStart(2, '0')}:{String(now.getMinutes()).padStart(2, '0')}:{String(now.getSeconds()).padStart(2, '0')}
           </span>
         </div>
@@ -98,7 +100,7 @@ export default function Dashboard() {
                 <div className="flex items-start gap-3">
                   <Icon name="target" size={32} />
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-lg break-words" style={{ ...pxBody, fontSize: '18px', color: 'var(--oto-text)' }}>{todayPlan.tasks?.name || '未知任务'}</p>
+                    <p className="font-bold text-lg break-words line-clamp-1" style={{ ...pxBody, fontSize: '18px', color: 'var(--oto-text)' }}>{todayPlan.tasks?.name || '未知任务'}</p>
                     <div className="flex items-center gap-3 mt-1">
                       <span style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-dim)' }}>
                         状态: {TASK_STATUS_MAP[todayPlan.tasks?.status || ''] || todayPlan.tasks?.status}
@@ -117,7 +119,7 @@ export default function Dashboard() {
                       <span className="text-xs mb-0.5" style={{ ...pxLabel, fontSize: '10px', color: 'var(--oto-text-muted)' }}>{label}</span>
                       <div className="p-3 oto-inset text-sm min-h-[68px]">
                         {todayPlan[key] ? (
-                          <span style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)' }}>{todayPlan[key]}</span>
+                          <span className="line-clamp-3" style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)' }}>{todayPlan[key]}</span>
                         ) : (
                           <span style={{ ...pxBody, fontSize: '15px', color: '#a08060' }}>
                             {i === 0 ? '去每日计划记录今天的计划吧' : i === 1 ? '完成核心任务之后回来总结吧' : '有什么需要备注的呢'}
@@ -196,7 +198,7 @@ export default function Dashboard() {
         {/* Task overview — 4 clickable status cards */}
         <div className="oto-window p-5 oto-card-stamped oto-stitch-corner">
           <h3 className="oto-title-flourish" style={{ ...pxH2, fontSize: '11px', color: 'var(--oto-text)' }}><Icon name="task" size={14} /> 任务总览</h3>
-          <div className="grid grid-cols-4 gap-3 mt-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
             {[
               { label: '全部', value: stats.tasks.total, icon: 'archive' as const, status: '' },
               { label: '待办', value: stats.tasks.todo, icon: 'pin' as const, status: 'TODO' },
@@ -223,7 +225,7 @@ export default function Dashboard() {
           <h3 className="oto-title-flourish" style={{ ...pxH2, fontSize: '11px', color: 'var(--oto-text)' }}><Icon name="tomato" size={14} /> 今日番茄记录</h3>
           <div className="mt-4">
             {stats.today_sessions.length > 0 ? (
-              <div className="space-y-2 max-h-[200px] overflow-auto">
+              <div className="space-y-2">
                 {stats.today_sessions.map(s => (
                   <div key={s.id} className="flex items-center py-2 hover:brightness-105 transition-all" style={{
                     borderBottom: '1px solid var(--oto-border-light)',
@@ -231,20 +233,20 @@ export default function Dashboard() {
                     paddingLeft: '8px',
                   }}>
                     <div className="min-w-0 flex-1">
-                      <p style={{ ...pxBody, fontSize: '16px', color: '#4a3020', fontWeight: 500 }} className="break-words">{(s as any).tasks?.name || (s as any).task_name || '未知任务'}</p>
+                      <p style={{ ...pxBody, fontSize: '16px', color: '#4a3020', fontWeight: 500 }} className="break-words line-clamp-1">{(s as any).tasks?.name || (s as any).task_name || (s.type !== 'WORK' ? (s.type === 'SHORT_BREAK' ? '短休息' : '长休息') : '未知任务')}</p>
                       <p style={{ ...pxBody, fontSize: '13px', color: 'var(--oto-text-muted)' }}>
                         {new Date(s.start_time).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
                         {s.end_time && ` - ${new Date(s.end_time).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`}
                       </p>
                     </div>
                     <div className="ml-3 mr-6">
-                      <StatusBadge label={s.type === 'WORK' ? `${s.duration_minutes}min` : '休息'} status={s.status} />
+                      <StatusBadge label={s.type === 'WORK' ? '工作' : '休息'} status={s.type} />
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p style={{ ...pxBody, color: 'var(--oto-text-muted)' }} className="text-center py-8">今天还没有番茄钟记录，开始你的第一个专注吧！</p>
+              <p style={{ ...pxBody, color: 'var(--oto-text-muted)' }} className="text-center py-8">今天还没有番茄钟记录，<br />开始你的第一个专注吧！</p>
             )}
           </div>
         </div>
@@ -256,20 +258,20 @@ export default function Dashboard() {
         { title: <><Icon name="bars" size={14} /> 本周摘要</>, tKey: 'week_completed' as const, pKey: 'this_week' as const, pMax: 40 },
         { title: <><Icon name="bars" size={14} /> 本月摘要</>, tKey: 'month_completed' as const, pKey: 'this_month' as const, pMax: 160 },
       ].map(row => (
-        <div key={row.pKey} className="oto-window p-5 oto-card-lift">
+        <div key={row.pKey} className="oto-window p-4 md:p-5 oto-card-lift">
           <h3 style={{ ...pxH2, fontSize: '10px', color: 'var(--oto-text)', marginBottom: '12px' }}>{row.title}</h3>
-          <div className="grid grid-cols-2 gap-8">
-            <div className="flex items-center gap-3">
-              <div className="flex-1 oto-progress">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-8">
+            <div>
+              <span style={{ ...pxBody, fontSize: '13px', color: 'var(--oto-text-dim)' }}>完成 {(stats.tasks as any)[row.tKey] || 0} 个任务</span>
+              <div className="oto-progress mt-1">
                 <div className="animate-progress-pulse" style={{ width: `${Math.min(((stats.tasks as any)[row.tKey] || 0) / Math.max(stats.tasks.total, 1) * 100, 100)}%`, backgroundColor: '#304868' }} />
               </div>
-              <span style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)' }} className="whitespace-nowrap">完成 {(stats.tasks as any)[row.tKey] || 0} 个任务</span>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="flex-1 oto-progress">
+            <div>
+              <span style={{ ...pxBody, fontSize: '13px', color: 'var(--oto-text-dim)' }}>完成 {(stats.pomodoros as any)[row.pKey] || 0} 个番茄钟</span>
+              <div className="oto-progress mt-1">
                 <div className="animate-progress-pulse" style={{ width: `${Math.min(((stats.pomodoros as any)[row.pKey] || 0) / Math.max(row.pMax, 1) * 100, 100)}%`, backgroundColor: '#8a3030' }} />
               </div>
-              <span style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)' }} className="whitespace-nowrap">{(stats.pomodoros as any)[row.pKey] || 0} 个番茄钟</span>
             </div>
           </div>
         </div>

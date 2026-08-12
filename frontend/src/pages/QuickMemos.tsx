@@ -10,6 +10,8 @@ export default function QuickMemos() {
   const [memos, setMemos] = useState<QuickMemo[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
+  const [expandedMemos, setExpandedMemos] = useState<Set<string>>(new Set());
+  const toggleExpand = (id: string) => setExpandedMemos(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
 
   const load = () => fetchQuickMemos().then(d => { setMemos(d); setLoading(false); });
   useEffect(() => { load(); }, []);
@@ -36,7 +38,10 @@ export default function QuickMemos() {
 
   const activeMemos = memos.filter(m => !m.is_done);
   const doneMemos = memos.filter(m => m.is_done);
+  const recentDone = doneMemos.slice(0, 20);
+  const archivedDone = doneMemos.slice(20);
   const [showDone, setShowDone] = useState(true);
+  const [showArchive, setShowArchive] = useState(false);
 
   return (
     <div className="space-y-6 oto-stagger">
@@ -60,7 +65,7 @@ export default function QuickMemos() {
             onKeyDown={e => { if (e.key === 'Enter') handleAdd(); }}
             placeholder="输入备忘内容，按 Enter 添加..."
             className="flex-1 border-none outline-none text-sm bg-transparent placeholder-gray-600 oto-input-glow transition-shadow duration-200"
-            style={{ ...pxBody, color: '#a0f0b0' }} autoFocus />
+            style={{ ...pxBody, color: 'var(--oto-text)' }} autoFocus />
         </div>
 
         {/* Active memos */}
@@ -81,7 +86,7 @@ export default function QuickMemos() {
                 <button onClick={() => handleToggle(memo)}
                   className="w-5 h-5 flex-shrink-0 flex items-center justify-center"
                   style={{ border: '3px solid #444', background: 'transparent' }} />
-                <span className="flex-1 text-sm select-none break-words" style={{ ...pxBody, color: '#4a3020' }}>{memo.content}</span>
+                <span className={`flex-1 text-sm select-none break-words cursor-pointer ${expandedMemos.has(memo.id) ? '' : 'line-clamp-1'}`} style={{ ...pxBody, color: '#4a3020' }} onClick={() => toggleExpand(memo.id)}>{memo.content}</span>
                 <button onClick={() => handleDelete(memo.id)}
                   className="text-gray-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all text-sm flex-shrink-0" title="删除"><Icon name="close" size={12} /></button>
               </div>
@@ -100,12 +105,18 @@ export default function QuickMemos() {
               <span className={`transition-transform ${showDone ? 'rotate-90' : ''}`}>▸</span>
               已完成 · {doneMemos.length} 项
             </span>
-            <span onClick={e => { e.stopPropagation(); handleClearDone(); }}
-              className="text-xs hover:text-red-400 cursor-pointer" style={{ fontFamily: "'HYPixel'", fontSize: '10px', color: 'var(--oto-text-muted)' }}>清空</span>
+            <span className="flex items-center gap-3">
+              {archivedDone.length > 0 && (
+                <span onClick={e => { e.stopPropagation(); setShowArchive(true); }}
+                  className="text-xs hover:text-blue-400 cursor-pointer" style={{ fontFamily: "'HYPixel'", fontSize: '10px', color: 'var(--oto-text-muted)' }}>归档 {archivedDone.length}</span>
+              )}
+              <span onClick={e => { e.stopPropagation(); handleClearDone(); }}
+                className="text-xs hover:text-red-400 cursor-pointer" style={{ fontFamily: "'HYPixel'", fontSize: '10px', color: 'var(--oto-text-muted)' }}>清空</span>
+            </span>
           </button>
           {showDone && (
             <div className="divide-y divide-gray-800">
-              {doneMemos.map(memo => (
+              {recentDone.map(memo => (
                 <div key={memo.id} className="px-4 py-3 flex items-center gap-3 transition-colors group" style={{ background: '#e8d4a8' }}>
                   <button onClick={() => handleToggle(memo)}
                     className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-white"
@@ -114,7 +125,7 @@ export default function QuickMemos() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </button>
-                  <span className="flex-1 text-sm line-through select-none break-words" style={{ ...pxBody, color: '#a08060' }}>{memo.content}</span>
+                  <span className={`flex-1 text-sm line-through select-none break-words cursor-pointer ${expandedMemos.has(memo.id) ? '' : 'line-clamp-1'}`} style={{ ...pxBody, color: '#a08060' }} onClick={() => toggleExpand(memo.id)}>{memo.content}</span>
                   <button onClick={() => handleDelete(memo.id)}
                     className="text-gray-700 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all text-sm flex-shrink-0" title="删除"><Icon name="close" size={12} /></button>
                 </div>
@@ -127,6 +138,40 @@ export default function QuickMemos() {
       <p className="text-center text-xs" style={{ ...pxBody, fontSize: '14px', color: '#a08060' }}>
         输入内容后按 Enter 添加 · 点击圆圈标记完成 · 悬停显示删除按钮
       </p>
+
+      {/* Archive Modal */}
+      {showArchive && (
+        <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(6,8,12,0.85)' }} onClick={() => setShowArchive(false)}>
+          <div className="oto-modal p-6 w-full max-h-[80vh] overflow-auto" style={{ maxWidth: '800px' }} onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '14px', lineHeight: '1.8', color: 'var(--oto-text)' }}>
+                <Icon name="archive" size={16} /> 已归档 · {archivedDone.length} 项
+              </h3>
+              <button onClick={() => setShowArchive(false)} className="oto-btn-sm oto-btn-gray"><Icon name="close" size={14} /></button>
+            </div>
+            {archivedDone.length === 0 ? (
+              <p className="text-center py-8" style={{ ...pxBody, color: 'var(--oto-text-muted)' }}>暂无归档项</p>
+            ) : (
+              <div className="divide-y divide-gray-800">
+                {archivedDone.map(memo => (
+                  <div key={memo.id} className="px-4 py-3 flex items-center gap-3 group" style={{ background: '#e8d4a8' }}>
+                    <button onClick={() => handleToggle(memo)}
+                      className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-white"
+                      style={{ background: '#205020', border: '3px solid #308030' }}>
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </button>
+                    <span className={`flex-1 text-sm line-through select-none break-words cursor-pointer ${expandedMemos.has(memo.id) ? '' : 'line-clamp-1'}`} style={{ ...pxBody, color: '#a08060' }} onClick={() => toggleExpand(memo.id)}>{memo.content}</span>
+                    <button onClick={() => handleDelete(memo.id)}
+                      className="text-gray-700 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all text-sm flex-shrink-0" title="删除"><Icon name="close" size={12} /></button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

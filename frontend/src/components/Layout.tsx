@@ -1,4 +1,5 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import Icon from './Icons';
 import type { IconName } from './Icons';
 import { useAuth } from '../contexts/AuthContext';
@@ -91,6 +92,11 @@ function NavItem({ to, icon, label, desc, end, accent }: {
 export default function Layout() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // 切换页面时自动关闭侧栏
+  useEffect(() => { setSidebarOpen(false); }, [location.pathname]);
 
   const handleLogout = async () => {
     await signOut();
@@ -98,10 +104,34 @@ export default function Layout() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex" style={{ minHeight: '100dvh' }}>
+      {/* ═══ MOBILE HEADER ═══ */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-4" style={{
+        background: 'linear-gradient(180deg, var(--oto-bg-header) 0%, #f0c8b0 100%)',
+        borderBottom: '2px solid var(--oto-gold)',
+        height: '48px',
+      }}>
+        <button onClick={() => setSidebarOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--oto-text)', padding: '4px' }}>
+          <Icon name="menu" size={22} />
+        </button>
+        <div className="flex items-center gap-1" style={{ position: 'relative', left: '5px' }}>
+          <span style={{ marginLeft: '-8px', marginRight: '6px', display: 'inline-flex' }}><Icon name="target" size={14} /></span>
+          <span style={{ fontFamily: 'var(--oto-font-title)', fontSize: '15px', fontWeight: 700, color: 'var(--oto-text)', letterSpacing: '0.3em' }}>MONO</span>
+          <span style={{ fontFamily: 'var(--oto-font-title)', fontSize: '15px', fontWeight: 700, color: 'var(--oto-text)', letterSpacing: '0.3em' }}>POMO</span>
+          <Icon name="tomato" size={14} />
+        </div>
+        <div style={{ width: '30px' }} />
+      </div>
+
+      {/* ═══ MOBILE OVERLAY ═══ */}
+      {sidebarOpen && (
+        <div className="md:hidden fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.5)' }}
+             onClick={() => setSidebarOpen(false)} />
+      )}
+
       {/* ═══ SIDEBAR ═══ */}
-      <aside className="flex-shrink-0 flex flex-col sticky top-0 h-screen oto-sidebar" style={{
-          width: '220px', zIndex: 10,
+      <aside className={`fixed md:sticky top-0 left-0 h-screen flex-shrink-0 flex flex-col oto-sidebar transition-transform duration-200 z-50 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`} style={{
+          width: '220px', zIndex: 50,
           borderRight: '3px solid var(--oto-gold)',
           boxShadow: '2px 0 12px rgba(0,0,0,0.2), inset -4px 0 8px rgba(0,0,0,0.05)',
           backgroundImage: `
@@ -288,9 +318,9 @@ export default function Layout() {
       </aside>
 
       {/* ═══ MAIN CONTENT ═══ */}
-      <main className="oto-main-shell oto-board-frame flex-1 min-h-screen overflow-auto oto-plank-lines ml-8" style={{ background: 'var(--oto-bg-main)' }}>
+      <main className="oto-main-shell oto-board-frame flex-1 min-h-screen overflow-auto oto-plank-lines ml-0 md:ml-8 pt-14 md:pt-0" style={{ background: 'var(--oto-bg-main)' }}>
         <div className="oto-page-bar" />
-        <div className="p-6 mx-auto" style={{ maxWidth: '1280px' }}>
+        <div className="p-3 md:p-6 mx-auto" style={{ maxWidth: '1280px' }}>
           <Outlet />
         </div>
       </main>

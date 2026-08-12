@@ -302,14 +302,30 @@ export default function Gacha() {
       <div className="oto-window-gold rounded-none! p-6 px-10">
         <div className="flex items-center justify-between flex-wrap gap-6">
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 pl-5 md:pl-0">
               <Icon name="coins" size={40} />
-              <span style={{ ...pxH2, fontSize: '36px', color: 'var(--oto-gold-dark)' }}>
+              <span style={{ ...pxH2, color: 'var(--oto-gold-dark)' }} className="hidden md:inline">
+                <span style={{ ...pxH2, fontSize: '36px', color: 'var(--oto-gold-dark)' }}>{balance?.balance ?? 0}</span>
+              </span>
+              <span style={{ ...pxH2, fontSize: '24px', color: 'var(--oto-gold-dark)' }} className="md:hidden">
                 {balance?.balance ?? 0}
               </span>
-              <span style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>本月代币</span>
+              <span style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-dim)' }} className="md:hidden">本月代币</span>
+              <span style={{ ...pxBody, color: 'var(--oto-text-dim)' }} className="hidden md:inline">本月代币</span>
             </div>
-            <div className="flex gap-4 items-center" style={pxSm}>
+            <div className="flex flex-wrap gap-x-3 gap-y-1 items-center justify-center md:hidden" style={{ ...pxSm, fontSize: '11px' }}>
+              <span style={{ color: 'var(--oto-text-dim)', whiteSpace: 'nowrap' }}>本月</span>
+              <span style={{ color: 'var(--oto-text-muted)', whiteSpace: 'nowrap' }}>
+                获得 <span style={{ color: 'var(--oto-green)' }}>+{balance?.total_earned ?? 0}</span>
+              </span>
+              <span style={{ color: 'var(--oto-text-muted)', whiteSpace: 'nowrap' }}>
+                消费 <span style={{ color: 'var(--oto-accent-alt)' }}>-{balance?.total_spent ?? 0}</span>
+              </span>
+              <span style={{ color: 'var(--oto-text-muted)', whiteSpace: 'nowrap' }}>
+                抽取 <span style={{ color: 'var(--oto-text-dim)' }}>{ssrTargetStatus?.total_pulls ?? '...'}</span> 次
+              </span>
+            </div>
+            <div className="hidden md:flex gap-4 items-center" style={pxSm}>
               <span style={{ color: 'var(--oto-text-muted)' }}>
                 本月获得 <span style={{ color: 'var(--oto-green)' }}>+{balance?.total_earned ?? 0}</span>
               </span>
@@ -323,34 +339,67 @@ export default function Gacha() {
                 每月 1 号凌晨 4 点自动清零（用于藏品室结算）
               </span>
             </div>
+            <p style={{ ...pxSm, color: 'var(--oto-text-muted)', fontSize: '10px', marginTop: '2px', textAlign: 'center' }} className="md:hidden">
+              每月 1 号凌晨 4 点自动清零（用于藏品室结算）
+            </p>
           </div>
           <div className="flex items-center gap-6 flex-wrap">
-            <button
-              className="oto-btn"
-              disabled={!canSingle || pulling}
-              onClick={() => handlePull(1)}
-              style={{ ...pxBody, fontSize: '22px', padding: '10px 32px', opacity: canSingle ? 1 : 0.4, cursor: canSingle ? 'pointer' : 'not-allowed' }}
-            >
-              <span style={{ marginRight: 6 }}><Icon name="sword" size={22} /></span>
-              单抽
-              <span style={{ ...pxSm, display: 'block', marginTop: 2, color: freePullAvailable ? 'var(--oto-green)' : 'inherit' }}>
-                {freePullAvailable ? '免费' : `${COST_SINGLE} 币`}
-              </span>
-            </button>
-            <button
-              className="oto-btn"
-              disabled={!canTen || pulling}
-              onClick={() => handlePull(10)}
-              style={{
-                ...pxBody, fontSize: '22px', padding: '10px 32px',
-                background: 'linear-gradient(135deg, #e8dcc0, #efe8d4)',
-                opacity: canTen ? 1 : 0.4, cursor: canTen ? 'pointer' : 'not-allowed',
-              }}
-            >
-              <span style={{ marginRight: 6 }}><Icon name="gift" size={22} /></span>
-              十连抽
-              <span style={{ ...pxSm, display: 'block', marginTop: 2 }}>{COST_TEN} 币</span>
-            </button>
+            {/* 桌面端按钮 */}
+            <div className="hidden md:flex items-center gap-6">
+              <button
+                className="oto-btn"
+                disabled={!canSingle || pulling}
+                onClick={() => handlePull(1)}
+                style={{ ...pxBody, fontSize: '22px', padding: '10px 32px', opacity: canSingle ? 1 : 0.4, cursor: canSingle ? 'pointer' : 'not-allowed' }}
+              >
+                <span style={{ marginRight: 6 }}><Icon name="sword" size={22} /></span>
+                单抽
+                <span style={{ ...pxSm, display: 'block', marginTop: 2, color: freePullAvailable ? 'var(--oto-green)' : 'inherit' }}>
+                  {freePullAvailable ? '免费' : `${COST_SINGLE} 币`}
+                </span>
+              </button>
+              <button
+                className="oto-btn"
+                disabled={!canTen || pulling}
+                onClick={() => handlePull(10)}
+                style={{
+                  ...pxBody, fontSize: '22px', padding: '10px 32px',
+                  background: 'linear-gradient(135deg, #e8dcc0, #efe8d4)',
+                  opacity: canTen ? 1 : 0.4, cursor: canTen ? 'pointer' : 'not-allowed',
+                }}
+              >
+                <span style={{ marginRight: 6 }}><Icon name="gift" size={22} /></span>
+                十连抽
+                <span style={{ ...pxSm, display: 'block', marginTop: 2 }}>{COST_TEN} 币</span>
+              </button>
+            </div>
+            {/* 手机端按钮 */}
+            <div className="flex md:hidden items-center justify-center gap-3 w-full" style={{ paddingLeft: '10px' }}>
+              <button
+                className="oto-btn flex-1"
+                disabled={!canSingle || pulling}
+                onClick={() => handlePull(1)}
+                style={{ ...pxBody, fontSize: '16px', padding: '8px 20px', opacity: canSingle ? 1 : 0.4, cursor: canSingle ? 'pointer' : 'not-allowed', textAlign: 'center' }}
+              >
+                <span style={{ whiteSpace: 'nowrap' }}><Icon name="sword" size={16} /> 单抽</span>
+                <span style={{ ...pxSm, display: 'block', marginTop: 2, color: freePullAvailable ? 'var(--oto-green)' : 'inherit' }}>
+                  {freePullAvailable ? '免费' : `${COST_SINGLE} 币`}
+                </span>
+              </button>
+              <button
+                className="oto-btn flex-1"
+                disabled={!canTen || pulling}
+                onClick={() => handlePull(10)}
+                style={{
+                  ...pxBody, fontSize: '16px', padding: '8px 20px', textAlign: 'center',
+                  background: 'linear-gradient(135deg, #e8dcc0, #efe8d4)',
+                  opacity: canTen ? 1 : 0.4, cursor: canTen ? 'pointer' : 'not-allowed',
+                }}
+              >
+                <span style={{ whiteSpace: 'nowrap' }}><Icon name="gift" size={16} /> 十连抽</span>
+                <span style={{ ...pxSm, display: 'block', marginTop: 2 }}>{COST_TEN} 币</span>
+              </button>
+            </div>
           </div>
         </div>
         {pulling && (
@@ -551,7 +600,7 @@ export default function Gacha() {
         {showRepeatable && (
           <div className="mt-4 space-y-2">
             <p style={{ ...pxSm, color: 'var(--oto-text-dim)' }}>
-              完成工作番茄钟即可获得代币，可无限次完成（代币分级奖励）
+              完成工作番茄钟即可获得代币，可无限次完成
             </p>
             {(() => {
               const src = EARN_SOURCES.find(s => !s.daily)!;
@@ -569,26 +618,25 @@ export default function Gacha() {
                   <div key={tier.name} className="oto-inset rounded-none! p-3"
                        style={{ opacity: !active && idx > 0 ? 0.5 : 1 }}>
                     <div className="flex items-center gap-3 mb-2">
-                      <Icon name={src.icon} size={20} />
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <span style={{ ...pxSm, fontWeight: 'bold' }}>
+                          <span style={{ ...pxSm, fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                             番茄钟 · {tier.name}（第 {tier.range} 个）
                           </span>
                           <span style={{
-                            ...pxSm, fontWeight: 'bold',
+                            ...pxSm, fontWeight: 'bold', whiteSpace: 'nowrap',
                             color: active ? 'var(--oto-gold-dark)' : 'var(--oto-text-muted)',
                           }}>
                             +{tier.amount} 币/个
                           </span>
                         </div>
-                        <p style={{ ...pxSm, color: 'var(--oto-text-muted)', marginTop: 2 }}>
+                        <p style={{ ...pxSm, color: 'var(--oto-text-muted)', marginTop: 2, whiteSpace: 'nowrap' }}>
                           本档完成第 {tier.range} 个番茄钟时按此档奖励
                         </p>
                       </div>
                       <div className="flex flex-col items-end gap-1">
                         <span style={{
-                          ...pxSm,
+                          ...pxSm, whiteSpace: 'nowrap',
                           color: isComplete ? 'var(--oto-green)' : 'var(--oto-text-dim)',
                         }}>
                           {tier.target === Infinity ? `${tier.current}/∞` : `${tier.current}/${tier.target}`}
@@ -915,48 +963,67 @@ export default function Gacha() {
             {records.length === 0 ? (
               <p style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>还没有抽取记录，快去试试手气吧！</p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="oto-table oto-table-striped w-full" style={pxSm}>
-                  <thead>
-                    <tr>
-                      <th style={{ width: '60px' }}>#</th>
-                      <th style={{ width: '50px' }}>图标</th>
-                      <th>物品</th>
-                      <th style={{ width: '80px' }}>稀有度</th>
-                      <th style={{ width: '160px' }}>时间</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {records.slice(0, 20).map((r, i) => (
-                      <tr key={r.id}>
-                        <td style={{ color: 'var(--oto-text-muted)' }}>{i + 1}</td>
-                        <td style={{ width: 36, height: 36 }}>
-                          {r.item_image ? (
-                            <img src={r.item_image} alt={r.item_name} style={{ width: 36, height: 36, objectFit: 'contain' }} />
-                          ) : (
-                            <img src={itemImage({ rarity: r.item_rarity || 'N', job: r.item_job || 'CLERIC' })} alt={r.item_name} style={{ width: 36, height: 36, objectFit: 'contain' }} />
-                          )}
-                        </td>
-                        <td style={{ fontWeight: 'bold' }}>{r.item_name}
-                          {r.item_job_display && <span style={{ ...pxSm, fontSize: '10px', color: 'var(--oto-text-muted)', marginLeft: 6 }}>{r.item_job_display}</span>}
-                        </td>
-                        <td>
-                          <span className="oto-badge" style={{
-                            ...pxSm, fontSize: '10px', padding: '1px 6px',
-                            color: RARITY_COLOR_MAP[r.item_rarity || 'N'],
-                            borderColor: RARITY_COLOR_MAP[r.item_rarity || 'N'],
-                          }}>
+              <>
+                {/* 手机端：卡片 */}
+                <div className="md:hidden space-y-2">
+                  {records.slice(0, 20).map((r, i) => (
+                    <div key={r.id} className="flex items-center gap-3 p-2 oto-inset rounded-none!">
+                      <img src={itemImage({ rarity: r.item_rarity || 'N', job: r.item_job || 'CLERIC' })} alt={r.item_name} style={{ width: 50, height: 50, objectFit: 'contain', flexShrink: 0, marginLeft: '10px' }} />
+                      <div className="flex-1 min-w-0" style={{ textAlign: 'right' }}>
+                        <div className="flex items-center justify-end gap-2">
+                          <span style={{ ...pxSm, fontWeight: 'bold' }}>{r.item_name}</span>
+                          <span className="oto-badge" style={{ ...pxSm, fontSize: '9px', padding: '1px 4px', color: RARITY_COLOR_MAP[r.item_rarity || 'N'], borderColor: RARITY_COLOR_MAP[r.item_rarity || 'N'] }}>
                             {r.rarity_display || RARITY_MAP[r.item_rarity || 'N']}
                           </span>
-                        </td>
-                        <td style={{ color: 'var(--oto-text-muted)' }}>
-                          {new Date(r.created_at).toLocaleString('zh-CN')}
-                        </td>
+                        </div>
+                        <p style={{ ...pxSm, fontSize: '10px', color: 'var(--oto-text-muted)' }}>
+                          {r.item_job_display && `${r.item_job_display} · `}{new Date(r.created_at).toLocaleString('zh-CN')}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 桌面端：表格 */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="oto-table oto-table-striped w-full" style={pxSm}>
+                    <thead>
+                      <tr>
+                        <th style={{ width: '50px' }}>#</th>
+                        <th style={{ width: '50px' }}>图标</th>
+                        <th>物品</th>
+                        <th style={{ width: '70px' }}>职业</th>
+                        <th style={{ width: '70px' }}>稀有度</th>
+                        <th style={{ width: '200px' }}>时间</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {records.slice(0, 20).map((r, i) => (
+                        <tr key={r.id}>
+                          <td style={{ color: 'var(--oto-text-muted)' }}>{i + 1}</td>
+                          <td style={{ width: 60, height: 60 }}>
+                            {r.item_image ? (
+                              <img src={r.item_image} alt={r.item_name} style={{ width: 60, height: 60, objectFit: 'contain' }} />
+                            ) : (
+                              <img src={itemImage({ rarity: r.item_rarity || 'N', job: r.item_job || 'CLERIC' })} alt={r.item_name} style={{ width: 60, height: 60, objectFit: 'contain' }} />
+                            )}
+                          </td>
+                          <td style={{ fontWeight: 'bold' }}>{r.item_name}</td>
+                          <td style={{ color: 'var(--oto-text-muted)' }}>{r.item_job_display || '-'}</td>
+                          <td>
+                            <span className="oto-badge" style={{ ...pxSm, fontSize: '10px', padding: '1px 6px', color: RARITY_COLOR_MAP[r.item_rarity || 'N'], borderColor: RARITY_COLOR_MAP[r.item_rarity || 'N'] }}>
+                              {r.rarity_display || RARITY_MAP[r.item_rarity || 'N']}
+                            </span>
+                          </td>
+                          <td style={{ color: 'var(--oto-text-muted)' }}>
+                            {new Date(r.created_at).toLocaleString('zh-CN')}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </div>
         )}
@@ -997,10 +1064,10 @@ export default function Gacha() {
 
             <div className={pullResult.length === 1
               ? 'flex justify-center mb-4'
-              : 'grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4'
+              : 'grid grid-cols-2 sm:grid-cols-5 gap-2 md:gap-3 mb-4'
             }>
               {pullResult.map((r, i) => (
-                <div key={i} className="oto-window rounded-none! p-3 text-center oto-scale-in"
+                <div key={i} className="oto-window rounded-none! p-2 md:p-3 text-center oto-scale-in"
                      style={{
                        borderColor: RARITY_COLOR_MAP[r.item_rarity || 'N'],
                        boxShadow: r.item_rarity === 'SSR' ? `0 0 20px ${RARITY_COLOR_MAP.SSR}66` :
@@ -1008,21 +1075,21 @@ export default function Gacha() {
                                   'none',
                        animationDelay: `${i * 0.08}s`,
                      }}>
-                  <div style={{ width: pullResult.length === 1 ? 80 : 48, height: pullResult.length === 1 ? 80 : 48, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: pullResult.length === 1 ? 80 : 48, height: pullResult.length === 1 ? 80 : 48, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }} className="md:w-auto md:h-auto" >
                     {r.item_image ? (
-                      <img src={r.item_image} alt={r.item_name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                      <img src={r.item_image} alt={r.item_name} style={{ width: pullResult.length === 1 ? 80 : 48, height: pullResult.length === 1 ? 80 : 48, objectFit: 'contain' }} />
                     ) : (
                       <img src={itemImage({ rarity: r.item_rarity || 'N', job: r.item_job || 'CLERIC' })} alt={r.item_name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     )}
                   </div>
-                  <div style={{ ...pxBody, fontWeight: 'bold', marginTop: 4 }}>{r.item_name}</div>
+                  <div style={{ ...pxBody, fontSize: '13px', fontWeight: 'bold', marginTop: 2 }}>{r.item_name}</div>
                   {r.item_job_display && (
-                    <div style={{ ...pxSm, fontSize: '10px', color: 'var(--oto-text-muted)', marginTop: 2, marginBottom: 4 }}>
+                    <div style={{ ...pxSm, fontSize: '9px', color: 'var(--oto-text-muted)', marginTop: 1 }}>
                       {r.item_job_display}
                     </div>
                   )}
                   <span className="oto-badge mt-1" style={{
-                    ...pxSm, fontSize: '10px', padding: '2px 8px',
+                    ...pxSm, fontSize: '9px', padding: '1px 5px',
                     color: RARITY_COLOR_MAP[r.item_rarity || 'N'],
                     borderColor: RARITY_COLOR_MAP[r.item_rarity || 'N'],
                   }}>
