@@ -875,7 +875,7 @@ export async function getWeeklyTasks() {
             .from('token_records')
             .select('*', { count: 'exact', head: true })
             .eq('user_id', user.id)
-            .gt('amount', 0).neq('source', '连续打卡')
+            .gt('amount', 0).in('source', STREAK_SOURCES)
             .gte('created_at', ds)
             .lt('created_at', ns)
           if ((count ?? 0) > 0) streak++
@@ -966,7 +966,7 @@ export async function claimWeeklyTask(taskKey: string) {
       const ns = nextDay.toISOString().slice(0, 10)
       const { count } = await supabase
         .from('token_records').select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id).gt('amount', 0).neq('source', '连续打卡')
+        .eq('user_id', user.id).gt('amount', 0).in('source', STREAK_SOURCES)
         .gte('created_at', ds).lt('created_at', ns)
       if ((count ?? 0) > 0) streak++
       else break
@@ -990,6 +990,12 @@ export async function claimWeeklyTask(taskKey: string) {
 // Streak Task（连续打卡）— 与工作看板的连续打卡天数同步
 // 自动发放：与日任务一致，无需手动领取
 // ============================================================
+const STREAK_SOURCES = [
+  '首次番茄钟', '休息', '创建任务', '完成任务', '确定核心任务',
+  '晨间规划', '晚间回顾', '每日计划完成', '写笔记', '创建清单',
+  '完成清单', '抽扭蛋', '番茄钟',
+]
+
 async function computeStreak(userId: string): Promise<number> {
   let streak = 0
   const cursor = new Date(localDate() + 'T00:00:00')
@@ -998,7 +1004,7 @@ async function computeStreak(userId: string): Promise<number> {
     const next = new Date(cursor); next.setDate(next.getDate() + 1)
     const ns = next.toISOString().slice(0, 10)
     const { count } = await supabase.from('token_records').select('*', { count: 'exact', head: true })
-      .eq('user_id', userId).gt('amount', 0).neq('source', '连续打卡')
+      .eq('user_id', userId).gt('amount', 0).in('source', STREAK_SOURCES)
       .gte('created_at', ds).lt('created_at', ns)
     if ((count ?? 0) > 0) streak++
     else break
@@ -1169,7 +1175,7 @@ export async function getDashboardStats() {
           const next = new Date(cursor); next.setDate(next.getDate() + 1)
           const ns = next.toISOString().slice(0, 10)
           const { count } = await supabase.from('token_records').select('*', { count: 'exact', head: true })
-            .eq('user_id', user.id).gt('amount', 0).neq('source', '连续打卡')
+            .eq('user_id', user.id).gt('amount', 0).in('source', STREAK_SOURCES)
             .gte('created_at', ds).lt('created_at', ns)
           if ((count ?? 0) > 0) streak++
           else break
