@@ -875,7 +875,7 @@ export async function getWeeklyTasks() {
             .from('token_records')
             .select('*', { count: 'exact', head: true })
             .eq('user_id', user.id)
-            .gt('amount', 0)
+            .gt('amount', 0).neq('source', '连续打卡')
             .gte('created_at', ds)
             .lt('created_at', ns)
           if ((count ?? 0) > 0) streak++
@@ -966,7 +966,7 @@ export async function claimWeeklyTask(taskKey: string) {
       const ns = nextDay.toISOString().slice(0, 10)
       const { count } = await supabase
         .from('token_records').select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id).gt('amount', 0)
+        .eq('user_id', user.id).gt('amount', 0).neq('source', '连续打卡')
         .gte('created_at', ds).lt('created_at', ns)
       if ((count ?? 0) > 0) streak++
       else break
@@ -984,6 +984,62 @@ export async function claimWeeklyTask(taskKey: string) {
   await addTokenRecord(amount, `周任务·${sourceName}`)
   invalidate('token-balance', 'weekly-tasks')
   return amount
+}
+
+// ============================================================
+// Streak Task（连续打卡）— 与工作看板的连续打卡天数同步
+// 自动发放：与日任务一致，无需手动领取
+// ============================================================
+async function computeStreak(userId: string): Promise<number> {
+  let streak = 0
+  const cursor = new Date(localDate() + 'T00:00:00')
+  for (let i = 0; i < 365; i++) {
+    const ds = cursor.toISOString().slice(0, 10)
+    const next = new Date(cursor); next.setDate(next.getDate() + 1)
+    const ns = next.toISOString().slice(0, 10)
+    const { count } = await supabase.from('token_records').select('*', { count: 'exact', head: true })
+      .eq('user_id', userId).gt('amount', 0).neq('source', '连续打卡')
+      .gte('created_at', ds).lt('created_at', ns)
+    if ((count ?? 0) > 0) streak++
+    else break
+    cursor.setDate(cursor.getDate() - 1)
+  }
+  return streak
+}
+
+export async function getStreakTaskStatus() {
+  return cached('streak-task', async () => {
+    const user = await currentUser()
+    if (!user) return { streak: 0, amount: 0, distributed: true }
+
+    const streak = await computeStreak(user.id)
+    const amount = streak * 10
+
+    if (streak === 0) return { streak: 0, amount: 0, distributed: true }
+
+    // 自动发放：今日尚无对应奖励记录则立即入账（与日任务一致，claimed=true）
+    const todayStr = localDate()
+    const { data: existing } = await supabase
+      .from('token_records').select('id, amount')
+      .eq('user_id', user.id).eq('source', '连续打卡')
+      .gte('created_at', todayStr).limit(10)
+
+    const alreadyDistributed = !!(existing && existing.some(r => r.amount === amount))
+
+    if (!alreadyDistributed) {
+      // 清理今日的过期记录（streak 变化导致金额不一致时）
+      if (existing && existing.length > 0) {
+        await supabase.from('token_records').delete()
+          .eq('user_id', user.id).eq('source', '连续打卡')
+          .gte('created_at', todayStr)
+      }
+      await addTokenRecord(amount, '连续打卡')
+      invalidate('token-balance', 'streak-task', 'dashboard-stats', 'today-counts', 'showcase-current')
+      return { streak, amount, distributed: true, just_distributed: true }
+    }
+
+    return { streak, amount, distributed: true }
+  })
 }
 
 // ============================================================
@@ -1113,7 +1169,8 @@ export async function getDashboardStats() {
           const next = new Date(cursor); next.setDate(next.getDate() + 1)
           const ns = next.toISOString().slice(0, 10)
           const { count } = await supabase.from('token_records').select('*', { count: 'exact', head: true })
-            .eq('user_id', user.id).gt('amount', 0).gte('created_at', ds).lt('created_at', ns)
+            .eq('user_id', user.id).gt('amount', 0).neq('source', '连续打卡')
+            .gte('created_at', ds).lt('created_at', ns)
           if ((count ?? 0) > 0) streak++
           else break
           cursor.setDate(cursor.getDate() - 1)

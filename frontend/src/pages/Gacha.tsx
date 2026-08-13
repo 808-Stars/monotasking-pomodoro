@@ -7,6 +7,7 @@ import {
   getTokenBalance, addTokenRecord, getDailyTasks,
   claimDailyTokens, claimAllDailyTokens,
   getWeeklyTasks, claimWeeklyTask,
+  getStreakTaskStatus,
   getSSRTargetStatus, setSSRTarget, clearSSRTarget,
   getTodayCounts,
 } from '../services/api';
@@ -80,6 +81,13 @@ interface WeeklyTask {
   can_claim: boolean;
 }
 
+interface StreakTaskStatus {
+  streak: number;
+  amount: number;
+  distributed: boolean;
+  just_distributed?: boolean;
+}
+
 export default function Gacha() {
   const [balance, setBalance] = useState<TokenBalance | null>(null);
   const [items, setItems] = useState<GachaItem[]>([]);
@@ -89,8 +97,11 @@ export default function Gacha() {
   const [pulling, setPulling] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [pullResult, setPullResult] = useState<GachaRecord[]>([]);
-  const [showSources, setShowSources] = useState(false);
-  const [showRepeatable, setShowRepeatable] = useState(false);
+  const [showTasksHub, setShowTasksHub] = useState(false);
+  const [showDailySub, setShowDailySub] = useState(false);
+  const [showWeeklySub, setShowWeeklySub] = useState(false);
+  const [showRepeatableSub, setShowRepeatableSub] = useState(false);
+  const [showStreakSub, setShowStreakSub] = useState(false);
   const [dailyTasks, setDailyTasks] = useState<DailyTaskStatus[]>([]);
   const [todayEarned, setTodayEarned] = useState<number>(0);
   const [dailyTarget, setDailyTarget] = useState<number>(400);
@@ -111,6 +122,7 @@ export default function Gacha() {
   const [todayTomatoCount, setTodayTomatoCount] = useState<number>(0);
   const [todayCounts, setTodayCounts] = useState<Record<string, number>>({});
   const [settingSSRTarget, setSettingSSRTarget] = useState(false);
+  const [streakTask, setStreakTask] = useState<StreakTaskStatus>({ streak: 0, amount: 0, distributed: true });
 
   const refreshDaily = useCallback(async () => {
     try {
@@ -121,8 +133,15 @@ export default function Gacha() {
     } catch { /* */ }
   }, []);
 
+  const refreshStreak = useCallback(async () => {
+    try {
+      const st = await getStreakTaskStatus();
+      setStreakTask(st);
+    } catch { /* */ }
+  }, []);
+
   const load = useCallback(async () => {
-    const [itemsData, recordsData, balanceData, dailyData, weeklyData, ssrData, todayCountsData] = await Promise.all([
+    const [itemsData, recordsData, balanceData, dailyData, weeklyData, ssrData, todayCountsData, streakData] = await Promise.all([
       fetchGachaItems(),
       fetchGachaRecords(),
       getTokenBalance(),
@@ -130,6 +149,7 @@ export default function Gacha() {
       getWeeklyTasks().catch(() => ({ tasks: [] as WeeklyTask[], week_start: '', week_earned: 0, week_target: 0 })),
       getSSRTargetStatus().catch(() => ({ target: null, total_pulls: 0, eligible: false, monthly_used: false })),
       getTodayCounts().catch(() => ({})),
+      getStreakTaskStatus().catch(() => ({ streak: 0, amount: 0, distributed: true })),
     ]);
     setItems(itemsData);
     setRecords(recordsData);
@@ -150,8 +170,15 @@ export default function Gacha() {
     // Weekly tasks
     setWeeklyTasks(weeklyData.tasks);
     setWeekStart(weeklyData.week_start);
-    setWeekEarned(weeklyData.week_earned ?? 0);
+    setWeekEarned(weeklyData.earned ?? 0);
     setWeekTarget(weeklyData.week_target ?? 0);
+
+    // Streak task（自动发放：load 期间可能新增记录，需要刷新余额）
+    setStreakTask(streakData);
+    if (streakData.just_distributed) {
+      const b = await getTokenBalance()
+      setBalance(b)
+    }
 
     // Compute owned counts and pity
     const counts: Record<string, number> = {};
@@ -410,255 +437,341 @@ export default function Gacha() {
         )}
       </div>
 
-      {/* Daily Tasks */}
+      {/* Token Tasks Hub — one parent folder with three sub-folders */}
       <div className="oto-window rounded-none! p-4">
         <div className="flex items-center justify-between cursor-pointer"
-             onClick={() => { setShowSources(!showSources); if (!showSources) refreshDaily(); }}>
+             onClick={() => {
+               setShowTasksHub(!showTasksHub);
+               if (!showTasksHub) {
+                 refreshDaily();
+                 refreshStreak();
+                 getTodayCounts().then(setTodayCounts).catch(() => {});
+               }
+             }}>
           <h2 style={pxH3} className="m-0! flex items-center gap-2">
-            <Icon name="sun" size={16} /> 日任务
-            {dailyTasks.some(t => t.can_claim) ? (
+            <Icon name="task" size={16} /> 代币任务
+            {(dailyTasks.some(t => t.can_claim) || weeklyTasks.some(t => t.can_claim)) ? (
               <span className="oto-badge" style={{
                 ...pxSm, fontSize: '10px', padding: '1px 8px',
                 background: 'var(--oto-gold)', color: '#fff',
                 borderColor: 'var(--oto-gold-dark)',
               }}>可领取</span>
-            ) : dailyTasks.length > 0 && dailyTasks.every(t => t.claimed) ? (
-              <span className="oto-badge" style={{
-                ...pxSm, fontSize: '10px', padding: '1px 8px',
-                background: 'var(--oto-green)', color: '#fff',
-                borderColor: 'var(--oto-green)',
-              }}>今日已领</span>
             ) : null}
           </h2>
-          <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{showSources ? '▲ 收起' : '▼ 展开'}</span>
+          <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{showTasksHub ? '▲ 收起' : '▼ 展开'}</span>
         </div>
-        {showSources && (
+        {showTasksHub && (
           <div className="mt-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <p style={{ ...pxSm, color: 'var(--oto-text-dim)' }}>
-                今日 ({localDate().replace(/-/g, '/')}) 已获得{' '}
-                <span style={{
-                  color: todayEarned >= dailyTarget ? 'var(--oto-green)' : 'var(--oto-gold-dark)',
-                  fontWeight: 'bold',
-                }}>{todayEarned}</span>
-                /{dailyTarget} 币
-                {todayEarned >= dailyTarget && <span style={{ marginLeft: 2 }}><Icon name="check" size={14} /></span>}
-              </p>
-              {dailyTasks.some(t => t.can_claim) && (
-                <button onClick={handleClaimAllDaily}
-                        className="oto-btn oto-btn-sm"
-                        style={{ ...pxSm, padding: '2px 10px' }}>
-                  一键领取
-                </button>
+
+            {/* Sub-folder 1: 日任务 */}
+            <div className="oto-inset rounded-none!">
+              <div className="flex items-center justify-between cursor-pointer p-3"
+                   onClick={() => setShowDailySub(!showDailySub)}>
+                <h3 style={{ ...pxSm, fontSize: '13px' }} className="m-0! flex items-center gap-2 font-bold">
+                  <Icon name="sun" size={14} /> 日任务
+                  {dailyTasks.some(t => t.can_claim) ? (
+                    <span className="oto-badge" style={{
+                      ...pxSm, fontSize: '9px', padding: '0px 6px',
+                      background: 'var(--oto-gold)', color: '#fff',
+                      borderColor: 'var(--oto-gold-dark)',
+                    }}>可领取</span>
+                  ) : dailyTasks.length > 0 && dailyTasks.every(t => t.claimed) ? (
+                    <span className="oto-badge" style={{
+                      ...pxSm, fontSize: '9px', padding: '0px 6px',
+                      background: 'var(--oto-green)', color: '#fff',
+                      borderColor: 'var(--oto-green)',
+                    }}>今日已领</span>
+                  ) : null}
+                </h3>
+                <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{showDailySub ? '▲' : '▼'}</span>
+              </div>
+              {showDailySub && (
+                <div className="px-3 pb-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p style={{ ...pxSm, color: 'var(--oto-text-dim)' }}>
+                      今日 ({localDate().replace(/-/g, '/')}) 已获得{' '}
+                      <span style={{
+                        color: todayEarned >= dailyTarget ? 'var(--oto-green)' : 'var(--oto-gold-dark)',
+                        fontWeight: 'bold',
+                      }}>{todayEarned}</span>
+                      /{dailyTarget} 币
+                      {todayEarned >= dailyTarget && <span style={{ marginLeft: 2 }}><Icon name="check" size={14} /></span>}
+                    </p>
+                    {dailyTasks.some(t => t.can_claim) && (
+                      <button onClick={handleClaimAllDaily}
+                              className="oto-btn oto-btn-sm"
+                              style={{ ...pxSm, padding: '2px 10px' }}>
+                        一键领取
+                      </button>
+                    )}
+                  </div>
+                  {EARN_SOURCES.filter(s => s.daily).map(s => {
+                    const task = dailyTasks.find(t => t.source === s.desc);
+                    const isClaimed = task?.claimed ?? false;
+                    const isCompleted = task?.completed ?? false;
+                    const canClaim = task?.can_claim ?? false;
+                    const displayAmount = task?.amount ?? s.amount;
+                    const pct = isClaimed ? 100 : isCompleted ? 50 : 0;
+                    return (
+                      <div key={s.desc} className="oto-inset rounded-none! p-3"
+                           style={{ opacity: isClaimed ? 0.5 : 1 }}>
+                        <div className="flex items-center gap-3 mb-2">
+                          <Icon name={s.icon} size={20} />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span style={{ ...pxSm, fontWeight: 'bold' }}>{s.desc}</span>
+                              <span style={{ ...pxSm, color: 'var(--oto-gold-dark)', fontWeight: 'bold' }}>
+                                +{displayAmount} 币
+                              </span>
+                            </div>
+                            <p style={{ ...pxSm, color: 'var(--oto-text-muted)', marginTop: 2 }}>
+                              {s.note}
+                            </p>
+                          </div>
+                          <div className="flex flex-col items-end gap-1">
+                            <span style={{ ...pxSm, color: isClaimed ? 'var(--oto-green)' : canClaim ? 'var(--oto-gold-dark)' : 'var(--oto-text-dim)' }}>
+                              {isClaimed ? '1/1' : isCompleted ? '可领取' : '0/1'}
+                            </span>
+                            {isClaimed ? (
+                              <span style={{ ...pxSm, color: 'var(--oto-green)' }}><Icon name="check" size={14} /> 已领取</span>
+                            ) : canClaim ? (
+                              <button onClick={() => handleClaimDaily(s.desc)}
+                                      className="oto-btn oto-btn-sm"
+                                      style={{ ...pxSm, padding: '2px 10px' }}>
+                                领取
+                              </button>
+                            ) : (
+                              <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{isCompleted ? '已完成' : '未完成'}</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="oto-progress" style={{ height: '6px' }}>
+                          <div style={{
+                            height: '100%', width: `${pct}%`,
+                            background: isClaimed
+                              ? 'linear-gradient(90deg, #4a8a4a, #6aaa6a)'
+                              : canClaim
+                                ? 'linear-gradient(90deg, #c89030, #d4b860)'
+                                : 'linear-gradient(90deg, #888, #aaa)',
+                            transition: 'width 0.4s',
+                          }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
-            {EARN_SOURCES.filter(s => s.daily).map(s => {
-              const task = dailyTasks.find(t => t.source === s.desc);
-              const isClaimed = task?.claimed ?? false;
-              const isCompleted = task?.completed ?? false;
-              const canClaim = task?.can_claim ?? false;
-              const displayAmount = task?.amount ?? s.amount;
-              const pct = isClaimed ? 100 : isCompleted ? 50 : 0;
-              return (
-                <div key={s.desc} className="oto-inset rounded-none! p-3"
-                     style={{ opacity: isClaimed ? 0.5 : 1 }}>
-                  <div className="flex items-center gap-3 mb-2">
-                    <Icon name={s.icon} size={20} />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span style={{ ...pxSm, fontWeight: 'bold' }}>{s.desc}</span>
-                        <span style={{ ...pxSm, color: 'var(--oto-gold-dark)', fontWeight: 'bold' }}>
-                          +{displayAmount} 币
-                        </span>
-                      </div>
-                      <p style={{ ...pxSm, color: 'var(--oto-text-muted)', marginTop: 2 }}>
-                        {s.note}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <span style={{ ...pxSm, color: isClaimed ? 'var(--oto-green)' : canClaim ? 'var(--oto-gold-dark)' : 'var(--oto-text-dim)' }}>
-                        {isClaimed ? '1/1' : isCompleted ? '可领取' : '0/1'}
-                      </span>
-                      {isClaimed ? (
-                        <span style={{ ...pxSm, color: 'var(--oto-green)' }}><Icon name="check" size={14} /> 已领取</span>
-                      ) : canClaim ? (
-                        <button onClick={() => handleClaimDaily(s.desc)}
-                                className="oto-btn oto-btn-sm"
-                                style={{ ...pxSm, padding: '2px 10px' }}>
-                          领取
-                        </button>
-                      ) : (
-                        <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{isCompleted ? '已完成' : '未完成'}</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="oto-progress" style={{ height: '6px' }}>
-                    <div style={{
-                      height: '100%', width: `${pct}%`,
-                      background: isClaimed
-                        ? 'linear-gradient(90deg, #4a8a4a, #6aaa6a)'
-                        : canClaim
-                          ? 'linear-gradient(90deg, #c89030, #d4b860)'
-                          : 'linear-gradient(90deg, #888, #aaa)',
-                      transition: 'width 0.4s',
-                    }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
 
-      {/* ── Weekly Tasks ── */}
-      <div className="oto-window rounded-none! p-4">
-        <div className="flex items-center justify-between cursor-pointer"
-             onClick={() => setShowWeekly(!showWeekly)}>
-          <h2 style={pxH3} className="m-0! flex items-center gap-2">
-            <Icon name="calendar" size={16} /> 周任务
-            {weeklyTasks.some(t => t.can_claim) && (
-              <span className="oto-badge" style={{
-                ...pxSm, fontSize: '10px', padding: '1px 8px',
-                background: 'var(--oto-gold)', color: '#fff',
-                borderColor: 'var(--oto-gold-dark)',
-              }}>可领取</span>
-            )}
-          </h2>
-          <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{showWeekly ? '▲ 收起' : '▼ 展开'}</span>
-        </div>
-        {showWeekly && (
-          <div className="mt-4 space-y-2">
-            <p style={{ ...pxSm, color: 'var(--oto-text-dim)' }}>
-              本周 ({weekStart ? `${weekStart.slice(5).replace('-', '/')} - ${new Date(new Date(weekStart).getTime() + 6 * 86400000).toISOString().slice(5, 10).replace('-', '/')}` : ''}) 已获得{' '}
-              <span style={{
-                color: weekEarned >= weekTarget && weekTarget > 0 ? 'var(--oto-green)' : 'var(--oto-gold-dark)',
-                fontWeight: 'bold',
-              }}>{weekEarned}</span>
-              /{weekTarget} 币
-              {weekEarned >= weekTarget && weekTarget > 0 && <span style={{ marginLeft: 2 }}><Icon name="check" size={14} /></span>}
-            </p>
-            {weeklyTasks.map(t => {
-              const pct = Math.min(t.progress / t.target * 100, 100);
-              const isClaimed = t.claimed;
-              const isComplete = t.progress >= t.target;
-              return (
-                <div key={t.key} className="oto-inset rounded-none! p-3"
-                     style={{ opacity: isClaimed ? 0.5 : 1 }}>
-                  <div className="flex items-center gap-3 mb-2">
-                    <Icon name={t.icon as IconName} size={20} />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span style={{ ...pxSm, fontWeight: 'bold' }}>{t.name}</span>
-                        <span style={{ ...pxSm, color: 'var(--oto-gold-dark)', fontWeight: 'bold' }}>
-                          +{t.amount} 币
-                        </span>
+            {/* Sub-folder 2: 周任务 */}
+            <div className="oto-inset rounded-none!">
+              <div className="flex items-center justify-between cursor-pointer p-3"
+                   onClick={() => setShowWeeklySub(!showWeeklySub)}>
+                <h3 style={{ ...pxSm, fontSize: '13px' }} className="m-0! flex items-center gap-2 font-bold">
+                  <Icon name="calendar" size={14} /> 周任务
+                  {weeklyTasks.some(t => t.can_claim) && (
+                    <span className="oto-badge" style={{
+                      ...pxSm, fontSize: '9px', padding: '0px 6px',
+                      background: 'var(--oto-gold)', color: '#fff',
+                      borderColor: 'var(--oto-gold-dark)',
+                    }}>可领取</span>
+                  )}
+                </h3>
+                <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{showWeeklySub ? '▲' : '▼'}</span>
+              </div>
+              {showWeeklySub && (
+                <div className="px-3 pb-3 space-y-2">
+                  <p style={{ ...pxSm, color: 'var(--oto-text-dim)' }}>
+                    本周 ({weekStart ? `${weekStart.slice(5).replace('-', '/')} - ${new Date(new Date(weekStart).getTime() + 6 * 86400000).toISOString().slice(5, 10).replace('-', '/')}` : ''}) 已获得{' '}
+                    <span style={{
+                      color: weekEarned >= weekTarget && weekTarget > 0 ? 'var(--oto-green)' : 'var(--oto-gold-dark)',
+                      fontWeight: 'bold',
+                    }}>{weekEarned}</span>
+                    /{weekTarget} 币
+                    {weekEarned >= weekTarget && weekTarget > 0 && <span style={{ marginLeft: 2 }}><Icon name="check" size={14} /></span>}
+                  </p>
+                  {weeklyTasks.map(t => {
+                    const pct = Math.min(t.progress / t.target * 100, 100);
+                    const isClaimed = t.claimed;
+                    const isComplete = t.progress >= t.target;
+                    return (
+                      <div key={t.key} className="oto-inset rounded-none! p-3"
+                           style={{ opacity: isClaimed ? 0.5 : 1 }}>
+                        <div className="flex items-center gap-3 mb-2">
+                          <Icon name={t.icon as IconName} size={20} />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span style={{ ...pxSm, fontWeight: 'bold' }}>{t.name}</span>
+                              <span style={{ ...pxSm, color: 'var(--oto-gold-dark)', fontWeight: 'bold' }}>
+                                +{t.amount} 币
+                              </span>
+                            </div>
+                            <p style={{ ...pxSm, color: 'var(--oto-text-muted)', marginTop: 2 }}>
+                              {t.desc}
+                            </p>
+                          </div>
+                          <div className="flex flex-col items-end gap-1">
+                            <span style={{ ...pxSm, color: isComplete ? 'var(--oto-green)' : 'var(--oto-text-dim)' }}>
+                              {t.progress}/{t.target}
+                            </span>
+                            {isClaimed ? (
+                              <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>已领取</span>
+                            ) : t.can_claim ? (
+                              <button onClick={() => handleClaimWeekly(t.key)}
+                                      className="oto-btn oto-btn-sm"
+                                      style={{ ...pxSm, padding: '2px 10px' }}>
+                                领取
+                              </button>
+                            ) : null}
+                          </div>
+                        </div>
+                        <div className="oto-progress" style={{ height: '6px' }}>
+                          <div style={{
+                            height: '100%', width: `${pct}%`,
+                            background: isComplete
+                              ? 'linear-gradient(90deg, #4a8a4a, #6aaa6a)'
+                              : 'linear-gradient(90deg, var(--oto-gold-dark), #d4b860)',
+                            transition: 'width 0.4s',
+                          }} />
+                        </div>
                       </div>
-                      <p style={{ ...pxSm, color: 'var(--oto-text-muted)', marginTop: 2 }}>
-                        {t.desc}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <span style={{ ...pxSm, color: isComplete ? 'var(--oto-green)' : 'var(--oto-text-dim)' }}>
-                        {t.progress}/{t.target}
-                      </span>
-                      {isClaimed ? (
-                        <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>已领取</span>
-                      ) : t.can_claim ? (
-                        <button onClick={() => handleClaimWeekly(t.key)}
-                                className="oto-btn oto-btn-sm"
-                                style={{ ...pxSm, padding: '2px 10px' }}>
-                          领取
-                        </button>
-                      ) : null}
-                    </div>
-                  </div>
-                  <div className="oto-progress" style={{ height: '6px' }}>
-                    <div style={{
-                      height: '100%', width: `${pct}%`,
-                      background: isComplete
-                        ? 'linear-gradient(90deg, #4a8a4a, #6aaa6a)'
-                        : 'linear-gradient(90deg, var(--oto-gold-dark), #d4b860)',
-                      transition: 'width 0.4s',
-                    }} />
-                  </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+              )}
+            </div>
 
-      {/* ── Earn Tokens (可多次完成) ── */}
-      <div className="oto-window rounded-none! p-4">
-        <div className="flex items-center justify-between cursor-pointer"
-             onClick={() => { setShowRepeatable(!showRepeatable); if (!showRepeatable) getTodayCounts().then(setTodayCounts).catch(() => {}); }}>
-          <h2 style={pxH3} className="m-0! flex items-center gap-2">
-            <Icon name="tomato" size={16} /> 番茄钟任务
-          </h2>
-          <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{showRepeatable ? '▲ 收起' : '▼ 展开'}</span>
-        </div>
-        {showRepeatable && (
-          <div className="mt-4 space-y-2">
-            <p style={{ ...pxSm, color: 'var(--oto-text-dim)' }}>
-              完成工作番茄钟即可获得代币，可无限次完成
-            </p>
-            {(() => {
-              const src = EARN_SOURCES.find(s => !s.daily)!;
-              const done = todayCounts[src.desc] || 0;
-              const tiers = [
-                { name: '入门', range: '1-4', amount: 40, current: Math.min(done, 4), target: 4 },
-                { name: '进阶', range: '5-8', amount: 50, current: Math.max(0, Math.min(done - 4, 4)), target: 4 },
-                { name: '大师', range: '9+',  amount: 60, current: Math.max(0, done - 8), target: Infinity },
-              ];
-              return tiers.map((tier, idx) => {
-                const isComplete = tier.target === Infinity ? tier.current > 0 : tier.current >= tier.target;
-                const active = (idx === 0 && done > 0) || (idx === 1 && done > 4) || (idx === 2 && done > 8);
-                const pct = tier.target === Infinity ? Math.min(tier.current * 12.5, 100) : Math.min(tier.current / tier.target * 100, 100);
-                return (
-                  <div key={tier.name} className="oto-inset rounded-none! p-3"
-                       style={{ opacity: !active && idx > 0 ? 0.5 : 1 }}>
+            {/* Sub-folder 3: 番茄钟任务（可多次完成） */}
+            <div className="oto-inset rounded-none!">
+              <div className="flex items-center justify-between cursor-pointer p-3"
+                   onClick={() => setShowRepeatableSub(!showRepeatableSub)}>
+                <h3 style={{ ...pxSm, fontSize: '13px' }} className="m-0! flex items-center gap-2 font-bold">
+                  <Icon name="tomato" size={14} /> 番茄钟任务
+                </h3>
+                <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{showRepeatableSub ? '▲' : '▼'}</span>
+              </div>
+              {showRepeatableSub && (
+                <div className="px-3 pb-3 space-y-2">
+                  <p style={{ ...pxSm, color: 'var(--oto-text-dim)' }}>
+                    完成工作番茄钟即可获得代币，可无限次完成
+                  </p>
+                  {(() => {
+                    const src = EARN_SOURCES.find(s => !s.daily)!;
+                    const done = todayCounts[src.desc] || 0;
+                    const tiers = [
+                      { name: '入门', range: '1-4', amount: 40, current: Math.min(done, 4), target: 4 },
+                      { name: '进阶', range: '5-8', amount: 50, current: Math.max(0, Math.min(done - 4, 4)), target: 4 },
+                      { name: '大师', range: '9+',  amount: 60, current: Math.max(0, done - 8), target: Infinity },
+                    ];
+                    return tiers.map((tier, idx) => {
+                      const isComplete = tier.target === Infinity ? tier.current > 0 : tier.current >= tier.target;
+                      const active = (idx === 0 && done > 0) || (idx === 1 && done > 4) || (idx === 2 && done > 8);
+                      const pct = tier.target === Infinity ? Math.min(tier.current * 12.5, 100) : Math.min(tier.current / tier.target * 100, 100);
+                      return (
+                        <div key={tier.name} className="oto-inset rounded-none! p-3"
+                             style={{ opacity: !active && idx > 0 ? 0.5 : 1 }}>
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <span style={{ ...pxSm, fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                                  番茄钟 · {tier.name}（第 {tier.range} 个）
+                                </span>
+                                <span style={{
+                                  ...pxSm, fontWeight: 'bold', whiteSpace: 'nowrap',
+                                  color: active ? 'var(--oto-gold-dark)' : 'var(--oto-text-muted)',
+                                }}>
+                                  +{tier.amount} 币/个
+                                </span>
+                              </div>
+                              <p style={{ ...pxSm, color: 'var(--oto-text-muted)', marginTop: 2, whiteSpace: 'nowrap' }}>
+                                本档完成第 {tier.range} 个番茄钟时按此档奖励
+                              </p>
+                            </div>
+                            <div className="flex flex-col items-end gap-1">
+                              <span style={{
+                                ...pxSm, whiteSpace: 'nowrap',
+                                color: isComplete ? 'var(--oto-green)' : 'var(--oto-text-dim)',
+                              }}>
+                                {tier.target === Infinity ? `${tier.current}/∞` : `${tier.current}/${tier.target}`}
+                              </span>
+                              {isComplete && idx < 2 && (
+                                <span style={{ ...pxSm, color: 'var(--oto-green)' }}><Icon name="check" size={14} /> 已达成</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="oto-progress" style={{ height: '6px' }}>
+                            <div style={{
+                              height: '100%', width: `${pct}%`,
+                              background: isComplete
+                                ? 'linear-gradient(90deg, #4a8a4a, #6aaa6a)'
+                                : 'linear-gradient(90deg, var(--oto-gold-dark), #d4b860)',
+                              transition: 'width 0.4s',
+                            }} />
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              )}
+            </div>
+
+            {/* Sub-folder 4: 打卡任务（连续打卡·自动发放） */}
+            <div className="oto-inset rounded-none!">
+              <div className="flex items-center justify-between cursor-pointer p-3"
+                   onClick={() => setShowStreakSub(!showStreakSub)}>
+                <h3 style={{ ...pxSm, fontSize: '13px' }} className="m-0! flex items-center gap-2 font-bold">
+                  <Icon name="calendarStar" size={14} /> 打卡任务
+                </h3>
+                <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{showStreakSub ? '▲' : '▼'}</span>
+              </div>
+              {showStreakSub && (
+                <div className="px-3 pb-3 space-y-2">
+                  <p style={{ ...pxSm, color: 'var(--oto-text-dim)' }}>
+                    与工作看板的连续打卡天数联动，每日自动发放
+                  </p>
+                  <div className="oto-inset rounded-none! p-3">
                     <div className="flex items-center gap-3 mb-2">
+                      <Icon name="calendar" size={20} />
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <span style={{ ...pxSm, fontWeight: 'bold', whiteSpace: 'nowrap' }}>
-                            番茄钟 · {tier.name}（第 {tier.range} 个）
+                          <span style={{ ...pxSm, fontWeight: 'bold' }}>
+                            连续打卡 {streakTask.streak} 天
                           </span>
-                          <span style={{
-                            ...pxSm, fontWeight: 'bold', whiteSpace: 'nowrap',
-                            color: active ? 'var(--oto-gold-dark)' : 'var(--oto-text-muted)',
-                          }}>
-                            +{tier.amount} 币/个
+                          <span style={{ ...pxSm, color: 'var(--oto-gold-dark)', fontWeight: 'bold' }}>
+                            +{streakTask.amount} 币
                           </span>
                         </div>
-                        <p style={{ ...pxSm, color: 'var(--oto-text-muted)', marginTop: 2, whiteSpace: 'nowrap' }}>
-                          本档完成第 {tier.range} 个番茄钟时按此档奖励
+                        <p style={{ ...pxSm, color: 'var(--oto-text-muted)', marginTop: 2 }}>
+                          按当前天数 ×10 发放
                         </p>
                       </div>
                       <div className="flex flex-col items-end gap-1">
-                        <span style={{
-                          ...pxSm, whiteSpace: 'nowrap',
-                          color: isComplete ? 'var(--oto-green)' : 'var(--oto-text-dim)',
-                        }}>
-                          {tier.target === Infinity ? `${tier.current}/∞` : `${tier.current}/${tier.target}`}
-                        </span>
-                        {isComplete && idx < 2 && (
-                          <span style={{ ...pxSm, color: 'var(--oto-green)' }}><Icon name="check" size={14} /> 已达成</span>
+                        {streakTask.streak === 0 ? (
+                          <>
+                            <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>暂无打卡</span>
+                            <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>未开始</span>
+                          </>
+                        ) : (
+                          <>
+                            <span style={{
+                              ...pxSm,
+                              color: streakTask.just_distributed ? 'var(--oto-gold-dark)' : 'var(--oto-text-dim)',
+                            }}>
+                              {streakTask.just_distributed ? '已发放' : '今日已发放'}
+                            </span>
+                            <span style={{ ...pxSm, color: 'var(--oto-green)' }}>
+                              <Icon name="check" size={14} /> 已到账
+                            </span>
+                          </>
                         )}
                       </div>
                     </div>
-                    <div className="oto-progress" style={{ height: '6px' }}>
-                      <div style={{
-                        height: '100%', width: `${pct}%`,
-                        background: isComplete
-                          ? 'linear-gradient(90deg, #4a8a4a, #6aaa6a)'
-                          : 'linear-gradient(90deg, var(--oto-gold-dark), #d4b860)',
-                        transition: 'width 0.4s',
-                      }} />
-                    </div>
                   </div>
-                );
-              });
-            })()}
+                </div>
+              )}
+            </div>
+
           </div>
         )}
       </div>
