@@ -6,7 +6,7 @@ import StatusBadge from '../components/StatusBadge';
 import Icon from '../components/Icons';
 
 const EMPTY: Partial<Project> = { name: '', description: '', color: '#687898', status: 'ACTIVE' };
-const COLORS = ['#687898', '#308030', '#b08020', '#986868', '#786898', '#208080', '#b03080'];
+const COLORS = ['#c83030', '#304868', '#d08030', '#308030', '#b09020', '#684878', '#e8e0d8', '#282020'];
 
 const pxBody = { fontFamily: 'var(--oto-font-body)', fontSize: '17px' };
 const pxSm = { fontFamily: 'var(--oto-font-body)', fontSize: '12px', letterSpacing: '0' };
@@ -82,20 +82,26 @@ export default function Projects() {
 
   return (
     <div className="space-y-6 oto-stagger">
-      <div className="oto-window rounded-none! p-4 flex items-center justify-between oto-card-stamped">
-        <h2 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '18px', lineHeight: '2', color: 'var(--oto-text)' }}><Icon name="folder" size={20} /> 项目管理</h2>
-        <div className="flex items-center gap-2">
-          <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="oto-select text-xs" style={{ textIndent: 0 }}>
-            <option value="created_at">创建时间</option>
-            <option value="name">项目名称</option>
-            <option value="status">状态</option>
-            <option value="task_count">任务数量</option>
-          </select>
-          <button onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')} className="oto-btn oto-btn-gray flex-shrink-0" title={sortDir === 'asc' ? '升序' : '降序'}>
-            排序{sortDir === 'asc' ? '↑' : '↓'}
-          </button>
-          <button onClick={openArchive} className="oto-btn oto-btn-gray"><Icon name="archive" size={14} /> 已归档</button>
-          <button onClick={openCreate} className="oto-btn"><Icon name="plus" size={14} /> 新建项目</button>
+      <div className="oto-window rounded-none! p-4 oto-card-stamped">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <h2 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '18px', lineHeight: '2', color: 'var(--oto-text)' }}><Icon name="folder" size={20} /> 项目管理</h2>
+          <div className="flex flex-col md:flex-row md:items-center gap-2">
+            <div className="flex items-center gap-2 w-full md:w-auto">
+              <button onClick={openArchive} className="oto-btn oto-btn-gray flex-1 md:flex-none"><Icon name="archive" size={14} /> 已归档</button>
+              <button onClick={openCreate} className="oto-btn flex-1 md:flex-none"><Icon name="plus" size={14} /> 新建项目</button>
+            </div>
+            <div className="flex items-center gap-2 w-full md:w-auto">
+              <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="oto-select text-xs w-1/2 md:w-auto md:flex-none" style={{ textIndent: 0 }}>
+                <option value="created_at">创建时间</option>
+                <option value="name">项目名称</option>
+                <option value="status">状态</option>
+                <option value="task_count">任务数量</option>
+              </select>
+              <button onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')} className="oto-btn oto-btn-gray w-1/2 md:w-auto md:flex-none" title={sortDir === 'asc' ? '升序' : '降序'}>
+                排序{sortDir === 'asc' ? '↑' : '↓'}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

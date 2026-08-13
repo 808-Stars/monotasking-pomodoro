@@ -276,8 +276,10 @@ export default function Guide() {
             <p style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>
               每日计划是单核工作法的核心——<strong style={{ color: '#304868' }}>每天只聚焦一件最重要的事</strong>。状态流转如下：
             </p>
-            <div className="mt-3 p-3 text-center" style={{ background: '#f8f4f0', fontFamily: 'var(--oto-font-body)', fontSize: '14px', color: '#4a3020', lineHeight: 2.2 }}>
-              <strong>未计划</strong> → <strong style={{ color: '#687898' }}>已计划</strong> → <strong style={{ color: '#689050' }}>已完成</strong> → <strong style={{ color: '#786890' }}>已回顾</strong><br />
+            <div className="mt-3 p-3 text-center" style={{ background: '#f8f4f0', fontFamily: 'var(--oto-font-body)', fontSize: '12px', color: '#4a3020', lineHeight: 2.2 }}>
+              <div className="md:text-[14px] whitespace-nowrap overflow-x-auto">
+                <strong>未计划</strong> → <strong style={{ color: '#687898' }}>已计划</strong> → <strong style={{ color: '#689050' }}>已完成</strong> → <strong style={{ color: '#786890' }}>已回顾</strong>
+              </div>
               <span style={{ color: '#a03038' }}>　　　　　↘ 未完成</span><br />
               <span style={{ color: 'var(--oto-text-muted)', fontSize: '12px' }}>
                 已计划可回退至未计划 · 已完成/未完成可回退至已计划 · 已回顾可回退至已完成
@@ -441,33 +443,33 @@ export default function Guide() {
         <div className="flex items-center justify-between">
           <div>
             <h2 style={{ ...pxH2, color: 'var(--oto-text)' }}><Icon name="book" size={22} /> 操作指南</h2>
-            <p style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>从零开始，掌握 monopomo</p>
+            <p style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>从零开始，掌握 MONOPOMO</p>
           </div>
         </div>
       </div>
 
       {/* Quick nav */}
-      <div className="oto-window p-4">
+      <div className="oto-window p-3 md:p-4">
         <p style={{ ...pxSm, fontSize: '10px', color: 'var(--oto-text-muted)', marginBottom: '10px' }}>快速跳转：</p>
-        <div className="grid grid-cols-7 gap-2">
+        <div className="grid grid-cols-4 md:grid-cols-7 gap-1.5 md:gap-2">
           {sections.map((s) => (
             <button key={s.id}
               onClick={() => { setOpenSection(s.id); document.getElementById(s.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
-              className="flex flex-col items-center gap-1.5 p-3 transition-all hover:brightness-110"
+              className="flex flex-col items-center gap-1 p-1.5 md:p-3 transition-all hover:brightness-110"
               style={{
                 background: openSection === s.id ? (s.tagBg || '#f0e4d4') : 'var(--oto-bg-inset)',
                 border: `1px solid ${openSection === s.id ? (s.tagBorder || '#c8a040') : 'var(--oto-border-light)'}`,
                 cursor: 'pointer',
               }}>
-              <span className="w-8 h-8 flex items-center justify-center"
+              <span className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center"
                 style={{ background: s.tagBg || '#f0e4d4', color: s.tagColor || '#4a3020' }}>
-                <Icon name={s.icon as IconName} size={18} />
+                <Icon name={s.icon as IconName} size={16} className="md:w-[18px] md:h-[18px]" />
               </span>
               <span style={{
-                fontFamily: 'var(--oto-font-body)', fontSize: '11px', fontWeight: openSection === s.id ? 700 : 400,
+                fontFamily: 'var(--oto-font-body)', fontSize: '10px', fontWeight: openSection === s.id ? 700 : 400,
                 color: openSection === s.id ? (s.tagColor || '#4a3020') : 'var(--oto-text-dim)',
                 textAlign: 'center', lineHeight: 1.3,
-              }}>
+              }} className="md:!text-[11px]">
                 {s.title.split('：')[0]}
               </span>
             </button>
@@ -482,14 +484,14 @@ export default function Guide() {
           return (
             <div key={s.id} id={s.id} className="oto-window overflow-hidden" style={{ borderColor: isOpen ? '#8a6a48' : '#c8b898' }}>
               <button onClick={() => toggle(s.id)}
-                className="w-full px-5 py-4 flex items-center justify-between text-left hover:brightness-110"
+                className="w-full px-3 md:px-5 py-3 md:py-4 flex items-center justify-between text-left hover:brightness-110"
                 style={{ background: isOpen ? '#f0e4d4' : 'transparent' }}>
-                <div className="flex items-center gap-3">
-                  <Icon name={s.icon as IconName} size={28} />
-                  <h3 style={{ ...pxH3, color: 'var(--oto-text)' }}>{s.title}</h3>
-                  {s.tag && <span className="oto-badge" style={{ background: s.tagBg, color: s.tagColor, borderColor: s.tagBorder }}>{s.tag}</span>}
+                <div className="flex items-center gap-2 md:gap-3">
+                  <Icon name={s.icon as IconName} size={20} className="md:w-7 md:h-7" />
+                  <h3 style={{ ...pxH3, fontSize: '13px', color: 'var(--oto-text)' }} className="md:!text-[15px]">{s.title}</h3>
+                  {s.tag && <span className="oto-badge text-[10px] px-1! py-0! md:text-xs md:px-2 md:py-0.5" style={{ background: s.tagBg, color: s.tagColor, borderColor: s.tagBorder }}>{s.tag}</span>}
                 </div>
-                <span className="text-gray-500 text-lg" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.25s ease' }}>▼</span>
+                <span className="text-gray-500 text-sm md:text-lg" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.25s ease' }}>▼</span>
               </button>
               {isOpen && (
                 <div className="px-5 pb-5 pt-4" style={{ borderTop: '2px solid #1a2430' }}>{s.content}</div>

@@ -69,20 +69,28 @@ const pxBody = { fontFamily: 'var(--oto-font-body)', fontSize: '18px' };
 export default function Onboarding() {
   const navigate = useNavigate();
   const [quests, setQuests] = useState<Quest[]>([]);
-  const [completed, setCompleted] = useState<Set<string>>(new Set());
+  const [completed, setCompleted] = useState<Set<string>>(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('onboarding_completed') || '[]')); } catch { return new Set(); }
+  });
   const [checking, setChecking] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => { const qs = buildQuests(); setQuests(qs); checkAll(qs); }, []);
 
   const checkAll = async (qs?: Quest[]) => {
-    const list = qs || quests; setChecking(true); const newCompleted = new Set<string>();
+    const list = qs || quests; setChecking(true);
+    // 保留已有的完成记录，只追加新的
+    const merged = new Set(completed);
     for (const q of list) {
-      // 限制完成顺序：前面的步骤未完成时，后续步骤不算完成
-      const prevDone = list.indexOf(q) === 0 || newCompleted.has(list[list.indexOf(q) - 1].id);
-      if (!prevDone) break;
-      try { const ok = await q.checkFn(); if (ok) newCompleted.add(q.id); else break; } catch { break; }
+      if (merged.has(q.id)) continue; // 已完成的跳过
+      // 前置步骤未完成则停止
+      const idx = list.indexOf(q);
+      if (idx > 0 && !merged.has(list[idx - 1].id)) break;
+      try { const ok = await q.checkFn(); if (ok) merged.add(q.id); else break; } catch { break; }
     }
-    setCompleted(newCompleted); setChecking(false);
+    setCompleted(merged);
+    localStorage.setItem('onboarding_completed', JSON.stringify([...merged]));
+    setChecking(false);
   };
 
   const doneCount = completed.size; const totalCount = quests.length;
@@ -91,13 +99,14 @@ export default function Onboarding() {
   const nextQuest = quests.find(q => !completed.has(q.id));
 
   return (
-    <div className="space-y-6 oto-stagger">
+    <div className="space-y-6 oto-stagger overflow-x-hidden">
       {/* Header */}
       <div className="oto-window rounded-none! p-5 oto-card-stamped" style={{ borderColor: 'var(--oto-gold)', background: 'var(--oto-bg-card)' }}>
         <div className="flex items-center justify-between">
           <div>
             <h2 style={{ ...pxH2, color: 'var(--oto-text)' }}><Icon name="graduate" size={20} /> 新手教程</h2>
-            <p style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>8 步走完核心功能，亲手体验 monopomo</p>
+            <p className="md:hidden" style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>8 步走完核心功能，<br />亲手体验 MONOPOMO</p>
+            <p className="hidden md:block" style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>8 步走完核心功能，亲手体验 MONOPOMO</p>
           </div>
         </div>
       </div>
@@ -108,8 +117,8 @@ export default function Onboarding() {
           <span style={{ fontFamily: "'HYPixel'", fontSize: '10px', color: '#4a3020' }}>学习进度</span>
           <span style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>{progressPct}%</span>
         </div>
-        <div className="oto-progress animate-progress-pulse">
-          <div style={{ width: `${progressPct}%`, background: 'linear-gradient(90deg, #689050, #78a860, #509030)' }} />
+        <div className="w-full h-2 rounded-none overflow-hidden" style={{ background: '#e8d4a8' }}>
+          <div className="h-full" style={{ width: `${progressPct}%`, background: 'linear-gradient(90deg, #689050, #78a860, #509030)', transition: 'width 0.3s ease' }} />
         </div>
         <div className="flex justify-between mt-2">
           {quests.map((q, i) => {
@@ -135,14 +144,19 @@ export default function Onboarding() {
       </div>
 
       {/* Status text */}
-      <div className="flex items-center justify-between">
+      <div className="oto-window p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-0">
         <p style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>
           {checking ? <><Icon name="clock" size={14} /> 检查进度中...</> :
-           allDone ? <><Icon name="star" size={14} /> 恭喜完成全部新手任务！现在你已经掌握了系统的所有核心功能。</> :
+           allDone ? <><Icon name="trophy" size={20} /> 恭喜完成全部新手任务！现在你已经掌握了系统的所有核心功能。</> :
            `↓ 下一步：${nextQuest?.title || ''}`}
         </p>
-        <button onClick={() => checkAll()} disabled={checking}
-          className="oto-btn-sm"><Icon name="refresh" size={14} /> 刷新进度</button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setShowWelcome(true)} className="oto-btn-sm">
+            <Icon name="star" size={14} /> 再看一遍欢迎弹窗
+          </button>
+          <button onClick={() => checkAll()} disabled={checking}
+            className="oto-btn-sm"><Icon name="refresh" size={14} /> 刷新进度</button>
+        </div>
       </div>
 
       {/* Quest cards */}
@@ -161,7 +175,7 @@ export default function Onboarding() {
               <div className="flex">
                 <div className="w-1.5 flex-shrink-0" style={{ background: isDone ? 'var(--oto-green)' : isNext ? 'var(--oto-gold)' : 'var(--oto-border-light)' }} />
                 <div className="flex-1 p-5">
-                  <div className="flex items-start gap-4">
+                  <div className="flex flex-col md:flex-row md:items-start gap-4">
                     <div className="w-12 h-12 flex items-center justify-center text-2xl flex-shrink-0 oto-inset"
                       style={{ opacity: isLocked ? 0.5 : 1 }}>
                       <Icon name={q.icon} size={24} />
@@ -175,9 +189,12 @@ export default function Onboarding() {
                       <h3 style={{ ...pxH3, fontSize: '10px', color: isDone ? 'var(--oto-text-muted)' : 'var(--oto-text)', textDecoration: isDone ? 'line-through' : 'none', marginBottom: '8px' }}>
                         {q.title}
                       </h3>
-                      <div className="text-sm leading-relaxed whitespace-pre-line" style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>{q.description}</div>
+                      <div className="text-sm leading-relaxed whitespace-pre-line" style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>
+                        <br className="md:hidden" />
+                        {q.description}
+                      </div>
                     </div>
-                    <div className="flex-shrink-0 self-center">
+                    <div className="flex-shrink-0 self-start md:self-center">
                       {isDone ? (
                         <span className="oto-badge" style={{ background: '#e8f0e4', color: 'var(--oto-green)', borderColor: 'var(--oto-green)' }}>已完成 <Icon name="check" size={14} /></span>
                       ) : isLocked ? (
@@ -215,6 +232,79 @@ export default function Onboarding() {
       {!allDone && nextQuest && (
         <div className="text-center py-4">
           <p style={{ ...pxBody, color: 'var(--oto-text-muted)' }}><Icon name="bulb" size={14} /> 完成当前任务后，点击「<Icon name="refresh" size={14} /> 刷新进度」查看最新状态</p>
+        </div>
+      )}
+
+      {/* Welcome Modal */}
+      {showWelcome && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center oto-overlay" onClick={() => setShowWelcome(false)}>
+          <div className="oto-modal max-w-lg w-[92vw] mx-4 overflow-hidden" onClick={e => e.stopPropagation()}>
+            {/* 顶部装饰条 */}
+            <div className="px-8 pt-8 pb-6 text-center" style={{ background: 'linear-gradient(180deg, #faf0e8 0%, #f4e0d4 100%)' }}>
+              <div className="mb-5" style={{ color: 'var(--oto-gold-dark)' }}>
+                <Icon name="clock" size={72} />
+              </div>
+              <p style={{ fontFamily: 'var(--oto-font-body)', fontSize: '14px', color: 'var(--oto-text)', letterSpacing: '2px', lineHeight: '2' }}>
+                欢迎使用
+              </p>
+              <h2 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '28px', color: 'var(--oto-text)', margin: '4px 0 0', lineHeight: '1.6' }}>
+                MONOPOMO
+              </h2>
+            </div>
+
+            {/* 双卡片 */}
+            <div className="px-6 py-5" style={{ background: 'var(--oto-bg-card)' }}>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="oto-window-gold p-5 text-center">
+                  <div className="mb-3" style={{ color: 'var(--oto-blue)' }}>
+                    <Icon name="target" size={40} />
+                  </div>
+                  <p style={{ fontFamily: 'var(--oto-font-title)', fontSize: '15px', color: 'var(--oto-blue)', lineHeight: '1.6', fontWeight: 'bold' }}>
+                    单核工作法
+                  </p>
+                  <p style={{ fontFamily: "'HYPixel'", fontSize: '12px', color: 'var(--oto-blue)', opacity: 0.6, marginTop: '2px' }}>
+                    Monotasking
+                  </p>
+                  <p style={{ fontFamily: 'var(--oto-font-title)', fontSize: '20px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>
+                    定方向
+                  </p>
+                </div>
+                <div className="oto-window-gold p-5 text-center">
+                  <div className="mb-3" style={{ color: 'var(--oto-red)' }}>
+                    <Icon name="tomato" size={40} />
+                  </div>
+                  <p style={{ fontFamily: 'var(--oto-font-title)', fontSize: '15px', color: 'var(--oto-red)', lineHeight: '1.6', fontWeight: 'bold' }}>
+                    番茄工作法
+                  </p>
+                  <p style={{ fontFamily: "'HYPixel'", fontSize: '12px', color: 'var(--oto-red)', opacity: 0.6, marginTop: '2px' }}>
+                    Pomodoro
+                  </p>
+                  <p style={{ fontFamily: 'var(--oto-font-title)', fontSize: '20px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>
+                    保执行
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 介绍文字 */}
+            <div className="px-8 pb-5" style={{ background: 'var(--oto-bg-card)' }}>
+              <div className="oto-inset p-4 text-center">
+                <p style={{ fontFamily: 'var(--oto-font-body)', fontSize: '15px', color: 'var(--oto-text-dim)', lineHeight: '2' }}>
+                  我们为您准备了一个 <strong style={{ color: 'var(--oto-blue)' }}>8 步新手教程</strong>
+                </p>
+                <p style={{ fontFamily: 'var(--oto-font-body)', fontSize: '14px', color: 'var(--oto-text-muted)', lineHeight: '2' }}>
+                  带你亲手体验全部功能，约需 <strong style={{ color: 'var(--oto-red)' }}>3-5 分钟</strong>
+                </p>
+              </div>
+            </div>
+
+            {/* 关闭按钮 */}
+            <div className="px-6 pb-6" style={{ background: 'var(--oto-bg-card)' }}>
+              <button onClick={() => setShowWelcome(false)} className="oto-btn w-full" style={{ padding: '12px 24px', fontSize: '16px' }}>
+                <Icon name="check" size={16} /> 知道了
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

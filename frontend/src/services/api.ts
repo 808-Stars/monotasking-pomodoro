@@ -513,6 +513,20 @@ export async function addTokenRecord(amount: number, source: string, claimed = t
   return data
 }
 
+export async function fetchTokenRecords(limit = 20) {
+  return cached(`token-records:${limit}`, async () => {
+    const user = await currentUser()
+    if (!user) return []
+    const { data } = await supabase
+      .from('token_records')
+      .select('id, amount, source, created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+    return data ?? []
+  })
+}
+
 export async function getDailyTasks() {
   return cached('daily-tasks', async () => {
     const user = await currentUser()
@@ -860,25 +874,22 @@ export async function getWeeklyTasks() {
         progress = Math.min(daily.count ?? 0, 3) + Math.min(weekly.count ?? 0, 1)
       } else if (t.key === 'streak_7') {
         let streak = 0
-        const wsNow = new Date(); const wsDate = new Date(wsNow); wsDate.setDate(wsDate.getDate() - wsDate.getDay() + 1)
-        const weekStartDate = new Date(wsDate.toISOString().slice(0, 10) + 'T00:00:00')
-        const cursor = new Date(localDate() + 'T00:00:00')
-        const startMs = weekStartDate.getTime()
-        const endMs = cursor.getTime()
-        for (let ms = endMs; ms >= startMs; ms -= 86400000) {
-          const d = new Date(ms)
-          const ds = d.toISOString().slice(0, 10)
-          const nextDay = new Date(d)
-          nextDay.setDate(nextDay.getDate() + 1)
-          const ns = nextDay.toISOString().slice(0, 10)
-          const { count } = await supabase
+        const todayLogical = localDate()
+        const todayStart = new Date(new Date(todayLogical + 'T00:00:00').getTime() + 4 * 3600_000)
+        const weekStart = new Date(todayStart); weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1)
+        for (let i = 0; i < 7; i++) {
+          const dayStart = new Date(todayStart.getTime() - i * 86400_000)
+          if (dayStart < weekStart) break
+          const dayEnd = new Date(dayStart.getTime() + 86400_000)
+          const { data: recs } = await supabase
             .from('token_records')
-            .select('*', { count: 'exact', head: true })
+            .select('source')
             .eq('user_id', user.id)
-            .gt('amount', 0).in('source', STREAK_SOURCES)
-            .gte('created_at', ds)
-            .lt('created_at', ns)
-          if ((count ?? 0) > 0) streak++
+            .gt('amount', 0)
+            .gte('created_at', dayStart.toISOString())
+            .lt('created_at', dayEnd.toISOString())
+          const cnt = (recs ?? []).filter(r => STREAK_SOURCES.includes(r.source)).length
+          if (cnt > 0) streak++
           else break
         }
         progress = Math.min(streak, 7)
@@ -953,22 +964,19 @@ export async function claimWeeklyTask(taskKey: string) {
     progress = Math.min(daily.count ?? 0, 3) + Math.min(weekly.count ?? 0, 1)
   } else if (taskKey === 'streak_7') {
     let streak = 0
-    const wsNow = new Date(); const wsDate = new Date(wsNow); wsDate.setDate(wsDate.getDate() - wsDate.getDay() + 1)
-    const weekStartDate = new Date(wsDate.toISOString().slice(0, 10) + 'T00:00:00')
-    const cursor = new Date(localDate() + 'T00:00:00')
-    const startMs = weekStartDate.getTime()
-    const endMs = cursor.getTime()
-    for (let ms = endMs; ms >= startMs; ms -= 86400000) {
-      const d = new Date(ms)
-      const ds = d.toISOString().slice(0, 10)
-      const nextDay = new Date(d)
-      nextDay.setDate(nextDay.getDate() + 1)
-      const ns = nextDay.toISOString().slice(0, 10)
-      const { count } = await supabase
-        .from('token_records').select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id).gt('amount', 0).in('source', STREAK_SOURCES)
-        .gte('created_at', ds).lt('created_at', ns)
-      if ((count ?? 0) > 0) streak++
+    const todayLogical = localDate()
+    const todayStart = new Date(new Date(todayLogical + 'T00:00:00').getTime() + 4 * 3600_000)
+    const weekStart = new Date(todayStart); weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1)
+    for (let i = 0; i < 7; i++) {
+      const dayStart = new Date(todayStart.getTime() - i * 86400_000)
+      if (dayStart < weekStart) break
+      const dayEnd = new Date(dayStart.getTime() + 86400_000)
+      const { data: recs } = await supabase
+        .from('token_records').select('source')
+        .eq('user_id', user.id).gt('amount', 0)
+        .gte('created_at', dayStart.toISOString()).lt('created_at', dayEnd.toISOString())
+      const cnt = (recs ?? []).filter(r => STREAK_SOURCES.includes(r.source)).length
+      if (cnt > 0) streak++
       else break
     }
     progress = Math.min(streak, 7)
@@ -998,17 +1006,21 @@ const STREAK_SOURCES = [
 
 async function computeStreak(userId: string): Promise<number> {
   let streak = 0
-  const cursor = new Date(localDate() + 'T00:00:00')
+  // 以 localDate() 的4AM偏移为基准，构建每个逻辑日的 UTC 时间范围
+  const todayLogical = localDate()
+  const todayStart = new Date(new Date(todayLogical + 'T00:00:00').getTime() + 4 * 3600_000)
+
   for (let i = 0; i < 365; i++) {
-    const ds = cursor.toISOString().slice(0, 10)
-    const next = new Date(cursor); next.setDate(next.getDate() + 1)
-    const ns = next.toISOString().slice(0, 10)
-    const { count } = await supabase.from('token_records').select('*', { count: 'exact', head: true })
-      .eq('user_id', userId).gt('amount', 0).in('source', STREAK_SOURCES)
-      .gte('created_at', ds).lt('created_at', ns)
-    if ((count ?? 0) > 0) streak++
+    const dayStart = new Date(todayStart.getTime() - i * 86400_000)
+    const dayEnd = new Date(dayStart.getTime() + 86400_000)
+    const { data } = await supabase.from('token_records')
+      .select('source')
+      .eq('user_id', userId).gt('amount', 0)
+      .gte('created_at', dayStart.toISOString())
+      .lt('created_at', dayEnd.toISOString())
+    const count = (data ?? []).filter(r => STREAK_SOURCES.includes(r.source)).length
+    if (count > 0) streak++
     else break
-    cursor.setDate(cursor.getDate() - 1)
   }
   return streak
 }
@@ -1023,27 +1035,9 @@ export async function getStreakTaskStatus() {
 
     if (streak === 0) return { streak: 0, amount: 0, distributed: true }
 
-    // 自动发放：今日尚无对应奖励记录则立即入账（与日任务一致，claimed=true）
-    const todayStr = localDate()
-    const { data: existing } = await supabase
-      .from('token_records').select('id, amount')
-      .eq('user_id', user.id).eq('source', '连续打卡')
-      .gte('created_at', todayStr).limit(10)
-
-    const alreadyDistributed = !!(existing && existing.some(r => r.amount === amount))
-
-    if (!alreadyDistributed) {
-      // 清理今日的过期记录（streak 变化导致金额不一致时）
-      if (existing && existing.length > 0) {
-        await supabase.from('token_records').delete()
-          .eq('user_id', user.id).eq('source', '连续打卡')
-          .gte('created_at', todayStr)
-      }
-      await addTokenRecord(amount, '连续打卡')
-      invalidate('token-balance', 'streak-task', 'dashboard-stats', 'today-counts', 'showcase-current')
-      return { streak, amount, distributed: true, just_distributed: true }
-    }
-
+    // daily=true 保证同一 source 同一天只插入一次，从根源避免并发重复
+    await addTokenRecord(amount, '连续打卡', true, true)
+    invalidate('token-balance', 'streak-task', 'dashboard-stats', 'today-counts', 'showcase-current')
     return { streak, amount, distributed: true }
   })
 }
@@ -1169,17 +1163,17 @@ export async function getDashboardStats() {
       // 连续打卡天数
       (async () => {
         let streak = 0
-        const cursor = new Date(localDate() + 'T00:00:00')
+        const todayLogical = localDate()
+        const todayStart = new Date(new Date(todayLogical + 'T00:00:00').getTime() + 4 * 3600_000)
         for (let i = 0; i < 365; i++) {
-          const ds = cursor.toISOString().slice(0, 10)
-          const next = new Date(cursor); next.setDate(next.getDate() + 1)
-          const ns = next.toISOString().slice(0, 10)
-          const { count } = await supabase.from('token_records').select('*', { count: 'exact', head: true })
-            .eq('user_id', user.id).gt('amount', 0).in('source', STREAK_SOURCES)
-            .gte('created_at', ds).lt('created_at', ns)
-          if ((count ?? 0) > 0) streak++
+          const dayStart = new Date(todayStart.getTime() - i * 86400_000)
+          const dayEnd = new Date(dayStart.getTime() + 86400_000)
+          const { data: recs } = await supabase.from('token_records').select('source')
+            .eq('user_id', user.id).gt('amount', 0)
+            .gte('created_at', dayStart.toISOString()).lt('created_at', dayEnd.toISOString())
+          const cnt = (recs ?? []).filter(r => STREAK_SOURCES.includes(r.source)).length
+          if (cnt > 0) streak++
           else break
-          cursor.setDate(cursor.getDate() - 1)
         }
         return streak
       })(),

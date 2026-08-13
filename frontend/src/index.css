@@ -494,10 +494,10 @@ h5, h6 {
 ::-webkit-scrollbar { width: 12px; }
 ::-webkit-scrollbar-track { background: var(--oto-bg-main); }
 ::-webkit-scrollbar-thumb {
-  background: var(--oto-border);
-  border: 2px solid var(--oto-border-light);
+  background: var(--oto-text-muted);
+  border: 2px solid var(--oto-bg-main);
 }
-::-webkit-scrollbar-thumb:hover { background: var(--oto-border-light); }
+::-webkit-scrollbar-thumb:hover { background: var(--oto-text-dim); }
 
 ::selection { background: var(--oto-gold); color: var(--oto-bg-main); }
 

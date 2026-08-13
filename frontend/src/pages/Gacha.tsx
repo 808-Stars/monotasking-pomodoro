@@ -7,11 +7,11 @@ import {
   getTokenBalance, addTokenRecord, getDailyTasks,
   claimDailyTokens, claimAllDailyTokens,
   getWeeklyTasks, claimWeeklyTask,
-  getStreakTaskStatus,
+  getStreakTaskStatus, fetchTokenRecords,
   getSSRTargetStatus, setSSRTarget, clearSSRTarget,
   getTodayCounts,
 } from '../services/api';
-import type { GachaItem, GachaRecord, TokenBalance } from '../types';
+import type { GachaItem, GachaRecord, TokenBalance, TokenRecord } from '../types';
 import { RARITY_MAP, RARITY_COLOR_MAP } from '../types';
 
 const RARITY_ROW: Record<string, number> = { SSR: 1, SR: 2, R: 3, N: 4 };
@@ -85,7 +85,6 @@ interface StreakTaskStatus {
   streak: number;
   amount: number;
   distributed: boolean;
-  just_distributed?: boolean;
 }
 
 export default function Gacha() {
@@ -120,6 +119,8 @@ export default function Gacha() {
   const [showSSRLock, setShowSSRLock] = useState(false);
   const [pullMeta, setPullMeta] = useState<{ ssr_target_consumed?: boolean; ssr_target_item?: any } | null>(null);
   const [todayTomatoCount, setTodayTomatoCount] = useState<number>(0);
+  const [tokenRecords, setTokenRecords] = useState<TokenRecord[]>([]);
+  const [showTokenRecords, setShowTokenRecords] = useState(false);
   const [todayCounts, setTodayCounts] = useState<Record<string, number>>({});
   const [settingSSRTarget, setSettingSSRTarget] = useState(false);
   const [streakTask, setStreakTask] = useState<StreakTaskStatus>({ streak: 0, amount: 0, distributed: true });
@@ -141,7 +142,7 @@ export default function Gacha() {
   }, []);
 
   const load = useCallback(async () => {
-    const [itemsData, recordsData, balanceData, dailyData, weeklyData, ssrData, todayCountsData, streakData] = await Promise.all([
+    const [itemsData, recordsData, balanceData, dailyData, weeklyData, ssrData, todayCountsData, streakData, tokenRecordsData] = await Promise.all([
       fetchGachaItems(),
       fetchGachaRecords(),
       getTokenBalance(),
@@ -150,11 +151,13 @@ export default function Gacha() {
       getSSRTargetStatus().catch(() => ({ target: null, total_pulls: 0, eligible: false, monthly_used: false })),
       getTodayCounts().catch(() => ({})),
       getStreakTaskStatus().catch(() => ({ streak: 0, amount: 0, distributed: true })),
+      fetchTokenRecords(20).catch(() => [] as TokenRecord[]),
     ]);
     setItems(itemsData);
     setRecords(recordsData);
     setBalance(balanceData);
     setSSRTargetStatus(ssrData);
+    setTokenRecords(tokenRecordsData);
 
     // Today tomato count for tier display
     const todayCounts = todayCountsData as Record<string, number>;
@@ -175,10 +178,8 @@ export default function Gacha() {
 
     // Streak task（自动发放：load 期间可能新增记录，需要刷新余额）
     setStreakTask(streakData);
-    if ('just_distributed' in streakData && streakData.just_distributed) {
-      const b = await getTokenBalance()
-      setBalance(b)
-    }
+    const b = await getTokenBalance()
+    setBalance(b)
 
     // Compute owned counts and pity
     const counts: Record<string, number> = {};
@@ -754,12 +755,7 @@ export default function Gacha() {
                           </>
                         ) : (
                           <>
-                            <span style={{
-                              ...pxSm,
-                              color: streakTask.just_distributed ? 'var(--oto-gold-dark)' : 'var(--oto-text-dim)',
-                            }}>
-                              {streakTask.just_distributed ? '已发放' : '今日已发放'}
-                            </span>
+                            <span style={{ ...pxSm, color: 'var(--oto-text-dim)' }}>今日已发放</span>
                             <span style={{ ...pxSm, color: 'var(--oto-green)' }}>
                               <Icon name="check" size={14} /> 已到账
                             </span>
@@ -772,6 +768,74 @@ export default function Gacha() {
               )}
             </div>
 
+          </div>
+        )}
+      </div>
+
+      {/* Token Records */}
+      <div className="oto-window rounded-none! p-4">
+        <div className="flex items-center justify-between cursor-pointer"
+             onClick={() => setShowTokenRecords(!showTokenRecords)}>
+          <h2 style={pxH3} className="m-0! flex items-center gap-2">
+            <Icon name="coins" size={18} /> 代币记录
+          </h2>
+          <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{showTokenRecords ? '▲ 收起' : '▼ 展开'}</span>
+        </div>
+        {showTokenRecords && (
+          <div className="mt-3">
+            <p style={{ ...pxSm, color: 'var(--oto-text-dim)', marginBottom: 8 }}>最近 20 条代币收支记录</p>
+            {tokenRecords.length === 0 ? (
+              <p style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>暂无代币记录</p>
+            ) : (
+              <>
+                {/* 手机端：卡片 */}
+                <div className="md:hidden space-y-2">
+                  {tokenRecords.map((r) => (
+                    <div key={r.id} className="flex items-center gap-3 p-2 oto-inset rounded-none!">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span style={{ ...pxSm, fontWeight: 'bold' }}>{r.source}</span>
+                          <span style={{ ...pxSm, color: r.amount > 0 ? 'var(--oto-green)' : 'var(--oto-red)', fontWeight: 'bold' }}>
+                            {r.amount > 0 ? `+${r.amount}` : r.amount}
+                          </span>
+                        </div>
+                        <p style={{ ...pxSm, fontSize: '10px', color: 'var(--oto-text-muted)' }}>
+                          {new Date(r.created_at).toLocaleString('zh-CN')}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 桌面端：表格 */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="oto-table oto-table-striped w-full" style={pxSm}>
+                    <thead>
+                      <tr>
+                        <th style={{ width: '50px' }}>#</th>
+                        <th>来源</th>
+                        <th style={{ width: '80px' }}>金额</th>
+                        <th style={{ width: '200px' }}>时间</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tokenRecords.map((r, i) => (
+                        <tr key={r.id}>
+                          <td style={{ color: 'var(--oto-text-muted)' }}>{i + 1}</td>
+                          <td style={{ fontWeight: 'bold' }}>{r.source}</td>
+                          <td style={{ color: r.amount > 0 ? 'var(--oto-green)' : 'var(--oto-red)', fontWeight: 'bold' }}>
+                            {r.amount > 0 ? `+${r.amount}` : r.amount}
+                          </td>
+                          <td style={{ color: 'var(--oto-text-muted)' }}>
+                            {new Date(r.created_at).toLocaleString('zh-CN')}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -985,82 +1049,6 @@ export default function Gacha() {
         )}
       </div>
 
-      {/* Collection Gallery */}
-      <div className="oto-window rounded-none! p-4">
-        <div className="flex items-center justify-between cursor-pointer"
-             onClick={() => setShowCollection(!showCollection)}>
-          <h2 style={pxH3} className="m-0! flex items-center gap-2">
-            <Icon name="gallery" size={18} /> 本月已收集图鉴
-          </h2>
-          <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{showCollection ? '▲ 收起' : '▼ 展开'}</span>
-        </div>
-        {showCollection && (
-          <div className="mt-3">
-            <p className="mb-3" style={{
-              fontSize: '11px',
-              color: 'var(--oto-text-muted)',
-              fontFamily: 'var(--oto-font-body)',
-            }}>
-              <Icon name="gallery" size={10} /> 本月收集图鉴月末自动清零（用于藏品室结算）
-            </p>
-        {rarityOrder.map(rarity => (
-          <div key={rarity} className="mb-4">
-            <h3 style={{
-              ...pxSm, marginBottom: 8, paddingLeft: 4,
-              color: RARITY_COLOR_MAP[rarity] || 'var(--oto-text)',
-              fontWeight: 'bold',
-            }}>
-              {RARITY_MAP[rarity] || rarity} ({rarity})
-            </h3>
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(130px,1fr))] gap-3">
-              {grouped[rarity].map(item => {
-                const owned = (item.owned_count ?? 0) > 0;
-                return (
-                  <div key={item.id} className="oto-window rounded-none! p-3 text-center"
-                       onClick={() => owned && setSelectedItem(item)}
-                       style={{
-                         opacity: owned ? 1 : 0.45,
-                         filter: owned ? 'none' : 'grayscale(1)',
-                         borderColor: owned ? RARITY_COLOR_MAP[item.rarity] : 'var(--oto-border)',
-                         cursor: owned ? 'pointer' : 'default',
-                         transition: 'transform 0.15s, box-shadow 0.15s',
-                       }}
-                       onMouseEnter={e => { if (owned) { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = `0 0 12px ${RARITY_COLOR_MAP[item.rarity]}44`; }}}
-                       onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}>
-                    <div style={{ width: 48, height: 48, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {owned ? (
-                        <img src={itemImage(item)} alt={item.name} style={{ width: 48, height: 48, objectFit: 'contain' }} />
-                      ) : (
-                        <span style={{ fontSize: '2rem', color: 'var(--oto-text-muted)' }}>{owned ? item.emoji : '?'}</span>
-                      )}
-                    </div>
-                    <div style={{ ...pxSm, fontWeight: 'bold', marginTop: 4 }}>{owned ? item.name : '???'}</div>
-                    {owned && item.job_display && (
-                      <div style={{ ...pxSm, fontSize: '10px', color: 'var(--oto-text-muted)', marginTop: 1 }}>
-                        {item.job_display}
-                      </div>
-                    )}
-                    <div className="oto-badge mt-1" style={{
-                      ...pxSm, fontSize: '10px', padding: '1px 6px',
-                      background: owned ? `${RARITY_COLOR_MAP[item.rarity]}22` : 'var(--oto-bg-inset)',
-                      color: RARITY_COLOR_MAP[item.rarity],
-                      borderColor: RARITY_COLOR_MAP[item.rarity],
-                    }}>
-                      {RARITY_MAP[item.rarity]}
-                    </div>
-                    {owned && <div style={{ ...pxSm, fontSize: '10px', color: 'var(--oto-text-muted)', marginTop: 2 }}>
-                      ×{item.owned_count}
-                    </div>}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
-        )}
-      </div>
-
       {/* Pull History */}
       <div className="oto-window rounded-none! p-4">
         <div className="flex items-center justify-between cursor-pointer"
@@ -1139,6 +1127,82 @@ export default function Gacha() {
               </>
             )}
           </div>
+        )}
+      </div>
+
+      {/* Collection Gallery */}
+      <div className="oto-window rounded-none! p-4">
+        <div className="flex items-center justify-between cursor-pointer"
+             onClick={() => setShowCollection(!showCollection)}>
+          <h2 style={pxH3} className="m-0! flex items-center gap-2">
+            <Icon name="gallery" size={18} /> 本月已收集图鉴
+          </h2>
+          <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{showCollection ? '▲ 收起' : '▼ 展开'}</span>
+        </div>
+        {showCollection && (
+          <div className="mt-3">
+            <p className="mb-3" style={{
+              fontSize: '11px',
+              color: 'var(--oto-text-muted)',
+              fontFamily: 'var(--oto-font-body)',
+            }}>
+              <Icon name="gallery" size={10} /> 本月收集图鉴月末自动清零（用于藏品室结算）
+            </p>
+        {rarityOrder.map(rarity => (
+          <div key={rarity} className="mb-4">
+            <h3 style={{
+              ...pxSm, marginBottom: 8, paddingLeft: 4,
+              color: RARITY_COLOR_MAP[rarity] || 'var(--oto-text)',
+              fontWeight: 'bold',
+            }}>
+              {RARITY_MAP[rarity] || rarity} ({rarity})
+            </h3>
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(130px,1fr))] gap-3">
+              {grouped[rarity].map(item => {
+                const owned = (item.owned_count ?? 0) > 0;
+                return (
+                  <div key={item.id} className="oto-window rounded-none! p-3 text-center"
+                       onClick={() => owned && setSelectedItem(item)}
+                       style={{
+                         opacity: owned ? 1 : 0.45,
+                         filter: owned ? 'none' : 'grayscale(1)',
+                         borderColor: owned ? RARITY_COLOR_MAP[item.rarity] : 'var(--oto-border)',
+                         cursor: owned ? 'pointer' : 'default',
+                         transition: 'transform 0.15s, box-shadow 0.15s',
+                       }}
+                       onMouseEnter={e => { if (owned) { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = `0 0 12px ${RARITY_COLOR_MAP[item.rarity]}44`; }}}
+                       onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}>
+                    <div style={{ width: 48, height: 48, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {owned ? (
+                        <img src={itemImage(item)} alt={item.name} style={{ width: 48, height: 48, objectFit: 'contain' }} />
+                      ) : (
+                        <span style={{ fontSize: '2rem', color: 'var(--oto-text-muted)' }}>{owned ? item.emoji : '?'}</span>
+                      )}
+                    </div>
+                    <div style={{ ...pxSm, fontWeight: 'bold', marginTop: 4 }}>{owned ? item.name : '???'}</div>
+                    {owned && item.job_display && (
+                      <div style={{ ...pxSm, fontSize: '10px', color: 'var(--oto-text-muted)', marginTop: 1 }}>
+                        {item.job_display}
+                      </div>
+                    )}
+                    <div className="oto-badge mt-1" style={{
+                      ...pxSm, fontSize: '10px', padding: '1px 6px',
+                      background: owned ? `${RARITY_COLOR_MAP[item.rarity]}22` : 'var(--oto-bg-inset)',
+                      color: RARITY_COLOR_MAP[item.rarity],
+                      borderColor: RARITY_COLOR_MAP[item.rarity],
+                    }}>
+                      {RARITY_MAP[item.rarity]}
+                    </div>
+                    {owned && <div style={{ ...pxSm, fontSize: '10px', color: 'var(--oto-text-muted)', marginTop: 2 }}>
+                      ×{item.owned_count}
+                    </div>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
         )}
       </div>
 

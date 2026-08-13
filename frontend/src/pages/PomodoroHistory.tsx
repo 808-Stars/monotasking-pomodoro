@@ -40,13 +40,15 @@ export default function PomodoroHistory() {
   return (
     <div className="space-y-6 oto-stagger">
       {/* Header — matches original gradient→solid pixel header */}
-      <div className="oto-window oto-page-header-red rounded-none! p-5 oto-card-shimmer oto-card-stamped" style={{ background: 'var(--oto-page-header-red)' }}>
+      <div className="oto-window oto-page-header-red rounded-none! p-5 oto-card-shimmer oto-card-stamped relative" style={{ background: 'var(--oto-page-header-red)' }}>
         <div className="flex items-center justify-between">
           <div>
             <h2 style={{ ...pxH2, color: 'var(--oto-text)' }}><Icon name="hourglass" size={20} /> 番茄钟</h2>
-            <p style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>番茄工作法 · 25分钟专注 + 5分钟休息的节奏</p>
+            <p className="hidden md:block" style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>番茄工作法 · 25分钟专注 + 5分钟休息的节奏</p>
+            <p className="md:hidden" style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>番茄工作法</p>
+            <p className="md:hidden" style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-dim)', marginTop: '2px' }}>25分钟专注 + 5分钟休息的节奏</p>
           </div>
-          <span className="oto-badge oto-badge-red">执行层</span>
+          <span className="oto-badge oto-badge-red absolute top-7 right-7 md:static">执行层</span>
         </div>
       </div>
 
@@ -72,7 +74,7 @@ export default function PomodoroHistory() {
               <div className="flex items-center gap-3">
                 {sessions.length > 20 && (
                   <button onClick={() => setShowArchive(true)} className="oto-btn-sm oto-btn-gray">
-                    <Icon name="archive" size={12} /> 归档 {sessions.length - 20}
+                    <Icon name="archive" size={12} /> 归档 {sessions.length - 10}
                   </button>
                 )}
                 <select value={filterType} onChange={e => setFilterType(e.target.value)} className="oto-select">
@@ -95,22 +97,21 @@ export default function PomodoroHistory() {
                     <p style={{ fontSize: '15px', color: 'var(--oto-text-muted)', marginTop: '4px' }}>开始你的第一个专注吧！</p>
                   </div>
                 ) : (
-                  sessions.slice(0, 20).map(s => (
-                    <div key={s.id} className="px-4 py-3 flex items-start justify-between transition-all hover:brightness-105" style={{
+                  sessions.slice(0, 10).map(s => (
+                    <div key={s.id} className="px-4 py-3 md:flex md:items-start md:justify-between relative transition-all hover:brightness-105" style={{
                       borderLeft: `3px solid ${s.type === 'WORK' ? '#8a3030' : s.type === 'SHORT_BREAK' ? '#406838' : '#304868'}`,
                       borderBottom: '1px solid var(--oto-border-light)',
                     }}>
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 pr-10">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-medium text-sm line-clamp-2 flex-1 min-w-0" style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text)' }}>{s.tasks?.name || (s.type !== 'WORK' ? POMODORO_TYPE_MAP[s.type] : '未关联任务')}</span>
-                          <div className="flex items-center gap-2 flex-shrink-0">
+                          <div className="hidden md:flex items-center gap-2 flex-shrink-0">
                             <StatusBadge label={POMODORO_TYPE_MAP[s.type] || s.type} status={s.type} />
                           </div>
                         </div>
                         <div className="flex gap-4 mt-1 text-xs" style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-muted)' }}>
                           <span>{new Date(s.start_time).toLocaleString('zh-CN')}</span>
                           {s.end_time && <span>→ {new Date(s.end_time).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>}
-                          <span>{s.duration_minutes} 分钟</span>
                         </div>
                         {s.notes && (
                           <p className="text-xs mt-1 break-words cursor-pointer" onClick={() => toggleNote(s.id)}
@@ -122,7 +123,8 @@ export default function PomodoroHistory() {
                         )}
                         {s.interruption_reason && <p className="text-xs mt-1" style={{ ...pxBody, fontSize: '14px', color: '#f09040' }}><Icon name="alert" size={14} /> 中断原因: {s.interruption_reason}</p>}
                       </div>
-                      <button onClick={() => handleDelete(s.id)} className="oto-btn-sm oto-btn-red ml-3">删除</button>
+                      <div className="md:hidden absolute top-3 right-3 text-xs"><StatusBadge label={POMODORO_TYPE_MAP[s.type] || s.type} status={s.type} /></div>
+                      <button onClick={() => handleDelete(s.id)} className="oto-btn-sm oto-btn-red ml-3 absolute bottom-3 right-3 md:static text-xs px-1! py-0!"><Icon name="trash" size={12} /></button>
                     </div>
                   ))
                 )}
@@ -138,27 +140,26 @@ export default function PomodoroHistory() {
           <div className="oto-modal p-6 w-full max-h-[80vh] overflow-auto" style={{ maxWidth: '800px' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '14px', lineHeight: '1.8', color: 'var(--oto-text)' }}>
-                <Icon name="archive" size={16} /> 已归档 · {sessions.length - 20} 条
+                <Icon name="archive" size={16} /> 已归档 · {sessions.length - 10} 条
               </h3>
               <button onClick={() => setShowArchive(false)} className="oto-btn-sm oto-btn-gray"><Icon name="close" size={14} /></button>
             </div>
             <div>
-              {sessions.slice(20).map(s => (
-                <div key={s.id} className="px-4 py-3 flex items-start justify-between transition-all" style={{
+              {sessions.slice(10).map(s => (
+                <div key={s.id} className="px-4 py-3 md:flex md:items-start md:justify-between relative transition-all" style={{
                   borderLeft: `3px solid ${s.type === 'WORK' ? '#8a3030' : s.type === 'SHORT_BREAK' ? '#406838' : '#304868'}`,
                   borderBottom: '1px solid var(--oto-border-light)',
                 }}>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 pr-10">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium text-sm line-clamp-1 flex-1 min-w-0" style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text)' }}>{s.tasks?.name || (s.type !== 'WORK' ? POMODORO_TYPE_MAP[s.type] : '未关联任务')}</span>
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="hidden md:flex items-center gap-2 flex-shrink-0">
                         <StatusBadge label={POMODORO_TYPE_MAP[s.type] || s.type} status={s.type} />
                       </div>
                     </div>
                     <div className="flex gap-4 mt-1 text-xs" style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-muted)' }}>
                       <span>{new Date(s.start_time).toLocaleString('zh-CN')}</span>
                       {s.end_time && <span>→ {new Date(s.end_time).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>}
-                      <span>{s.duration_minutes} 分钟</span>
                     </div>
                     {s.notes && (
                       <p className="text-xs mt-1 break-words cursor-pointer" onClick={() => toggleNote(s.id)}
@@ -169,7 +170,8 @@ export default function PomodoroHistory() {
                       </p>
                     )}
                   </div>
-                  <button onClick={() => handleDelete(s.id)} className="oto-btn-sm oto-btn-red ml-3">删除</button>
+                  <div className="md:hidden absolute top-3 right-3 text-xs"><StatusBadge label={POMODORO_TYPE_MAP[s.type] || s.type} status={s.type} /></div>
+                  <button onClick={() => handleDelete(s.id)} className="oto-btn-sm oto-btn-red ml-3 absolute bottom-3 right-3 md:static text-xs px-1! py-0!"><Icon name="trash" size={12} /></button>
                 </div>
               ))}
             </div>

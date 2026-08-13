@@ -51,13 +51,15 @@ export default function Reviews() {
   return (
     <div className="space-y-6 oto-stagger">
       {/* Header — matches original */}
-      <div className="oto-window oto-page-header-blue rounded-none! p-5 oto-card-stamped" style={{ background: 'var(--oto-page-header-blue)' }}>
+      <div className="oto-window oto-page-header-blue rounded-none! p-5 oto-card-stamped relative" style={{ background: 'var(--oto-page-header-blue)' }}>
         <div className="flex items-center justify-between">
           <div>
             <h2 style={{ ...pxH2, color: 'var(--oto-text)' }}><Icon name="notebook" size={20} /> 笔记本</h2>
-            <p style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>单核工作法 · 记录学习与工作心得</p>
+            <p className="hidden md:block" style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>单核工作法 · 记录学习与工作心得</p>
+            <p className="md:hidden" style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>单核工作法</p>
+            <p className="md:hidden" style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-dim)', marginTop: '2px' }}>记录学习与工作心得</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 absolute top-7 right-7 md:static">
             <span className="oto-badge oto-badge-blue">日 {counts.daily}</span>
             <span className="oto-badge oto-badge-gold">周 {counts.weekly}</span>
             <span className="oto-badge" style={{ background: '#f0e4f4', color: '#3a2048', borderColor: '#b090c0' }}>月 {counts.monthly}</span>

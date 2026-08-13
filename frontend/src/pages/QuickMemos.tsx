@@ -46,13 +46,15 @@ export default function QuickMemos() {
   return (
     <div className="space-y-6 oto-stagger">
       {/* Header */}
-      <div className="oto-window oto-page-header-red rounded-none! p-5 oto-card-stamped" style={{ background: 'var(--oto-page-header-red)' }}>
+      <div className="oto-window oto-page-header-red rounded-none! p-5 oto-card-stamped relative" style={{ background: 'var(--oto-page-header-red)' }}>
         <div className="flex items-center justify-between">
           <div>
             <h2 style={{ ...pxH2, color: 'var(--oto-text)' }}><Icon name="memo" size={20} /> 随手清单</h2>
-            <p style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>番茄工作法 · 快速记录想法，轻便勾选完成</p>
+            <p className="hidden md:block" style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>番茄工作法 · 快速记录想法，轻便勾选完成</p>
+            <p className="md:hidden" style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>番茄工作法</p>
+            <p className="md:hidden" style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-dim)', marginTop: '2px' }}>快速记录想法，轻便勾选完成</p>
           </div>
-          <span className="oto-badge oto-badge-red">{activeMemos.length} 待完成</span>
+          <span className="oto-badge oto-badge-red absolute top-7 right-7 md:static">{activeMemos.length} 待完成</span>
         </div>
       </div>
 
@@ -101,17 +103,21 @@ export default function QuickMemos() {
           <button onClick={() => setShowDone(!showDone)}
             className="w-full px-4 py-3 flex items-center justify-between hover:brightness-110"
             style={{ background: 'var(--oto-bg-inset)' }}>
-            <span style={{ ...pxBody, color: 'var(--oto-text-dim)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-dim)', display: 'flex', alignItems: 'center', gap: '8px' }} className="md:!text-[18px]">
               <span className={`transition-transform ${showDone ? 'rotate-90' : ''}`}>▸</span>
               已完成 · {doneMemos.length} 项
             </span>
             <span className="flex items-center gap-3">
               {archivedDone.length > 0 && (
                 <span onClick={e => { e.stopPropagation(); setShowArchive(true); }}
-                  className="text-xs hover:text-blue-400 cursor-pointer" style={{ fontFamily: "'HYPixel'", fontSize: '10px', color: 'var(--oto-text-muted)' }}>归档 {archivedDone.length}</span>
+                  className="oto-btn-sm" style={{ padding: '2px 8px' }}>
+                  <Icon name="archive" size={12} /> 归档 {archivedDone.length}
+                </span>
               )}
               <span onClick={e => { e.stopPropagation(); handleClearDone(); }}
-                className="text-xs hover:text-red-400 cursor-pointer" style={{ fontFamily: "'HYPixel'", fontSize: '10px', color: 'var(--oto-text-muted)' }}>清空</span>
+                className="oto-btn-sm oto-btn-red" style={{ padding: '2px 8px' }}>
+                <Icon name="trash" size={12} /> 清空
+              </span>
             </span>
           </button>
           {showDone && (
@@ -136,7 +142,7 @@ export default function QuickMemos() {
       )}
 
       <p className="text-center text-xs" style={{ ...pxBody, fontSize: '14px', color: '#a08060' }}>
-        输入内容后按 Enter 添加 · 点击圆圈标记完成 · 悬停显示删除按钮
+        输入内容后按 Enter 添加<br className="md:hidden" />点击圆圈标记完成 · 悬停显示删除按钮
       </p>
 
       {/* Archive Modal */}

@@ -114,13 +114,15 @@ export default function DailyPlans() {
   return (
     <div className="space-y-6 oto-stagger">
       {/* Header — matches original gradient→solid pixel header */}
-      <div className="oto-window oto-page-header-blue rounded-none! p-5 oto-card-shimmer oto-card-stamped" style={{ background: 'var(--oto-page-header-blue)' }}>
+      <div className="oto-window oto-page-header-blue rounded-none! p-5 oto-card-shimmer oto-card-stamped relative" style={{ background: 'var(--oto-page-header-blue)' }}>
         <div className="flex items-center justify-between">
           <div>
             <h2 style={{ ...pxH2, color: 'var(--oto-text)' }}><Icon name="target" size={20} /> 每日计划</h2>
-            <p style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>单核工作法 · 每天只聚焦一件最重要的事</p>
+            <p className="hidden md:block" style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>单核工作法 · 每天只聚焦一件最重要的事</p>
+            <p className="md:hidden" style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>单核工作法</p>
+            <p className="md:hidden" style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-dim)', marginTop: '2px' }}>每天只聚焦一件最重要的事</p>
           </div>
-          <span className="oto-badge oto-badge-blue">战略层</span>
+          <span className="oto-badge oto-badge-blue absolute top-7 right-7 md:static">战略层</span>
         </div>
       </div>
 
@@ -134,7 +136,7 @@ export default function DailyPlans() {
         {/* Core task selection */}
         <div className="mb-4">
           <label className="text-sm block mb-2" style={{ ...pxSm, fontSize: '11px', color: 'var(--oto-text-dim)' }}>
-            <span className="oto-quest-marker" style={{ width: '16px', height: '16px', fontSize: '10px', marginRight: '6px', verticalAlign: 'middle' }}>!</span><Icon name="target" size={14} /> 核心任务（单核工作法：每天只聚焦一个最重要的任务）
+            <span className="oto-quest-marker" style={{ width: '16px', height: '16px', fontSize: '10px', marginRight: '6px', verticalAlign: 'middle' }}>!</span><Icon name="target" size={14} /> 核心任务<br className="md:hidden" /><span className="md:hidden" style={{ paddingLeft: '20px' }}>（单核工作法：每天只聚焦一个最重要的任务）</span><span className="hidden md:inline">（单核工作法：每天只聚焦一个最重要的任务）</span>
           </label>
           {allTasks.length === 0 ? (
             <p style={{ ...pxBody, color: 'var(--oto-text-muted)' }}>暂无可选任务，请先在任务管理中创建</p>
@@ -198,22 +200,22 @@ export default function DailyPlans() {
         {/* Status actions */}
         <div className="flex gap-2 items-center flex-wrap">
           {todayPlan?.status === 'UNPLANNED' && (
-            <button onClick={() => handleStatusChange('PLANNED')} className="oto-btn"><Icon name="target" size={14} /> 开始计划</button>
+            <button onClick={() => handleStatusChange('PLANNED')} className="oto-btn text-xs! px-2! py-1! md:text-base! md:px-4! md:py-2!"><Icon name="target" size={14} /> 开始计划</button>
           )}
           {todayPlan?.status === 'PLANNED' && (<>
-            <button onClick={() => handleStatusChange('COMPLETED')} className="oto-btn oto-btn-green"><Icon name="check" size={14} /> 完成计划</button>
-            <button onClick={() => handleStatusChange('FAILED')} className="oto-btn oto-btn-red"><Icon name="close" size={14} /> 标记未完成</button>
-            <button onClick={() => handleStatusChange('UNPLANNED')} className="oto-btn oto-btn-gray"><Icon name="undo" size={14} /> 回退</button>
+            <button onClick={() => handleStatusChange('COMPLETED')} className="oto-btn oto-btn-green text-xs! px-2! py-1! md:text-base! md:px-4! md:py-2!"><Icon name="check" size={14} /> 完成计划</button>
+            <button onClick={() => handleStatusChange('FAILED')} className="oto-btn oto-btn-red text-xs! px-2! py-1! md:text-base! md:px-4! md:py-2!"><Icon name="close" size={14} /> 标记未完成</button>
+            <button onClick={() => handleStatusChange('UNPLANNED')} className="oto-btn oto-btn-gray text-xs! px-2! py-1! md:text-base! md:px-4! md:py-2!"><Icon name="undo" size={14} /> 回退</button>
           </>)}
           {todayPlan?.status === 'COMPLETED' && (<>
-            <button onClick={() => handleStatusChange('REVIEWED')} className="oto-btn"><Icon name="notebook" size={14} /> 标记已回顾</button>
-            <button onClick={() => handleStatusChange('PLANNED')} className="oto-btn oto-btn-gray"><Icon name="undo" size={14} /> 回退</button>
+            <button onClick={() => handleStatusChange('REVIEWED')} className="oto-btn text-xs! px-2! py-1! md:text-base! md:px-4! md:py-2!"><Icon name="notebook" size={14} /> 标记已回顾</button>
+            <button onClick={() => handleStatusChange('PLANNED')} className="oto-btn oto-btn-gray text-xs! px-2! py-1! md:text-base! md:px-4! md:py-2!"><Icon name="undo" size={14} /> 回退</button>
           </>)}
           {todayPlan?.status === 'FAILED' && (
-            <button onClick={() => handleStatusChange('PLANNED')} className="oto-btn oto-btn-gray"><Icon name="undo" size={14} /> 回退</button>
+            <button onClick={() => handleStatusChange('PLANNED')} className="oto-btn oto-btn-gray text-xs! px-2! py-1! md:text-base! md:px-4! md:py-2!"><Icon name="undo" size={14} /> 回退</button>
           )}
           {todayPlan?.status === 'REVIEWED' && (
-            <button onClick={() => handleStatusChange('COMPLETED')} className="oto-btn oto-btn-gray"><Icon name="undo" size={14} /> 回退</button>
+            <button onClick={() => handleStatusChange('COMPLETED')} className="oto-btn oto-btn-gray text-xs! px-2! py-1! md:text-base! md:px-4! md:py-2!"><Icon name="undo" size={14} /> 回退</button>
           )}
           {saving && <span className="text-xs self-center" style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-muted)' }}>保存中...</span>}
         </div>
@@ -223,16 +225,16 @@ export default function DailyPlans() {
 
       {/* Calendar History — matches original structure */}
       <div className="oto-window overflow-hidden oto-card-stamped">
-        <div className="px-6 py-4 grid grid-cols-3 items-center" style={{ borderBottom: '1px solid var(--oto-border-light)' }}>
+        <div className="px-6 py-4 grid grid-cols-1 md:grid-cols-3 items-center gap-2 md:gap-0" style={{ borderBottom: '1px solid var(--oto-border-light)' }}>
           <h3 style={{ ...pxH2, fontSize: '12px', color: 'var(--oto-text)' }}><Icon name="calendar" size={16} /> 历史计划</h3>
           <div className="flex items-center justify-center gap-3">
             <button onClick={prevMonth} className="oto-btn-sm"><Icon name="arrowLeft" size={14} /></button>
             <span className="text-sm font-medium text-center" style={{ fontFamily: 'var(--oto-font-title)', fontSize: '13px', color: '#4a3020' }}>{monthLabel}</span>
             <button onClick={nextMonth} className="oto-btn-sm"><Icon name="arrowRight" size={14} /></button>
           </div>
-          <div className="flex items-center justify-end gap-3 text-xs" style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-muted)' }}>
+          <div className="flex items-center justify-center md:justify-end gap-3 flex-wrap" style={{ ...pxBody, fontSize: '10px', color: 'var(--oto-text-muted)' }}>
             {Object.entries({ UNPLANNED: '未计划', PLANNED: '已计划', COMPLETED: '已完成', FAILED: '未完成', REVIEWED: '已回顾' }).map(([k, v]) => (
-              <span key={k} className="flex items-center gap-1"><span className="w-2.5 h-2.5" style={{ backgroundColor: STATUS_DOT[k] }} />{v}</span>
+              <span key={k} className="flex items-center gap-1"><span className="w-1.5 h-1.5 md:w-2.5 md:h-2.5" style={{ backgroundColor: STATUS_DOT[k] }} />{v}</span>
             ))}
           </div>
         </div>
@@ -244,7 +246,7 @@ export default function DailyPlans() {
             ))}
           </div>
           <div className="grid grid-cols-7 gap-px" style={{ background: '#d4b860' }}>
-            {Array.from({ length: firstDayOfWeek }).map((_, i) => <div key={`e${i}`} className="min-h-[64px]" style={{ background: '#e8d4a8' }} />)}
+            {Array.from({ length: firstDayOfWeek }).map((_, i) => <div key={`e${i}`} className="min-h-[40px] md:min-h-[64px]" style={{ background: '#e8d4a8' }} />)}
             {Array.from({ length: daysInMonth }).map((_, i) => {
               const day = i + 1;
               const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -254,28 +256,36 @@ export default function DailyPlans() {
               const isSelected = dateStr === selectedDate;
               return (
                 <button key={day} onClick={() => setSelectedDate(isSelected ? null : dateStr)}
-                  className="oto-cal-day min-h-[64px] p-1.5 text-left relative"
+                  className="oto-cal-day min-h-[40px] md:min-h-[64px] p-1 md:p-1.5 text-left relative"
                   style={{
                     background: planVisible ? (STATUS_BG[planVisible.status] || 'var(--oto-bg-inset)') : 'var(--oto-bg-inset)',
                     border: planVisible ? `1px solid ${STATUS_BORDER[planVisible.status] || '#d4b860'}` : '1px solid transparent',
                     outline: isSelected ? '2px solid #4da6ff' : 'none', outlineOffset: '-2px',
                   }}>
-                  <span className="inline-flex items-center justify-center w-6 h-6 text-xs font-medium"
-                    style={{
-                      fontFamily: 'var(--oto-font-body)', fontSize: '11px',
-                      background: isToday ? '#687898' : 'transparent',
-                      color: isToday ? '#fff' : planVisible ? '#aaa' : '#556',
-                      boxShadow: isToday ? '0 0 0 4px rgba(104,120,152,0.2)' : 'none',
-                    }}>
-                    {day}
-                  </span>
+                  <div className="flex items-center gap-1 md:block">
+                    <span className="inline-flex items-center justify-center w-5 h-5 md:w-6 md:h-6 text-xs font-medium flex-shrink-0"
+                      style={{
+                        fontFamily: 'var(--oto-font-body)', fontSize: '11px',
+                        background: isToday ? '#687898' : 'transparent',
+                        color: isToday ? '#fff' : planVisible ? '#aaa' : '#556',
+                        boxShadow: isToday ? '0 0 0 4px rgba(104,120,152,0.2)' : 'none',
+                      }}>
+                      {day}
+                    </span>
+                    {planVisible && (
+                      <span className="inline-block w-1.5 h-1.5 md:w-2 md:h-2 flex-shrink-0 md:hidden" style={{ backgroundColor: STATUS_DOT[planVisible.status] || '#556' }} />
+                    )}
+                  </div>
                   {planVisible && (
-                    <div className="mt-0.5">
+                    <div className="mt-0.5 hidden md:block">
                       <span className="inline-block w-2 h-2" style={{ backgroundColor: STATUS_DOT[planVisible.status] || '#556' }} />
                       {planVisible.tasks?.name && <p className="text-xs truncate mt-0.5 leading-tight" style={{ ...pxBody, fontSize: '11px', color: 'var(--oto-text-dim)' }}>{planVisible.tasks?.name}</p>}
                     </div>
                   )}
-                  {!planVisible && <div className="mt-0.5"><span className="inline-block w-2 h-2" style={{ backgroundColor: '#222' }} /></div>}
+                  {planVisible && planVisible.tasks?.name && (
+                    <p className="text-xs mt-0.5 leading-tight md:hidden" style={{ ...pxBody, fontSize: '10px', color: 'var(--oto-text-dim)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{planVisible.tasks?.name}</p>
+                  )}
+                  {!planVisible && <div className="mt-0.5 hidden md:block"><span className="inline-block w-2 h-2" style={{ backgroundColor: '#222' }} /></div>}
                 </button>
               );
             })}
@@ -291,14 +301,14 @@ export default function DailyPlans() {
                 <StatusBadge label={DAILY_PLAN_STATUS_MAP[selectedPlanVisible.status] || selectedPlanVisible.status} status={selectedPlanVisible.status} />
               </h4>
               <div className="flex gap-2">
-                <button onClick={() => handleDelete(selectedPlanVisible.id)} className="oto-btn-sm oto-btn-red"><Icon name="trash" size={12} /> 删除</button>
-                <button onClick={() => setSelectedDate(null)} className="oto-btn-sm oto-btn-gray"><Icon name="close" size={12} /> 关闭</button>
+                <button onClick={() => handleDelete(selectedPlanVisible.id)} className="oto-btn-sm oto-btn-red"><Icon name="trash" size={12} /></button>
+                <button onClick={() => setSelectedDate(null)} className="oto-btn-sm oto-btn-gray"><Icon name="close" size={12} /></button>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs block mb-1" style={{ ...pxSm, color: 'var(--oto-text-muted)' }}><Icon name="target" size={14} /> 核心任务</label>
-                <p className="text-sm font-medium break-words" style={{ ...pxBody, color: '#4a3020' }}>{selectedPlanVisible.tasks?.name || <span style={{ color: '#a08060' }}>未设置</span>}</p>
+                <p className="text-sm font-medium break-words cursor-pointer" style={{ ...pxBody, color: '#4a3020', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }} onClick={(e) => { const el = e.currentTarget; if (el.style.webkitLineClamp === 'none') { el.style.webkitLineClamp = '1'; } else { el.style.webkitLineClamp = 'none'; } }}>{selectedPlanVisible.tasks?.name || <span style={{ color: '#a08060' }}>未设置</span>}</p>
               </div>
               <div>
                 <label className="text-xs block mb-1" style={{ ...pxSm, color: 'var(--oto-text-muted)' }}><Icon name="tomato" size={14} /> 番茄钟</label>
@@ -309,13 +319,13 @@ export default function DailyPlans() {
               {[{ icon: 'sun' as const, label: '晨间规划', key: 'morning_reflection' }, { icon: 'moon' as const, label: '晚间回顾', key: 'evening_review' }].map(f => (
                 <div key={f.key}>
                   <label className="text-xs block mb-1" style={{ ...pxSm, color: 'var(--oto-text-muted)' }}><Icon name={f.icon as IconName} size={14} /> {f.label}</label>
-                  <p className="text-sm whitespace-pre-wrap break-words" style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>{(selectedPlanVisible as any)[f.key] || '—'}</p>
+                  <p className="text-sm whitespace-pre-wrap break-words cursor-pointer" style={{ ...pxBody, color: 'var(--oto-text-dim)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }} onClick={(e) => { const el = e.currentTarget; el.style.webkitLineClamp = el.style.webkitLineClamp === 'none' ? '3' : 'none'; }}>{(selectedPlanVisible as any)[f.key] || '—'}</p>
                 </div>
               ))}
             </div>
             <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--oto-border-light)' }}>
               <label className="text-xs block mb-1" style={{ ...pxSm, color: 'var(--oto-text-muted)' }}><Icon name="notebook" size={14} /> 备注</label>
-              <p className="text-sm whitespace-pre-wrap break-words" style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>{selectedPlanVisible.notes || '—'}</p>
+              <p className="text-sm whitespace-pre-wrap break-words cursor-pointer" style={{ ...pxBody, color: 'var(--oto-text-dim)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }} onClick={(e) => { const el = e.currentTarget; el.style.webkitLineClamp = el.style.webkitLineClamp === 'none' ? '3' : 'none'; }}>{selectedPlanVisible.notes || '—'}</p>
             </div>
           </div>
         )}

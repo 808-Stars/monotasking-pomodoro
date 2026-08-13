@@ -111,11 +111,13 @@ export default function Tasks() {
 
   return (
     <div className="space-y-6 oto-stagger">
-      <div className="oto-window rounded-none! p-4 flex items-center justify-between oto-card-stamped">
-        <h2 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '18px', lineHeight: '2', color: 'var(--oto-text)' }}><Icon name="task" size={20} /> 任务管理</h2>
-        <div className="flex items-center gap-2">
-          <button onClick={openArchive} className="oto-btn oto-btn-gray"><Icon name="archive" size={14} /> 已归档</button>
-          <button onClick={openCreate} className="oto-btn"><Icon name="plus" size={14} /> 新建任务</button>
+      <div className="oto-window rounded-none! p-4 oto-card-stamped">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <h2 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '18px', lineHeight: '2', color: 'var(--oto-text)' }}><Icon name="task" size={20} /> 任务管理</h2>
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <button onClick={openArchive} className="oto-btn oto-btn-gray w-1/2 md:w-auto md:flex-none"><Icon name="archive" size={14} /> 已归档</button>
+            <button onClick={openCreate} className="oto-btn w-1/2 md:w-auto md:flex-none"><Icon name="plus" size={14} /> 新建任务</button>
+          </div>
         </div>
       </div>
 
