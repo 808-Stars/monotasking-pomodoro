@@ -170,12 +170,12 @@ export default function Gacha() {
     // Weekly tasks
     setWeeklyTasks(weeklyData.tasks);
     setWeekStart(weeklyData.week_start);
-    setWeekEarned(weeklyData.earned ?? 0);
+    setWeekEarned(weeklyData.week_earned ?? 0);
     setWeekTarget(weeklyData.week_target ?? 0);
 
     // Streak task（自动发放：load 期间可能新增记录，需要刷新余额）
     setStreakTask(streakData);
-    if (streakData.just_distributed) {
+    if ('just_distributed' in streakData && streakData.just_distributed) {
       const b = await getTokenBalance()
       setBalance(b)
     }
