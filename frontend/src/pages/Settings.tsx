@@ -10,6 +10,10 @@ import {
   submitFeedback,
   fetchComments,
   submitComment,
+  getCurrentUsername,
+  updateUsername,
+  updatePassword,
+  updateEmail,
   type FeedbackEntry,
   type FeedbackComment,
 } from '../services/api';
@@ -81,6 +85,56 @@ export default function Settings() {
   const [submitting, setSubmitting] = useState(false);
   const [loadingFeedback, setLoadingFeedback] = useState(true);
   const [feedbackError, setFeedbackError] = useState('');
+  const [showAllFeedback, setShowAllFeedback] = useState(false);
+
+  // ── 账户设置 ──
+  const [currentUsername, setCurrentUsername] = useState<string | null>(null);
+  const [newUsername, setNewUsername] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [accountLoading, setAccountLoading] = useState(false);
+  const [accountError, setAccountError] = useState('');
+  const [accountSuccess, setAccountSuccess] = useState('');
+
+  useEffect(() => {
+    getCurrentUsername().then(setCurrentUsername).catch(() => {});
+  }, []);
+
+  const handleUpdateUsername = async () => {
+    if (!newUsername.trim()) return;
+    setAccountLoading(true); setAccountError(''); setAccountSuccess('');
+    try {
+      await updateUsername(newUsername.trim());
+      setCurrentUsername(newUsername.trim());
+      setNewUsername('');
+      setAccountSuccess('用户名修改成功');
+    } catch (e: any) { setAccountError(e?.message || '修改失败'); }
+    finally { setAccountLoading(false); }
+  };
+
+  const handleUpdatePassword = async () => {
+    if (!newPassword) return;
+    if (newPassword !== confirmPassword) { setAccountError('两次输入的密码不一致'); return; }
+    setAccountLoading(true); setAccountError(''); setAccountSuccess('');
+    try {
+      await updatePassword(newPassword);
+      setNewPassword(''); setConfirmPassword('');
+      setAccountSuccess('密码修改成功');
+    } catch (e: any) { setAccountError(e?.message || '修改失败'); }
+    finally { setAccountLoading(false); }
+  };
+
+  const handleUpdateEmail = async () => {
+    if (!newEmail.trim()) return;
+    setAccountLoading(true); setAccountError(''); setAccountSuccess('');
+    try {
+      await updateEmail(newEmail.trim());
+      setNewEmail('');
+      setAccountSuccess('邮箱修改成功，请查收确认邮件');
+    } catch (e: any) { setAccountError(e?.message || '修改失败'); }
+    finally { setAccountLoading(false); }
+  };
 
   // ── 评论 ──
   const [expandedFeedback, setExpandedFeedback] = useState<string | null>(null);
@@ -89,6 +143,10 @@ export default function Settings() {
   const [commentContent, setCommentContent] = useState('');
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [loadingComments, setLoadingComments] = useState(false);
+  const [mentionUser, setMentionUser] = useState<string | null>(null);
+  const [showMentionDropdown, setShowMentionDropdown] = useState(false);
+  const [expandedContent, setExpandedContent] = useState<Record<string, boolean>>({});
+  const [expandedComment, setExpandedComment] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     setLoadingFeedback(true);
@@ -149,13 +207,16 @@ export default function Settings() {
     if (!commentContent.trim()) return;
     setCommentSubmitting(true);
     try {
-      const comment = await submitComment(feedbackId, commentContent.trim());
+      // 如果有 @提及，将提及用户名前缀加入内容
+      const content = mentionUser ? `@${mentionUser} ${commentContent.trim()}` : commentContent.trim();
+      const comment = await submitComment(feedbackId, content);
       setCommentsMap(prev => ({
         ...prev,
         [feedbackId]: [...(prev[feedbackId] || []), comment],
       }));
       setCommentCounts(prev => ({ ...prev, [feedbackId]: (prev[feedbackId] || 0) + 1 }));
       setCommentContent('');
+      setMentionUser(null);
     } catch (e: any) {
       const msg = e?.message || '评论失败';
       if (msg.includes('does not exist') || msg.includes('relation') || msg.includes('42P01')) {
@@ -267,7 +328,104 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* ═══ 2. 版本信息 ═══ */}
+      {/* ═══ 2. 账户设置 ═══ */}
+      <div className="oto-window overflow-hidden">
+        <div className="px-4 py-3 flex items-center gap-2" style={{ borderBottom: '1px solid var(--oto-border-light)' }}>
+          <Icon name="lock" size={16} />
+          <h3 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '11px', lineHeight: '1.8', color: 'var(--oto-text)' }}>账户设置</h3>
+          {currentUsername && (
+            <span className="ml-2 text-xs" style={{ color: 'var(--oto-text-muted)' }}>当前用户：{currentUsername}</span>
+          )}
+        </div>
+        <div className="p-4 space-y-4">
+          {/* 修改用户名 */}
+          <div className="oto-inset p-4 space-y-3">
+            <h4 style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text)' }}>修改用户名</h4>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={newUsername}
+                onChange={e => setNewUsername(e.target.value)}
+                placeholder={currentUsername || '输入新用户名'}
+                className="oto-input flex-1 text-sm"
+                style={{ padding: '8px 12px' }}
+              />
+              <button
+                onClick={handleUpdateUsername}
+                disabled={accountLoading || !newUsername.trim()}
+                className="oto-btn oto-btn-sm"
+                style={{ opacity: newUsername.trim() ? 1 : 0.4, cursor: newUsername.trim() ? 'pointer' : 'not-allowed' }}
+              >
+                {accountLoading ? '保存中...' : '保存'}
+              </button>
+            </div>
+            <p className="text-xs" style={{ color: 'var(--oto-text-muted)' }}>3-20位，只允许字母、数字、下划线、中文</p>
+          </div>
+
+          {/* 修改密码 */}
+          <div className="oto-inset p-4 space-y-3">
+            <h4 style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text)' }}>修改密码</h4>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={e => setNewPassword(e.target.value)}
+              placeholder="输入新密码"
+              className="oto-input w-full text-sm"
+              style={{ padding: '8px 12px' }}
+            />
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              placeholder="确认新密码"
+              className="oto-input w-full text-sm"
+              style={{ padding: '8px 12px' }}
+            />
+            <button
+              onClick={handleUpdatePassword}
+              disabled={accountLoading || !newPassword || !confirmPassword}
+              className="oto-btn oto-btn-sm"
+              style={{ opacity: newPassword && confirmPassword ? 1 : 0.4, cursor: newPassword && confirmPassword ? 'pointer' : 'not-allowed' }}
+            >
+              {accountLoading ? '保存中...' : '保存密码'}
+            </button>
+          </div>
+
+          {/* 修改邮箱 */}
+          <div className="oto-inset p-4 space-y-3">
+            <h4 style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text)' }}>修改邮箱</h4>
+            <div className="flex items-center gap-2">
+              <input
+                type="email"
+                value={newEmail}
+                onChange={e => setNewEmail(e.target.value)}
+                placeholder="输入新邮箱"
+                className="oto-input flex-1 text-sm"
+                style={{ padding: '8px 12px' }}
+              />
+              <button
+                onClick={handleUpdateEmail}
+                disabled={accountLoading || !newEmail.trim()}
+                className="oto-btn oto-btn-sm"
+                style={{ opacity: newEmail.trim() ? 1 : 0.4, cursor: newEmail.trim() ? 'pointer' : 'not-allowed' }}
+              >
+                {accountLoading ? '保存中...' : '保存邮箱'}
+              </button>
+            </div>
+            <p className="text-xs" style={{ color: 'var(--oto-text-muted)' }}>修改后需查收确认邮件</p>
+          </div>
+
+          {/* 错误/成功提示 */}
+          {accountError && (
+            <p className="text-sm text-center" style={{ color: 'var(--oto-accent-alt)' }}>{accountError}</p>
+          )}
+          {accountSuccess && (
+            <p className="text-sm text-center" style={{ color: 'var(--oto-green)' }}>{accountSuccess}</p>
+          )}
+        </div>
+      </div>
+
+      {/* ═══ 3. 版本信息 ═══ */}
       <div className="oto-window overflow-hidden">
         <div className="px-4 py-3 flex items-center gap-2" style={{ borderBottom: '1px solid var(--oto-border-light)' }}>
           <Icon name="clock" size={16} />
@@ -288,7 +446,7 @@ export default function Settings() {
                 fontFamily: 'var(--oto-font-title)', fontSize: '12px', lineHeight: '1',
                 display: 'inline-block',
               }}>v{CHANGELOG[0].version}</span>
-              <span className="flex-1" style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text)' }}>{CHANGELOG[0].title}</span>
+              <span className="flex-1 truncate" style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text)' }}>{CHANGELOG[0].title}</span>
               <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{CHANGELOG[0].date}</span>
             </div>
           )}
@@ -313,7 +471,7 @@ export default function Settings() {
                     fontFamily: 'var(--oto-font-title)', fontSize: '12px', lineHeight: '1',
                     display: 'inline-block',
                   }}>v{entry.version}</span>
-                  <span className="flex-1" style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text)' }}>{entry.title}</span>
+                  <span className="flex-1 truncate" style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text)' }}>{entry.title}</span>
                   <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{entry.date}</span>
                 </div>
               ))}
@@ -330,12 +488,16 @@ export default function Settings() {
         <div className="px-4 py-3 flex items-center gap-2" style={{ borderBottom: '1px solid var(--oto-border-light)' }}>
           <Icon name="bulb" size={16} />
           <h3 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '11px', lineHeight: '1.8', color: 'var(--oto-text)' }}>用户反馈</h3>
+          <span className="ml-auto" />
+          <button onClick={() => { setShowAllFeedback(true); }} className="oto-btn-sm oto-btn-gray">
+            <Icon name="bars" size={12} /> 全部反馈
+          </button>
         </div>
         <div className="p-4 space-y-4">
           {/* 提交表单 */}
           <div className="oto-inset p-4 space-y-3">
             <div className="flex items-center gap-3">
-              <label style={labelStyle}>类型</label>
+              <label style={{ ...labelStyle, fontSize: '13px', color: 'var(--oto-text-dim)' }}>类型</label>
               <select
                 value={feedbackType}
                 onChange={e => setFeedbackType(e.target.value as FeedbackEntry['type'])}
@@ -346,20 +508,6 @@ export default function Settings() {
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
-            </div>
-            <div>
-              <textarea
-                value={feedbackContent}
-                onChange={e => setFeedbackContent(e.target.value)}
-                placeholder="请描述你的反馈..."
-                rows={3}
-                className="oto-textarea w-full placeholder:text-[14px] md:placeholder:text-[15px]"
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <span style={{ ...pxSm, color: 'var(--oto-text-muted)', fontSize: '10px' }}>
-                提交后所有用户可查看
-              </span>
               <button
                 onClick={handleSubmitFeedback}
                 disabled={submitting || !feedbackContent.trim()}
@@ -368,6 +516,15 @@ export default function Settings() {
               >
                 <Icon name="pin" size={12} /> {submitting ? '提交中...' : '提交'}
               </button>
+            </div>
+            <div>
+              <textarea
+                value={feedbackContent}
+                onChange={e => setFeedbackContent(e.target.value)}
+                placeholder="请描述你的反馈（提交后所有用户可查看）"
+                rows={3}
+                className="oto-textarea w-full placeholder:text-[14px] md:placeholder:text-[15px]"
+              />
             </div>
             {feedbackError && (
               <p className="text-sm" style={{ color: 'var(--oto-accent-alt)' }}>{feedbackError}</p>
@@ -402,16 +559,23 @@ export default function Settings() {
                         {new Date(fb.created_at).toLocaleString('zh-CN')}
                       </span>
                     </div>
-                    <p className="text-sm whitespace-pre-wrap mb-2" style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>{fb.content}</p>
+                    <p className="text-sm whitespace-pre-wrap mb-2 cursor-pointer" style={{ ...pxBody, color: 'var(--oto-text-dim)', display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden', WebkitLineClamp: expandedContent[fb.id] ? 'unset' : 3 }}
+                      onClick={() => setExpandedContent(prev => ({ ...prev, [fb.id]: !prev[fb.id] }))}>
+                      {fb.content}
+                      {!expandedContent[fb.id] && fb.content.length > 100 && <span style={{ color: 'var(--oto-gold-dark)', marginLeft: 4, fontSize: '12px' }}>展开</span>}
+                      {expandedContent[fb.id] && fb.content.length > 100 && <span style={{ color: 'var(--oto-gold-dark)', marginLeft: 4, fontSize: '12px' }}>收起</span>}
+                    </p>
 
                     {/* 评论区域 */}
-                    <button
-                      onClick={() => toggleComments(fb.id)}
-                      className="oto-btn-sm oto-btn-gray text-xs flex items-center gap-1"
-                      style={{ fontSize: '11px' }}
-                    >
-                      <Icon name="edit" size={12} /> {commentCounts[fb.id] || 0} 条评论
-                    </button>
+                    <div className="flex items-center justify-end mt-1">
+                      <button
+                        onClick={() => toggleComments(fb.id)}
+                        className="oto-btn-sm oto-btn-gray text-xs flex items-center gap-1"
+                        style={{ fontSize: '11px' }}
+                      >
+                        <Icon name="edit" size={12} /> {commentCounts[fb.id] || 0} 条评论
+                      </button>
+                    </div>
 
                     {expandedFeedback === fb.id && (
                       <div className="mt-3 pt-3 space-y-2" style={{ borderTop: '1px solid var(--oto-border-light)' }}>
@@ -430,30 +594,88 @@ export default function Settings() {
                                   {new Date(c.created_at).toLocaleString('zh-CN')}
                                 </span>
                               </div>
-                              <p className="text-xs" style={{ color: 'var(--oto-text-dim)' }}>{c.content}</p>
+                              <div className="text-xs cursor-pointer" style={{ color: 'var(--oto-text-dim)', display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden', WebkitLineClamp: expandedComment[c.id] ? 'unset' : 3 }}
+                                onClick={() => setExpandedComment(prev => ({ ...prev, [c.id]: !prev[c.id] }))}>
+                                {c.content.startsWith('@') ? (
+                                  <>
+                                    <span className="inline-block px-1 py-0.5 mr-1" style={{ background: '#e8e4f0', color: '#504868', border: '1px solid #a898b8', fontSize: '10px' }}>
+                                      {c.content.split(' ')[0]}
+                                    </span>
+                                    {c.content.split(' ').slice(1).join(' ')}
+                                  </>
+                                ) : c.content}
+                                {c.content.length > 60 && (
+                                  <span style={{ color: 'var(--oto-gold-dark)', marginLeft: 4, fontSize: '10px' }}>
+                                    {expandedComment[c.id] ? '收起' : '展开'}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           ))
                         )}
 
                         {/* 评论输入 */}
-                        <div className="flex gap-2 mt-2">
-                          <input
-                            type="text"
-                            value={expandedFeedback === fb.id ? commentContent : ''}
-                            onChange={e => setCommentContent(e.target.value)}
-                            placeholder="写下你的评论..."
-                            className="oto-input flex-1 text-xs"
-                            style={{ padding: '6px 10px' }}
-                            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmitComment(fb.id); } }}
-                          />
-                          <button
-                            onClick={() => handleSubmitComment(fb.id)}
-                            disabled={commentSubmitting || !commentContent.trim()}
-                            className="oto-btn-sm"
-                            style={{ opacity: commentContent.trim() ? 1 : 0.4, cursor: commentContent.trim() ? 'pointer' : 'not-allowed' }}
-                          >
-                            <Icon name="pin" size={12} />
-                          </button>
+                        <div className="mt-2 relative">
+                          <div className="flex gap-2">
+                            <div className="relative flex-1 flex items-center oto-input" style={{ padding: '4px 6px', gap: '4px' }}>
+                              {mentionUser && (
+                                <span className="flex-shrink-0 text-xs px-1.5 py-0.5 flex items-center gap-1" style={{ background: '#e8e4f0', color: '#504868', border: '1px solid #a898b8' }}>
+                                  @{mentionUser}
+                                  <button onClick={() => setMentionUser(null)} style={{ color: 'var(--oto-text-muted)', cursor: 'pointer', lineHeight: 1 }}>×</button>
+                                </span>
+                              )}
+                              <input
+                                type="text"
+                                value={expandedFeedback === fb.id ? commentContent : ''}
+                                onChange={e => setCommentContent(e.target.value)}
+                                placeholder="写下你的评论..."
+                                className="flex-1 text-xs bg-transparent outline-none border-none"
+                                style={{ padding: '2px 4px', minWidth: 0 }}
+                                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmitComment(fb.id); } }}
+                              />
+                              {/* @提及按钮 */}
+                              {(commentsMap[fb.id] || []).length > 0 && (
+                                <button
+                                  onClick={() => setShowMentionDropdown(showMentionDropdown === fb.id ? null : fb.id)}
+                                  className="flex-shrink-0 text-xs px-1 py-0.5"
+                                  style={{ color: 'var(--oto-text-muted)', cursor: 'pointer' }}
+                                >
+                                  @
+                                </button>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => handleSubmitComment(fb.id)}
+                              disabled={commentSubmitting || !commentContent.trim()}
+                              className="oto-btn-sm"
+                              style={{ opacity: commentContent.trim() ? 1 : 0.4, cursor: commentContent.trim() ? 'pointer' : 'not-allowed' }}
+                            >
+                              <Icon name="pin" size={12} />
+                            </button>
+                          </div>
+                          {/* @提及下拉 */}
+                          {showMentionDropdown === fb.id && (
+                            <div className="absolute z-10 mt-1 w-full oto-window overflow-auto max-h-32" style={{ background: 'var(--oto-bg-card)' }}>
+                              {(() => {
+                                const usernames = [...new Set((commentsMap[fb.id] || []).map(c => c.username).filter(Boolean))];
+                                if (feedbackList.find(f => f.id === fb.id)?.username) {
+                                  const author = feedbackList.find(f => f.id === fb.id)!.username!;
+                                  if (!usernames.includes(author)) usernames.unshift(author);
+                                }
+                                return usernames.map(u => (
+                                  <button
+                                    key={u}
+                                    type="button"
+                                    onMouseDown={() => { setMentionUser(u); setShowMentionDropdown(null); }}
+                                    className="w-full text-left px-3 py-1.5 text-xs hover:brightness-105"
+                                    style={{ ...pxBody, fontSize: '12px', color: 'var(--oto-text)' }}
+                                  >
+                                    @{u}
+                                  </button>
+                                ));
+                              })()}
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
@@ -468,6 +690,57 @@ export default function Settings() {
       {/* 开发者日志详情弹窗 */}
       {modalEntry && (
         <WhatsNewModal entry={modalEntry} onClose={() => setModalEntry(null)} />
+      )}
+
+      {/* 查看全部反馈弹窗 */}
+      {showAllFeedback && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center oto-overlay" onClick={() => setShowAllFeedback(false)}>
+          <div className="oto-modal max-w-2xl w-[95vw] mx-4 overflow-hidden flex flex-col" style={{ maxHeight: '80vh' }} onClick={e => e.stopPropagation()}>
+            <div className="px-6 pt-5 pb-3 flex-shrink-0 flex items-center gap-2" style={{ borderBottom: '1px solid var(--oto-border-light)', background: 'var(--oto-bg-card)' }}>
+              <Icon name="bulb" size={16} />
+              <h3 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '13px', lineHeight: '1.8', color: 'var(--oto-text)' }}>全部反馈</h3>
+              {feedbackList.length > 0 && (
+                <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{feedbackList.length} 条</span>
+              )}
+              <button onClick={() => setShowAllFeedback(false)} className="ml-auto oto-btn-sm oto-btn-gray"><Icon name="close" size={14} /></button>
+            </div>
+            <div className="px-6 py-4 space-y-3 overflow-y-auto flex-1" style={{ background: 'var(--oto-bg-card)' }}>
+              {loadingFeedback ? (
+                <div className="text-center py-6" style={{ color: 'var(--oto-text-muted)' }}>
+                  <Icon name="loading" size={20} className="animate-spin" />
+                </div>
+              ) : feedbackList.length === 0 ? (
+                <p className="text-center py-4" style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>暂无反馈</p>
+              ) : (
+                feedbackList.map(fb => (
+                  <div key={fb.id} className="px-4 py-3 oto-window" style={{ borderLeft: '3px solid var(--oto-gold)' }}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="font-medium text-sm" style={{ color: 'var(--oto-text)' }}>{fb.username}</span>
+                      <StatusBadge
+                        label={FEEDBACK_TYPE_MAP[fb.type]}
+                        status={fb.type === 'bug' ? 'FAILED' : fb.type === 'suggestion' ? 'COMPLETED' : fb.type === 'question' ? 'PLANNED' : 'ARCHIVED'}
+                      />
+                      {commentCounts[fb.id] > 0 && (
+                        <span className="text-xs" style={{ color: 'var(--oto-text-muted)' }}>
+                          {commentCounts[fb.id]} 条评论
+                        </span>
+                      )}
+                      <span className="ml-auto" style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>
+                        {new Date(fb.created_at).toLocaleString('zh-CN')}
+                      </span>
+                    </div>
+                    <p className="text-sm whitespace-pre-wrap cursor-pointer" style={{ ...pxBody, color: 'var(--oto-text-dim)', display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden', WebkitLineClamp: expandedContent[fb.id] ? 'unset' : 3 }}
+                      onClick={() => setExpandedContent(prev => ({ ...prev, [fb.id]: !prev[fb.id] }))}>
+                      {fb.content}
+                      {!expandedContent[fb.id] && fb.content.length > 100 && <span style={{ color: 'var(--oto-gold-dark)', marginLeft: 4, fontSize: '12px' }}>展开</span>}
+                      {expandedContent[fb.id] && fb.content.length > 100 && <span style={{ color: 'var(--oto-gold-dark)', marginLeft: 4, fontSize: '12px' }}>收起</span>}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

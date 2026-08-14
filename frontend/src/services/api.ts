@@ -1388,3 +1388,44 @@ export async function submitComment(feedbackId: string, content: string) {
   const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).maybeSingle()
   return { ...data, username: profile?.username || '匿名用户' } as FeedbackComment
 }
+
+// ============================================================
+// Account Management
+// ============================================================
+
+/** 获取当前用户的用户名 */
+export async function getCurrentUsername() {
+  const user = await currentUser()
+  if (!user) return null
+  const { data } = await supabase.from('profiles').select('username').eq('id', user.id).maybeSingle()
+  return data?.username ?? null
+}
+
+/** 修改用户名 */
+export async function updateUsername(newUsername: string) {
+  const user = await currentUser()
+  if (!user) throw new Error('未登录')
+  if (!/^[\w一-鿿]{3,20}$/.test(newUsername)) throw new Error('用户名需3-20位，只允许字母、数字、下划线、中文')
+  const { data: existing } = await supabase.from('profiles').select('id').eq('username', newUsername).maybeSingle()
+  if (existing && existing.id !== user.id) throw new Error('该用户名已被使用')
+  const { error } = await supabase.from('profiles').update({ username: newUsername }).eq('id', user.id)
+  if (error) throw error
+  return true
+}
+
+/** 修改密码 */
+export async function updatePassword(newPassword: string) {
+  if (newPassword.length < 6) throw new Error('密码至少需要6个字符')
+  const { error } = await supabase.auth.updateUser({ password: newPassword })
+  if (error) throw error
+  return true
+}
+
+/** 修改邮箱 */
+export async function updateEmail(newEmail: string) {
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+  if (!emailRegex.test(newEmail)) throw new Error('请输入有效的邮箱地址')
+  const { error } = await supabase.auth.updateUser({ email: newEmail })
+  if (error) throw error
+  return true
+}
