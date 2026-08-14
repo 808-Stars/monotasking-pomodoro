@@ -18,11 +18,9 @@ export default function LoginPage() {
     if (mode === 'register' && !username.trim()) { setError('请输入用户名'); return }
     setSubmitting(true)
     setError('')
-    const fn = mode === 'login' ? signIn : signUp
-    const args: [string, string] | [string, string, string] = mode === 'login'
-      ? [email.trim(), password]
-      : [email.trim(), password, username.trim()]
-    const { error: err } = await fn(...args)
+    const { error: err } = mode === 'login'
+      ? await signIn(email.trim(), password)
+      : await signUp(email.trim(), password, username.trim())
     if (err) { setError(err); setSubmitting(false); return }
     navigate('/', { replace: true })
   }
