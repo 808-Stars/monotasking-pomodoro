@@ -491,11 +491,16 @@ h5, h6 {
 /* ═══════════════════════════════════════════════════════════════
    SCROLLBAR / SELECTION / LINKS / DIVIDER
    ═══════════════════════════════════════════════════════════════ */
-::-webkit-scrollbar { width: 12px; }
-::-webkit-scrollbar-track { background: var(--oto-bg-main); }
+::-webkit-scrollbar {
+  width: 12px;
+}
+::-webkit-scrollbar-track {
+  background: #5a2818;
+  box-shadow: inset 1px 0 0 #2a1008;
+}
 ::-webkit-scrollbar-thumb {
   background: var(--oto-text-muted);
-  border: 2px solid var(--oto-bg-main);
+  border: 2px solid #5a2818;
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--oto-text-dim); }
 

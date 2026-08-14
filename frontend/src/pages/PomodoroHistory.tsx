@@ -102,16 +102,18 @@ export default function PomodoroHistory() {
                       borderLeft: `3px solid ${s.type === 'WORK' ? '#8a3030' : s.type === 'SHORT_BREAK' ? '#406838' : '#304868'}`,
                       borderBottom: '1px solid var(--oto-border-light)',
                     }}>
-                      <div className="flex-1 min-w-0 pr-10">
+                      <div className="flex-1 min-w-0 pr-10 md:pr-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-medium text-sm line-clamp-2 flex-1 min-w-0" style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text)' }}>{s.tasks?.name || (s.type !== 'WORK' ? POMODORO_TYPE_MAP[s.type] : '未关联任务')}</span>
-                          <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+                          <span className="font-medium text-sm line-clamp-2 flex-1 min-w-0 md:pr-14" style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text)' }}>{s.tasks?.name || (s.type !== 'WORK' ? POMODORO_TYPE_MAP[s.type] : '未关联任务')}</span>
+                          <div className="hidden md:flex items-center gap-2 flex-shrink-0 absolute top-3 right-3">
                             <StatusBadge label={POMODORO_TYPE_MAP[s.type] || s.type} status={s.type} />
                           </div>
                         </div>
-                        <div className="flex gap-4 mt-1 text-xs" style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-muted)' }}>
+                        <div className="flex items-center gap-4 mt-1 text-xs" style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-muted)' }}>
                           <span>{new Date(s.start_time).toLocaleString('zh-CN')}</span>
                           {s.end_time && <span>→ {new Date(s.end_time).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>}
+                          {/* 桌面端：删除键与时间共占一行，靠右 */}
+                          <button onClick={() => handleDelete(s.id)} className="hidden md:inline-flex ml-auto items-center oto-btn-sm oto-btn-red text-xs px-1! py-0!"><Icon name="trash" size={12} /></button>
                         </div>
                         {s.notes && (
                           <p className="text-xs mt-1 break-words cursor-pointer" onClick={() => toggleNote(s.id)}
@@ -124,7 +126,8 @@ export default function PomodoroHistory() {
                         {s.interruption_reason && <p className="text-xs mt-1" style={{ ...pxBody, fontSize: '14px', color: '#f09040' }}><Icon name="alert" size={14} /> 中断原因: {s.interruption_reason}</p>}
                       </div>
                       <div className="md:hidden absolute top-3 right-3 text-xs"><StatusBadge label={POMODORO_TYPE_MAP[s.type] || s.type} status={s.type} /></div>
-                      <button onClick={() => handleDelete(s.id)} className="oto-btn-sm oto-btn-red ml-3 absolute bottom-3 right-3 md:static text-xs px-1! py-0!"><Icon name="trash" size={12} /></button>
+                      {/* 移动端：删除键仍绝对定位在右下角 */}
+                      <button onClick={() => handleDelete(s.id)} className="md:hidden oto-btn-sm oto-btn-red ml-3 absolute bottom-3 right-3 text-xs px-1! py-0!"><Icon name="trash" size={12} /></button>
                     </div>
                   ))
                 )}
@@ -150,16 +153,18 @@ export default function PomodoroHistory() {
                   borderLeft: `3px solid ${s.type === 'WORK' ? '#8a3030' : s.type === 'SHORT_BREAK' ? '#406838' : '#304868'}`,
                   borderBottom: '1px solid var(--oto-border-light)',
                 }}>
-                  <div className="flex-1 min-w-0 pr-10">
+                  <div className="flex-1 min-w-0 pr-10 md:pr-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium text-sm line-clamp-1 flex-1 min-w-0" style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text)' }}>{s.tasks?.name || (s.type !== 'WORK' ? POMODORO_TYPE_MAP[s.type] : '未关联任务')}</span>
-                      <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+                      <span className="font-medium text-sm line-clamp-1 flex-1 min-w-0 md:pr-14" style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text)' }}>{s.tasks?.name || (s.type !== 'WORK' ? POMODORO_TYPE_MAP[s.type] : '未关联任务')}</span>
+                      <div className="hidden md:flex items-center gap-2 flex-shrink-0 absolute top-3 right-3">
                         <StatusBadge label={POMODORO_TYPE_MAP[s.type] || s.type} status={s.type} />
                       </div>
                     </div>
-                    <div className="flex gap-4 mt-1 text-xs" style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-muted)' }}>
+                    <div className="flex items-center gap-4 mt-1 text-xs" style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-muted)' }}>
                       <span>{new Date(s.start_time).toLocaleString('zh-CN')}</span>
                       {s.end_time && <span>→ {new Date(s.end_time).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>}
+                      {/* 桌面端：删除键与时间共占一行，靠右 */}
+                      <button onClick={() => handleDelete(s.id)} className="hidden md:inline-flex ml-auto items-center oto-btn-sm oto-btn-red text-xs px-1! py-0!"><Icon name="trash" size={12} /></button>
                     </div>
                     {s.notes && (
                       <p className="text-xs mt-1 break-words cursor-pointer" onClick={() => toggleNote(s.id)}
@@ -171,7 +176,8 @@ export default function PomodoroHistory() {
                     )}
                   </div>
                   <div className="md:hidden absolute top-3 right-3 text-xs"><StatusBadge label={POMODORO_TYPE_MAP[s.type] || s.type} status={s.type} /></div>
-                  <button onClick={() => handleDelete(s.id)} className="oto-btn-sm oto-btn-red ml-3 absolute bottom-3 right-3 md:static text-xs px-1! py-0!"><Icon name="trash" size={12} /></button>
+                  {/* 移动端：删除键仍绝对定位在右下角 */}
+                  <button onClick={() => handleDelete(s.id)} className="md:hidden oto-btn-sm oto-btn-red ml-3 absolute bottom-3 right-3 text-xs px-1! py-0!"><Icon name="trash" size={12} /></button>
                 </div>
               ))}
             </div>

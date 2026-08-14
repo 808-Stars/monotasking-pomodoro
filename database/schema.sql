@@ -244,3 +244,51 @@ CREATE TRIGGER set_updated_at BEFORE UPDATE ON projects FOR EACH ROW EXECUTE FUN
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON tasks FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON daily_plans FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON quick_memos FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ============================================================
+-- 13. 用户反馈
+-- ============================================================
+CREATE TABLE feedback (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  type TEXT DEFAULT 'general' CHECK (type IN ('bug', 'suggestion', 'question', 'general')),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX idx_feedback_user ON feedback(user_id);
+
+ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can read feedback" ON feedback FOR SELECT USING (true);
+CREATE POLICY "Authenticated users can insert feedback" ON feedback FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- ============================================================
+-- 14. 用户资料（用户名）
+-- ============================================================
+CREATE TABLE profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  username TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public profiles are viewable by everyone" ON profiles FOR SELECT USING (true);
+CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
+
+-- ============================================================
+-- 15. 反馈评论
+-- ============================================================
+CREATE TABLE feedback_comments (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  feedback_id UUID NOT NULL REFERENCES feedback(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX idx_feedback_comments_feedback ON feedback_comments(feedback_id);
+
+ALTER TABLE feedback_comments ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can read comments" ON feedback_comments FOR SELECT USING (true);
+CREATE POLICY "Authenticated users can insert comments" ON feedback_comments FOR INSERT WITH CHECK (auth.uid() = user_id);

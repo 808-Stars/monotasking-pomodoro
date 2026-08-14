@@ -4,14 +4,16 @@ import type { Project, Task } from '../types';
 import { PROJECT_STATUS_MAP, TASK_STATUS_MAP, PRIORITY_MAP } from '../types';
 import StatusBadge from '../components/StatusBadge';
 import Icon from '../components/Icons';
+import { useOnboarding } from '../contexts/OnboardingContext';
 
 const EMPTY: Partial<Project> = { name: '', description: '', color: '#687898', status: 'ACTIVE' };
-const COLORS = ['#c83030', '#304868', '#d08030', '#308030', '#b09020', '#684878', '#e8e0d8', '#282020'];
+const COLORS = ['#c83030', '#304868', '#d08030', '#308030', '#b09020', '#684878', '#c0c0c0', '#282020'];
 
 const pxBody = { fontFamily: 'var(--oto-font-body)', fontSize: '17px' };
 const pxSm = { fontFamily: 'var(--oto-font-body)', fontSize: '12px', letterSpacing: '0' };
 
 export default function Projects() {
+  const { activeQuest, completeQuest } = useOnboarding();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -48,7 +50,13 @@ export default function Projects() {
   const openEdit = (p: Project) => { setEditing(p); setForm({ ...p }); setShowForm(true); };
   const handleSave = async () => {
     if (!form.name?.trim()) { alert('请输入项目名称'); return; }
-    if (editing?.id) await updateProject(editing.id, form); else await createProject(form as any);
+    if (editing?.id) {
+      await updateProject(editing.id, form);
+    } else {
+      await createProject(form as any);
+      // 新手教程：只有从新手教程跳过来时才算创建项目步骤完成
+      if (activeQuest?.id === 'create-project') completeQuest('create-project');
+    }
     setShowForm(false); load();
   };
   const handleDelete = async (id: string) => {

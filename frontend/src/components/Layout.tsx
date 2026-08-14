@@ -1,14 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import Icon from './Icons';
 import type { IconName } from './Icons';
 import { useAuth } from '../contexts/AuthContext';
+import { isTokenSystemDisabled, isGuideDisabled, isOnboardingDisabled } from '../services/api';
+import WhatsNewModal from './WhatsNewModal';
+import { CHANGELOG } from '../data/changelog';
 
 /* ── Nav data ── */
-const sharedItems: { to: string; label: string; icon: IconName; desc: string; accent?: 'gold' | 'blue' | 'red'; end?: boolean }[] = [
+type NavItem = { to: string; label: string; icon: IconName; desc: string; accent?: 'gold' | 'blue' | 'red'; end?: boolean };
+
+const baseSharedItems: NavItem[] = [
   { to: '/', label: '工作看板', icon: 'dashboard', desc: '全局概览', end: true },
   { to: '/tasks', label: '任务管理', icon: 'task', desc: '管理任务', accent: 'gold' },
   { to: '/projects', label: '项目管理', icon: 'folder', desc: '管理项目', accent: 'gold' },
+];
+const gachaItems: NavItem[] = [
   { to: '/gacha', label: '扭蛋机', icon: 'joystick', desc: '娱乐一下' },
   { to: '/showcase', label: '藏品室', icon: 'building', desc: '回顾成果' },
 ];
@@ -94,6 +101,36 @@ export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // What's New 弹窗：版本更新后首次打开时自动弹出
+  const [showWhatsNew, setShowWhatsNew] = useState(() => {
+    try { return localStorage.getItem('last_seen_changelog_version') !== CHANGELOG[0]?.version } catch { return false }
+  });
+
+  // 关闭代币系统后移除扭蛋机和藏品室
+  const [tokenDisabled, setTokenDisabled] = useState(isTokenSystemDisabled());
+  // 关闭操作指南 / 新手教程后移除侧栏入口
+  const [guideDisabled, setGuideDisabledState] = useState(isGuideDisabled());
+  const [onboardingDisabled, setOnboardingDisabledState] = useState(isOnboardingDisabled());
+  useEffect(() => {
+    const handler = () => {
+      setTokenDisabled(isTokenSystemDisabled());
+      setGuideDisabledState(isGuideDisabled());
+      setOnboardingDisabledState(isOnboardingDisabled());
+    };
+    window.addEventListener('oto:token-system-changed', handler);
+    window.addEventListener('oto:settings-changed', handler);
+    window.addEventListener('storage', handler);
+    return () => {
+      window.removeEventListener('oto:token-system-changed', handler);
+      window.removeEventListener('oto:settings-changed', handler);
+      window.removeEventListener('storage', handler);
+    };
+  }, []);
+  const sharedItems = useMemo(
+    () => tokenDisabled ? baseSharedItems : [...baseSharedItems, ...gachaItems],
+    [tokenDisabled],
+  );
 
   // 切换页面时自动关闭侧栏
   useEffect(() => { setSidebarOpen(false); }, [location.pathname]);
@@ -257,7 +294,7 @@ export default function Layout() {
         }}>
           <NavLink to="/guide" className={({ isActive }) =>
             `oto-nav-item group flex items-center gap-3 px-3 py-1.5 ${isActive ? 'active' : ''}`
-          }>
+          } style={guideDisabled ? { display: 'none' } : undefined}>
             <Icon name="book" size={16} />
             <span style={{
               fontFamily: 'var(--oto-font-body)', fontSize: '13px', fontWeight: 600,
@@ -267,12 +304,22 @@ export default function Layout() {
 
           <NavLink to="/onboarding" className={({ isActive }) =>
             `oto-nav-item group flex items-center gap-3 px-3 py-1.5 ${isActive ? 'active' : ''}`
-          }>
+          } style={onboardingDisabled ? { display: 'none' } : undefined}>
             <Icon name="graduate" size={16} />
             <span style={{
               fontFamily: 'var(--oto-font-body)', fontSize: '13px', fontWeight: 600,
               color: 'var(--oto-text)',
             }}>新手教程</span>
+          </NavLink>
+
+          <NavLink to="/settings" className={({ isActive }) =>
+            `oto-nav-item group flex items-center gap-3 px-3 py-1.5 ${isActive ? 'active' : ''}`
+          }>
+            <Icon name="gear" size={16} />
+            <span style={{
+              fontFamily: 'var(--oto-font-body)', fontSize: '13px', fontWeight: 600,
+              color: 'var(--oto-text)',
+            }}>设置</span>
           </NavLink>
 
           <div className="oto-ornament-divider" style={{ margin: '6px 0 2px' }}>
@@ -323,6 +370,12 @@ export default function Layout() {
         <div className="p-3 md:p-6 mx-auto" style={{ maxWidth: '1280px' }}>
           <Outlet />
         </div>
+        {showWhatsNew && (
+          <WhatsNewModal onClose={() => {
+            try { localStorage.setItem('last_seen_changelog_version', CHANGELOG[0].version) } catch {}
+            setShowWhatsNew(false);
+          }} />
+        )}
       </main>
     </div>
   );

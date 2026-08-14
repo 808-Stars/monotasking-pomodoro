@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Icon, { type IconName } from '../components/Icons';
 import WelcomeModal from '../components/WelcomeModal';
-import { fetchProjects, fetchTasks, fetchTodayPlan, fetchPomodoroSessions, fetchReviews, fetchGachaRecords, getShowcaseCurrent } from '../services/api';
+import { useOnboarding } from '../contexts/OnboardingContext';
 
 interface Quest {
   id: string; icon: IconName; title: string; subtitle: string; description: React.ReactNode;
   actionLabel: string; actionTo: string; color: string; bg: string;
-  checkFn: () => Promise<boolean>;
 }
 
 function buildQuests(): Quest[] {
@@ -16,49 +14,41 @@ function buildQuests(): Quest[] {
       id: 'create-project', icon: 'folder', title: '第 1 步：创建你的第一个项目', subtitle: '项目管理',
       description: '项目是用来分组管理任务的容器。比如「课程学习」「个人提升」「实验室项目」。\n\n去创建一个新项目，给它起个名字、选个颜色。项目用彩色左边框标识，点击卡片可展开查看详情。',
       actionLabel: '去创建项目', actionTo: '/projects', color: '#b89848', bg: '#faf0e8',
-      checkFn: async () => { try { const data = await fetchProjects(); return data.filter((p: any) => !p.name.startsWith('[示例]')).length > 0; } catch { return false; } },
     },
     {
       id: 'create-task', icon: 'task', title: '第 2 步：创建你的第一个任务', subtitle: '任务管理',
       description: '任务是你要完成的具体工作。每个任务可设定优先级、所属项目、预估番茄钟数和截止日期。\n\n去任务页面创建一个新任务，记得关联到刚才创建的项目。',
       actionLabel: '去创建任务', actionTo: '/tasks', color: '#b89848', bg: '#faf0e8',
-      checkFn: async () => { try { const data = await fetchTasks(); return data.filter((t: any) => !t.name.startsWith('[示例]')).length > 0; } catch { return false; } },
     },
     {
       id: 'set-core-task', icon: 'target', title: '第 3 步：设定今日核心任务', subtitle: '每日计划 · 单核工作法',
       description: '单核工作法的核心动作：每天只选一个最重要的任务作为「核心任务」。\n\n去每日计划页面，从自定义下拉菜单中选一个核心任务（菜单中能看到优先级、状态和项目）。然后在「晨间规划」写下今天的目标。',
       actionLabel: '去设定核心任务', actionTo: '/daily-plans', color: '#687898', bg: '#e8e4f0',
-      checkFn: async () => { try { const plan = await fetchTodayPlan(); return !!(plan && plan.core_task_id && !(plan as any).tasks?.name?.startsWith('[示例]')); } catch { return false; } },
     },
     {
-      id: 'do-pomodoro', icon: 'tomato', title: '第 4 步：完成一个番茄钟', subtitle: '番茄钟 · 番茄工作法',
-      description: <>番茄工作法的核心：25 分钟专注 + 5 分钟休息。{'\n\n'}去番茄钟页面，选择刚才创建的任务，点击 <Icon name="play" size={14} /> 开始按钮启动计时。完成后系统自动记录并更新任务的番茄钟计数，同时获得代币奖励。</>,
+      id: 'do-pomodoro', icon: 'tomato', title: '第 4 步：开启一个番茄钟', subtitle: '番茄钟 · 番茄工作法',
+      description: <>番茄工作法的核心：25 分钟专注 + 5 分钟休息。{'\n\n'}去番茄钟页面，选择刚才创建的任务，点击 <Icon name="play" size={14} /> 开始按钮启动计时（启动即算完成本步骤）。系统会自动开始记录，完成后更新任务的番茄钟计数并发放代币奖励。</>,
       actionLabel: '去开启番茄钟', actionTo: '/pomodoro', color: '#a05858', bg: '#f0e0e0',
-      checkFn: async () => { try { const data = await fetchPomodoroSessions(); return data.filter((s: any) => !s.notes?.startsWith('[示例]') && !s.tasks?.name?.startsWith('[示例]')).length > 0; } catch { return false; } },
     },
     {
       id: 'complete-task', icon: 'check', title: '第 5 步：完成一个任务', subtitle: '任务管理',
       description: <>完成实际工作后，来标记任务状态。{'\n\n'}去任务页面，找到创建的任务，点击「<Icon name="check" size={14} /> 完成」按钮。完成后可以点击「<Icon name="undo" size={14} /> 回退」回到进行中状态。</>,
       actionLabel: '去完成任务', actionTo: '/tasks', color: '#689868', bg: '#e0ece0',
-      checkFn: async () => { try { const data = await fetchTasks(); return data.filter((t: any) => t.status === 'DONE' && !t.name.startsWith('[示例]')).length > 0; } catch { return false; } },
     },
     {
       id: 'write-review', icon: 'notebook', title: '第 6 步：写一条笔记', subtitle: '笔记本',
       description: '笔记是持续进步的关键。花几分钟记录今天的收获、完成任务数、番茄钟数以及心得体会。\n\n去笔记本页面新建一条笔记（日记/周记/月记），把今天的体验写下来。不追求完美——一句话也可以是一条好笔记。',
       actionLabel: '去写笔记', actionTo: '/reviews', color: '#687898', bg: '#e8e4f0',
-      checkFn: async () => { try { const data = await fetchReviews(); return data.filter((r: any) => !r.content?.startsWith('[示例]') && r.content?.trim() !== '').length > 0; } catch { return false; } },
     },
     {
       id: 'try-gacha', icon: 'joystick', title: '第 7 步：体验一次扭蛋', subtitle: '扭蛋机 · 游戏化激励',
       description: <>完成工作赚取代币后，来扭蛋机试试手气！{'\n\n'}每天首次单抽<strong>免费</strong>（不消耗代币）。单抽 50 币，十连 500 币。物品分 N/R/SR/SSR 四种稀有度，集齐全部 8 种 SSR 是终极目标。</>,
       actionLabel: '去体验扭蛋', actionTo: '/gacha', color: '#b89848', bg: '#f4e8d0',
-      checkFn: async () => { try { const data = await fetchGachaRecords(); return data.length > 0; } catch { return false; } },
     },
     {
       id: 'check-showcase', icon: 'building', title: '第 8 步：查看藏品室', subtitle: '藏品室 · 成就系统',
       description: '藏品室展示你的成就：赏金猎人勋章（代币数）、番茄大厨怀表（番茄钟数）、卡牌大师奖杯（集齐稀有度）。\n\n去藏品室看看你的当前进度，记得点击「同步到月度记录」保存快照。',
       actionLabel: '去查看藏品室', actionTo: '/showcase', color: '#b89848', bg: '#f4e8d0',
-      checkFn: async () => { try { await getShowcaseCurrent(); return true; } catch { return false; } },
     },
   ];
 }
@@ -68,30 +58,24 @@ const pxH3: React.CSSProperties = { fontFamily: 'var(--oto-font-body)', fontSize
 const pxBody = { fontFamily: 'var(--oto-font-body)', fontSize: '18px' };
 
 export default function Onboarding() {
-  const navigate = useNavigate();
+  const { startQuest, completedQuestIds } = useOnboarding();
   const [quests, setQuests] = useState<Quest[]>([]);
-  const [completed, setCompleted] = useState<Set<string>>(() => {
-    try { return new Set(JSON.parse(localStorage.getItem('onboarding_completed') || '[]')); } catch { return new Set(); }
-  });
-  const [checking, setChecking] = useState(false);
+  const [completed, setCompleted] = useState<Set<string>>(() => completedQuestIds());
   const [showWelcome, setShowWelcome] = useState(false);
 
-  useEffect(() => { const qs = buildQuests(); setQuests(qs); checkAll(qs); }, []);
+  // 每次进入页面，从 localStorage 重新读取已完成的步骤集合
+  // （由目标页面通过 completeQuest 写入；不基于数据自动检测）
+  useEffect(() => {
+    setQuests(buildQuests());
+    setCompleted(completedQuestIds());
+  }, []);
 
-  const checkAll = async (qs?: Quest[]) => {
-    const list = qs || quests; setChecking(true);
-    // 保留已有的完成记录，只追加新的
-    const merged = new Set(completed);
-    for (const q of list) {
-      if (merged.has(q.id)) continue; // 已完成的跳过
-      // 前置步骤未完成则停止
-      const idx = list.indexOf(q);
-      if (idx > 0 && !merged.has(list[idx - 1].id)) break;
-      try { const ok = await q.checkFn(); if (ok) merged.add(q.id); else break; } catch { break; }
-    }
-    setCompleted(merged);
-    localStorage.setItem('onboarding_completed', JSON.stringify([...merged]));
-    setChecking(false);
+  const restartTutorial = () => {
+    // 清空所有已完成步骤，从头开始
+    try { localStorage.setItem('onboarding_completed', '[]'); } catch { /* ignore */ }
+    setCompleted(new Set());
+    // 在教程开始前弹出欢迎弹窗
+    setShowWelcome(true);
   };
 
   const doneCount = completed.size; const totalCount = quests.length;
@@ -116,7 +100,7 @@ export default function Onboarding() {
       <div className="oto-window p-5">
         <div className="flex items-center justify-between mb-3">
           <span style={{ fontFamily: "'HYPixel'", fontSize: '10px', color: '#4a3020' }}>学习进度</span>
-          <span style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>{progressPct}%</span>
+          <span className="text-[16px]! md:text-[18px]!" style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>{progressPct}%</span>
         </div>
         <div className="w-full h-2 rounded-none overflow-hidden" style={{ background: '#e8d4a8' }}>
           <div className="h-full" style={{ width: `${progressPct}%`, background: 'linear-gradient(90deg, #689050, #78a860, #509030)', transition: 'width 0.3s ease' }} />
@@ -146,17 +130,27 @@ export default function Onboarding() {
 
       {/* Status text */}
       <div className="oto-window p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-0">
-        <p style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>
-          {checking ? <><Icon name="clock" size={14} /> 检查进度中...</> :
-           allDone ? <><Icon name="trophy" size={20} /> 恭喜完成全部新手任务！现在你已经掌握了系统的所有核心功能。</> :
-           `↓ 下一步：${nextQuest?.title || ''}`}
+        <p className="text-[16px]! md:text-[18px]!" style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>
+          {allDone ? <><Icon name="trophy" size={20} /> 恭喜完成全部新手任务！现在你已经掌握了系统的所有核心功能。</> :
+           <>{`↓ 下一步：`}{(() => {
+             const t = nextQuest?.title || '';
+             const i = t.indexOf('：');
+             if (i < 0) return <>{t}</>;
+             return (<>
+               <span className="md:hidden">{t.slice(0, i + 1)}</span>
+               <span className="hidden md:inline">{t}</span>
+               <br className="md:hidden" />
+               <div className="md:hidden" style={{ paddingLeft: '1.5em' }}>{t.slice(i + 1)}</div>
+             </>);
+           })()}<br />
+           <span className="hidden md:inline" style={{ fontSize: '12px', color: 'var(--oto-text-muted)' }}>（从该页面点击跳转才能正常计入进度哦）</span>
+           <div className="md:hidden" style={{ paddingLeft: '1.5em', fontSize: '12px', color: 'var(--oto-text-muted)' }}>（从该页面点击跳转才能正常计入进度哦）</div>
+           </>}
         </p>
         <div className="flex items-center gap-2">
-          <button onClick={() => setShowWelcome(true)} className="oto-btn-sm">
-            <Icon name="star" size={14} /> 再看一遍欢迎弹窗
+          <button onClick={restartTutorial} className="oto-btn-sm">
+            <Icon name="refresh" size={14} /> 重新开始新手教程
           </button>
-          <button onClick={() => checkAll()} disabled={checking}
-            className="oto-btn-sm"><Icon name="refresh" size={14} /> 刷新进度</button>
         </div>
       </div>
 
@@ -190,7 +184,7 @@ export default function Onboarding() {
                       <h3 style={{ ...pxH3, fontSize: '10px', color: isDone ? 'var(--oto-text-muted)' : 'var(--oto-text)', textDecoration: isDone ? 'line-through' : 'none', marginBottom: '8px' }}>
                         {q.title}
                       </h3>
-                      <div className="text-sm leading-relaxed whitespace-pre-line" style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>
+                      <div className="text-sm leading-relaxed whitespace-pre-line text-[16px]! md:text-[18px]!" style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>
                         <br className="md:hidden" />
                         {q.description}
                       </div>
@@ -201,7 +195,7 @@ export default function Onboarding() {
                       ) : isLocked ? (
                         <span className="oto-badge" style={{ background: 'var(--oto-bg-inset)', color: 'var(--oto-text-muted)', borderColor: 'var(--oto-border-light)' }}>请先完成上一步</span>
                       ) : (
-                        <button onClick={() => navigate(q.actionTo)} className="oto-btn"
+                        <button onClick={() => startQuest(q.id, q.actionTo)} className="oto-btn"
                           style={{ background: `${q.color}18`, color: q.color, borderColor: q.color }}>
                           {q.actionLabel} →
                         </button>
@@ -232,13 +226,16 @@ export default function Onboarding() {
 
       {!allDone && nextQuest && (
         <div className="text-center py-4">
-          <p style={{ ...pxBody, color: 'var(--oto-text-muted)' }}><Icon name="bulb" size={14} /> 完成当前任务后，点击「<Icon name="refresh" size={14} /> 刷新进度」查看最新状态</p>
+          <p className="text-[16px]! md:text-[18px]!" style={{ ...pxBody, color: 'var(--oto-text-muted)' }}><Icon name="bulb" size={14} /> 完成当前操作后，系统会自动回到这里并标记完成</p>
         </div>
       )}
 
-      {/* Welcome Modal */}
+      {/* Welcome Modal — 重新开始教程时弹出 */}
       {showWelcome && (
-        <WelcomeModal onClose={() => setShowWelcome(false)} />
+        <WelcomeModal
+          onClose={() => setShowWelcome(false)}
+          onStart={() => setShowWelcome(false)}
+        />
       )}
     </div>
   );

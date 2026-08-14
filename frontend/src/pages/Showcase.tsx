@@ -6,6 +6,7 @@ import {
   getShowcaseCurrent,
   snapshotShowcaseNow,
 } from '../services/api';
+import { useOnboarding } from '../contexts/OnboardingContext';
 
 /* Trophy descriptions */
 const RARITY_NAMES = ['N（普通）', 'R（稀有）', 'SR（史诗）', 'SSR（传说）'];
@@ -160,6 +161,7 @@ function ItemCard({ kind, name, desc, level, value, thresholds, isTrophy }: {
 }
 
 export default function Showcase() {
+  const { activeQuest, completeQuest } = useOnboarding();
   const today = new Date();
   const [year, setYear] = useState<string>(() => today.getFullYear().toString());
   const [snapshots, setSnapshots] = useState<ShowcaseSnapshot[]>([]);
@@ -168,6 +170,9 @@ export default function Showcase() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [snapshotting, setSnapshotting] = useState(false);
+
+  // 新手教程：点击「同步到月度记录」并成功保存后才算完成查看藏品室步骤
+  // （不再是首次访问页面就完成，避免用户只看不点确认）
 
   const load = useCallback(async (isRefresh = false) => {
     if (!isRefresh) setLoading(true);
@@ -225,6 +230,8 @@ export default function Showcase() {
       await snapshotShowcaseNow();
       await load();
       alert('快照已保存！');
+      // 新手教程：点击「同步到月度记录」并保存成功后才算完成查看藏品室步骤
+      if (activeQuest?.id === 'check-showcase') completeQuest('check-showcase');
     } catch (e: any) {
       alert('保存失败：' + (e?.message || '未知错误'));
     }

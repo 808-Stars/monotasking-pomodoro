@@ -4,6 +4,7 @@ import { localDate } from '../utils/date';
 import type { Review } from '../types';
 import StatusBadge from '../components/StatusBadge';
 import Icon from '../components/Icons';
+import { useOnboarding } from '../contexts/OnboardingContext';
 
 const REVIEW_TYPE_MAP: Record<string, string> = { DAILY: '日记', WEEKLY: '周记', MONTHLY: '月记' };
 // default date 改在组件初始化时按 fakeDate 计算
@@ -14,6 +15,7 @@ const pxBody = { fontFamily: 'var(--oto-font-body)', fontSize: '18px' };
 const pxSm = { fontFamily: 'var(--oto-font-body)', fontSize: '12px', letterSpacing: '0' };
 
 export default function Reviews() {
+  const { activeQuest, completeQuest } = useOnboarding();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -42,8 +44,14 @@ export default function Reviews() {
   const handleSave = async () => {
     if (!form.content?.trim()) { alert('请输入回顾内容'); return; }
     const data = { ...form, completed_tasks_count: Number(form.completed_tasks_count) || 0, total_pomodoros: Number(form.total_pomodoros) || 0 };
-    if (editing?.id) { await updateReview(editing.id, data); }
-    else { await createReview(data as any); addTokenRecord(40, '写笔记', true, true).catch(() => {}); }
+    if (editing?.id) {
+      await updateReview(editing.id, data);
+    } else {
+      await createReview(data as any);
+      addTokenRecord(40, '写笔记', true, true).catch(() => {});
+      // 新手教程：只有从新手教程跳过来时才算写笔记步骤完成
+      if (activeQuest?.id === 'write-review') completeQuest('write-review');
+    }
     setShowForm(false); load(); loadAll();
   };
   const handleDelete = async (id: string) => { if (!confirm('确定删除？')) return; await deleteReview(id); load(); loadAll(); };

@@ -319,6 +319,12 @@ export const IconLock = (p: IconProps) => <Svg {...p}>
   <circle cx="12" cy="16" r="1.2" fill="currentColor"/>
 </Svg>;
 
+// 齿轮（设置）
+export const IconGear = (p: IconProps) => <Svg {...p}>
+  <circle cx="12" cy="12" r="3"/>
+  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+</Svg>;
+
 // 加载转圈（8 角旋转）
 export const IconLoading = (p: IconProps) => <Svg {...p}>
   <path d="M12 3v3"/>
@@ -581,6 +587,7 @@ const icons = {
   mail:         IconMail,
   chest:        IconChest,
   logout:       IconLogout,        // 退出登录
+  gear:         IconGear,          // 设置（齿轮）
 } as const;
 
 export type IconName = keyof typeof icons;

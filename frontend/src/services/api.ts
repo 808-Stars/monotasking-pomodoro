@@ -111,12 +111,20 @@ export async function fetchProjects() {
   return cached('projects', async () => {
     const user = await currentUser()
     if (!user) return []
+    // 通过 PostgREST 关系计数（tasks.project_id 是 projects.id 的外键），
+    // 一次性拿到每个项目的任务数，避免 N+1 查询
     const { data } = await supabase
       .from('projects')
-      .select('*')
+      .select('*, tasks(count)')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
-    return data ?? []
+    return (data ?? []).map((p: any) => {
+      // 只保留 projects 表的真实列 + 计算出的 task_count，
+      // 丢弃 PostgREST 关系字段 tasks，避免被误传到 update/create
+      const { tasks, ...rest } = p
+      const task_count = Array.isArray(tasks) && tasks.length > 0 ? (tasks[0] as any).count : 0
+      return { ...rest, task_count }
+    })
   })
 }
 
@@ -133,10 +141,18 @@ export async function createProject(project: { name: string; description?: strin
   return data
 }
 
+// projects 表允许外部更新的列（防御性白名单，避免 form 里携带的
+// PostgREST 关系字段或计算字段被误传到 UPDATE 语句导致失败）
+const PROJECT_UPDATABLE_COLUMNS = ['name', 'description', 'color', 'status']
+
 export async function updateProject(id: string, updates: Record<string, any>) {
+  const safe: Record<string, any> = {}
+  for (const key of PROJECT_UPDATABLE_COLUMNS) {
+    if (key in updates) safe[key] = updates[key]
+  }
   const { data, error } = await supabase
     .from('projects')
-    .update(updates)
+    .update(safe)
     .eq('id', id)
     .select()
     .single()
@@ -468,6 +484,44 @@ export async function deleteQuickMemo(id: string) {
 // ============================================================
 // Token Records
 // ============================================================
+
+// ── 关闭代币系统开关（per-user）──
+const TOKEN_DISABLED_KEY = 'token_system_disabled'
+
+export function isTokenSystemDisabled(): boolean {
+  try { return localStorage.getItem(TOKEN_DISABLED_KEY) === 'true' } catch { return false }
+}
+
+export function setTokenSystemDisabled(disabled: boolean) {
+  try { localStorage.setItem(TOKEN_DISABLED_KEY, disabled ? 'true' : 'false') } catch {}
+  // 通知 Layout 侧栏、Showcase 等组件实时更新
+  window.dispatchEvent(new Event('oto:token-system-changed'))
+}
+
+// ── 关闭操作指南开关（per-user）──
+const GUIDE_DISABLED_KEY = 'guide_disabled'
+
+export function isGuideDisabled(): boolean {
+  try { return localStorage.getItem(GUIDE_DISABLED_KEY) === 'true' } catch { return false }
+}
+
+export function setGuideDisabled(disabled: boolean) {
+  try { localStorage.setItem(GUIDE_DISABLED_KEY, disabled ? 'true' : 'false') } catch {}
+  window.dispatchEvent(new Event('oto:settings-changed'))
+}
+
+// ── 关闭新手教程开关（per-user）──
+const ONBOARDING_DISABLED_KEY = 'onboarding_disabled'
+
+export function isOnboardingDisabled(): boolean {
+  try { return localStorage.getItem(ONBOARDING_DISABLED_KEY) === 'true' } catch { return false }
+}
+
+export function setOnboardingDisabled(disabled: boolean) {
+  try { localStorage.setItem(ONBOARDING_DISABLED_KEY, disabled ? 'true' : 'false') } catch {}
+  window.dispatchEvent(new Event('oto:settings-changed'))
+}
+
 export async function getTokenBalance() {
   return cached('token-balance', async () => {
     const user = await currentUser()
@@ -1259,4 +1313,78 @@ export async function getDailyEarned(month: string) {
       month_pomodoros: Object.values(pomodoros).reduce((s, v) => s + v, 0),
     }
   })
+}
+
+// ============================================================
+// User Feedback (公开论坛)
+// ============================================================
+export interface FeedbackEntry {
+  id: string
+  content: string
+  type: 'bug' | 'suggestion' | 'question' | 'general'
+  created_at: string
+  user_id: string
+  username?: string
+}
+
+export interface FeedbackComment {
+  id: string
+  feedback_id: string
+  content: string
+  created_at: string
+  user_id: string
+  username?: string
+}
+
+export async function fetchFeedback() {
+  return cached('feedback', async () => {
+    const { data } = await supabase
+      .from('feedback')
+      .select('id, content, type, created_at, user_id, profiles(username)')
+      .order('created_at', { ascending: false })
+    return (data ?? []).map((r: any) => ({
+      ...r,
+      username: r.profiles?.username || '匿名用户',
+    })) as FeedbackEntry[]
+  })
+}
+
+export async function submitFeedback(content: string, type: FeedbackEntry['type']) {
+  const user = await currentUser()
+  if (!user) throw new Error('未登录')
+  const { data, error } = await supabase
+    .from('feedback')
+    .insert({ user_id: user.id, content, type })
+    .select('id, content, type, created_at, user_id')
+    .single()
+  if (error) throw error
+  invalidate('feedback')
+  // 获取当前用户的 username
+  const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).maybeSingle()
+  return { ...data, username: profile?.username || '匿名用户' } as FeedbackEntry
+}
+
+export async function fetchComments(feedbackId: string) {
+  const { data } = await supabase
+    .from('feedback_comments')
+    .select('id, feedback_id, content, created_at, user_id, profiles(username)')
+    .eq('feedback_id', feedbackId)
+    .order('created_at', { ascending: true })
+  return (data ?? []).map((r: any) => ({
+    ...r,
+    username: r.profiles?.username || '匿名用户',
+  })) as FeedbackComment[]
+}
+
+export async function submitComment(feedbackId: string, content: string) {
+  const user = await currentUser()
+  if (!user) throw new Error('未登录')
+  const { data, error } = await supabase
+    .from('feedback_comments')
+    .insert({ feedback_id: feedbackId, user_id: user.id, content })
+    .select('id, feedback_id, content, created_at, user_id')
+    .single()
+  if (error) throw error
+  const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).maybeSingle()
+  return { ...data, username: profile?.username || '匿名用户' } as FeedbackComment
 }

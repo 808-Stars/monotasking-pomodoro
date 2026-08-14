@@ -8,16 +8,21 @@ export default function LoginPage() {
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [username, setUsername] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (!email.trim() || !password) { setError('请输入邮箱和密码'); return }
+    if (mode === 'register' && !username.trim()) { setError('请输入用户名'); return }
     setSubmitting(true)
     setError('')
     const fn = mode === 'login' ? signIn : signUp
-    const { error: err } = await fn(email.trim(), password)
+    const args: [string, string] | [string, string, string] = mode === 'login'
+      ? [email.trim(), password]
+      : [email.trim(), password, username.trim()]
+    const { error: err } = await fn(...args)
     if (err) { setError(err); setSubmitting(false); return }
     navigate('/', { replace: true })
   }
@@ -51,6 +56,19 @@ export default function LoginPage() {
           }}>注册</button>
         </div>
         <form onSubmit={handleSubmit}>
+          {mode === 'register' && (
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ fontSize: '13px', color: 'var(--oto-text-dim)', display: 'block', marginBottom: '4px' }}>
+                用户名
+              </label>
+              <input
+                type="text" autoComplete="username"
+                value={username} onChange={e => setUsername(e.target.value)}
+                className="oto-input" style={{ width: '100%', boxSizing: 'border-box' }}
+                placeholder="3-20位，字母/数字/下划线/中文"
+              />
+            </div>
+          )}
           <div style={{ marginBottom: '16px' }}>
             <label style={{ fontSize: '13px', color: 'var(--oto-text-dim)', display: 'block', marginBottom: '4px' }}>
               邮箱

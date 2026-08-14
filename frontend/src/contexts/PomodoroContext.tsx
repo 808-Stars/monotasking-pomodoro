@@ -3,6 +3,7 @@ import { createPomodoroSession, fetchTasks, addTokenRecord } from '../services/a
 import { supabase } from '../services/supabase';
 import { localDate } from '../utils/date';
 import type { Task } from '../types';
+import { useOnboarding } from './OnboardingContext';
 
 const WORK_TIME = 25 * 60;
 const SHORT_BREAK = 5 * 60;
@@ -35,6 +36,7 @@ interface PomodoroContextType {
 const PomodoroContext = createContext<PomodoroContextType | null>(null);
 
 export function PomodoroProvider({ children }: { children: React.ReactNode }) {
+  const { activeQuest, completeQuest } = useOnboarding();
   const [phase, setPhase] = useState<TimerPhase>('idle');
   const [mode, setMode] = useState<TimerMode>('WORK');
   const [seconds, setSeconds] = useState(WORK_TIME);
@@ -211,7 +213,7 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
       } catch (e) { console.error('[handleComplete] break error:', e); }
       alert(mode === 'SHORT_BREAK' ? '短休息结束！准备开始工作吧~' : '长休息结束！精力充沛地继续吧~');
     }
-  }, [mode]);
+  }, [mode, activeQuest, completeQuest]);
 
   const handleCompleteRef = useRef<(() => void) | null>(null);
   handleCompleteRef.current = handleComplete;
@@ -229,6 +231,8 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
       needsCompleteRef.current = false;
       saveTimer({ mode, phase: 'running', targetEnd: targetEndRef.current, startTime: now.getTime(), elapsed: 0, taskId: selectedTask, notes, seconds: totalSeconds });
       setPhase('running');
+      // 新手教程：开启一个番茄钟即算完成该步骤（不需要等 25 分钟跑完）
+      if (mode === 'WORK' && activeQuest?.id === 'do-pomodoro') completeQuest('do-pomodoro');
     } else if (phase === 'running') {
       setEndTimeState(null);
       saveTimer({ mode, phase: 'paused', targetEnd: targetEndRef.current, startTime: startTimeRef.current?.getTime() || 0, elapsed: elapsedRef.current, taskId: selectedTask, notes, seconds });
@@ -240,7 +244,7 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
       saveTimer({ mode, phase: 'running', targetEnd: targetEndRef.current, startTime: startTimeRef.current?.getTime() || 0, elapsed: elapsedRef.current, taskId: selectedTask, notes, seconds: remainingSeconds });
       setPhase('running');
     }
-  }, [phase, mode, selectedTask, totalSeconds, seconds]);
+  }, [phase, mode, selectedTask, totalSeconds, seconds, activeQuest, completeQuest]);
 
   const handleSkip = useCallback(() => {
     clearTimer();

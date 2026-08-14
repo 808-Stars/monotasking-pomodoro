@@ -8,6 +8,7 @@ import type { Task, Project } from '../types';
 import { TASK_STATUS_MAP, PRIORITY_MAP } from '../types';
 import StatusBadge from '../components/StatusBadge';
 import Icon from '../components/Icons';
+import { useOnboarding } from '../contexts/OnboardingContext';
 
 const EMPTY_TASK: Partial<Task> = {
   name: '', description: '', priority: 'MEDIUM', status: 'TODO',
@@ -18,6 +19,7 @@ const pxSm = { fontFamily: 'var(--oto-font-body)', fontSize: '12px', letterSpaci
 const pxBody = { fontFamily: 'var(--oto-font-body)', fontSize: '18px' };
 
 export default function Tasks() {
+  const { activeQuest, completeQuest } = useOnboarding();
   const [searchParams] = useSearchParams();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -83,6 +85,8 @@ export default function Tasks() {
     } else {
       await createTask(data);
       addTokenRecord(20, '创建任务', true, true).catch(() => {});
+      // 新手教程：只有从新手教程跳过来时才算创建任务步骤完成
+      if (activeQuest?.id === 'create-task') completeQuest('create-task');
     }
     setShowForm(false); load();
     // Broadcast: pomodoro page subscribes to this event to refresh task dropdown
@@ -91,7 +95,12 @@ export default function Tasks() {
   const handleDelete = async (id: string) => { if (!confirm('确定删除此任务？')) return; await deleteTask(id); load(); window.dispatchEvent(new Event('oto:tasks-changed')); };
   const handleAction = async (id: string, action: 'start' | 'complete' | 'archive') => {
     if (action === 'start') await updateTask(id, { status: 'IN_PROGRESS' });
-    else if (action === 'complete') { await updateTask(id, { status: 'DONE' }); addTokenRecord(20, '完成任务', true, true).catch(() => {}); }
+    else if (action === 'complete') {
+      await updateTask(id, { status: 'DONE' });
+      addTokenRecord(20, '完成任务', true, true).catch(() => {});
+      // 新手教程：只有从新手教程跳过来时才算完成任务步骤完成
+      if (activeQuest?.id === 'complete-task') completeQuest('complete-task');
+    }
     else await updateTask(id, { status: 'ARCHIVED' });
     load();
     window.dispatchEvent(new Event('oto:tasks-changed'));

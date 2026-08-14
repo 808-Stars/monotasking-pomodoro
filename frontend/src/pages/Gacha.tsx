@@ -13,6 +13,7 @@ import {
 } from '../services/api';
 import type { GachaItem, GachaRecord, TokenBalance, TokenRecord } from '../types';
 import { RARITY_MAP, RARITY_COLOR_MAP } from '../types';
+import { useOnboarding } from '../contexts/OnboardingContext';
 
 const RARITY_ROW: Record<string, number> = { SSR: 1, SR: 2, R: 3, N: 4 };
 const JOB_COL: Record<string, number> = { CLERIC: 1, SCHOLAR: 2, MERCHANT: 3, WARRIOR: 4, DANCER: 5, APOTHECARY: 6, THIEF: 7, HUNTER: 8 };
@@ -88,6 +89,7 @@ interface StreakTaskStatus {
 }
 
 export default function Gacha() {
+  const { activeQuest, completeQuest } = useOnboarding();
   const [balance, setBalance] = useState<TokenBalance | null>(null);
   const [items, setItems] = useState<GachaItem[]>([]);
   const [records, setRecords] = useState<GachaRecord[]>([]);
@@ -1277,7 +1279,11 @@ export default function Gacha() {
             </div>
             <button
               className="oto-btn w-full"
-              onClick={() => setShowResult(false)}
+              onClick={() => {
+                setShowResult(false);
+                // 新手教程：点击结果弹窗的"确定"才算完成该步骤
+                if (activeQuest?.id === 'try-gacha') completeQuest('try-gacha');
+              }}
               style={pxBody}
             >
               确定

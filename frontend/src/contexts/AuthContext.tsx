@@ -7,7 +7,7 @@ interface AuthContextType {
   user: User | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: string | null }>
-  signUp: (email: string, password: string) => Promise<{ error: string | null }>
+  signUp: (email: string, password: string, username: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
 }
 
@@ -56,7 +56,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error ? translateAuthError(error.message) : null }
   }, [])
 
-  const signUp = useCallback(async (email: string, password: string) => {
+  const signUp = useCallback(async (email: string, password: string, username: string) => {
+    // 验证用户名：3-20位，只允许字母、数字、下划线、中文
+    if (!/^[\w一-鿿]{3,20}$/.test(username)) return { error: '用户名需3-20位，只允许字母、数字、下划线、中文' }
+    // 检查用户名是否已存在
+    const { data: existing } = await supabase.from('profiles').select('id').eq('username', username).maybeSingle()
+    if (existing) return { error: '该用户名已被使用' }
     // Strict email validation
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
     if (!emailRegex.test(email)) return { error: '请输入有效的邮箱地址' }
@@ -71,6 +76,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const msg = error.message || (error as any).error_description || (error as any).msg || String(error)
       console.error('[signUp] resolved message:', msg)
       return { error: translateAuthError(msg) }
+    }
+    // 创建用户资料
+    if (data.user) {
+      await supabase.from('profiles').insert({ id: data.user.id, username })
     }
     if (!data.session) return { error: '注册成功！请检查邮箱并点击确认链接后登录' }
     return { error: null }

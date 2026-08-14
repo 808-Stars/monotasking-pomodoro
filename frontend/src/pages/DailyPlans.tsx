@@ -5,6 +5,7 @@ import { DAILY_PLAN_STATUS_MAP, TASK_STATUS_MAP, PRIORITY_MAP } from '../types';
 import StatusBadge from '../components/StatusBadge';
 import Icon from '../components/Icons';
 import type { IconName } from '../components/Icons';
+import { useOnboarding } from '../contexts/OnboardingContext';
 
 const STATUS_DOT: Record<string, string> = { UNPLANNED: '#222', PLANNED: '#687898', COMPLETED: '#689050', FAILED: '#a03038', REVIEWED: '#786890' };
 const STATUS_BG: Record<string, string> = { UNPLANNED: 'transparent', PLANNED: '#e8e4f0', COMPLETED: '#e0ece0', FAILED: '#f0e0e0', REVIEWED: '#ece4f0' };
@@ -15,6 +16,7 @@ const pxBody = { fontFamily: 'var(--oto-font-body)', fontSize: '18px' };
 const pxSm = { fontFamily: 'var(--oto-font-body)', fontSize: '12px', letterSpacing: '0' };
 
 export default function DailyPlans() {
+  const { activeQuest, completeQuest } = useOnboarding();
   const [plans, setPlans] = useState<DailyPlan[]>([]);
   const [todayPlan, setTodayPlan] = useState<DailyPlan | null>(null);
   const [allTasks, setAllTasks] = useState<Task[]>([]);
@@ -62,6 +64,8 @@ export default function DailyPlans() {
   const handleSetCoreTask = async (taskId: string | null) => {
     if (!todayPlan) return; setSaving(true);
     await updateDailyPlan(todayPlan.id, { core_task_id: taskId });
+    // 新手教程：只有从新手教程跳过来时才算设定核心任务步骤完成
+    if (taskId && activeQuest?.id === 'set-core-task') completeQuest('set-core-task');
     const updated = await fetchTodayPlan(); setTodayPlan(updated); load(); setSaving(false);
     if (taskId) addTokenRecord(20, '确定核心任务', true, true).catch(() => {});
   };
@@ -136,7 +140,7 @@ export default function DailyPlans() {
         {/* Core task selection */}
         <div className="mb-4">
           <label className="text-sm block mb-2" style={{ ...pxSm, fontSize: '11px', color: 'var(--oto-text-dim)' }}>
-            <span className="oto-quest-marker" style={{ width: '16px', height: '16px', fontSize: '10px', marginRight: '6px', verticalAlign: 'middle' }}>!</span><Icon name="target" size={14} /> 核心任务<br className="md:hidden" /><span className="md:hidden" style={{ paddingLeft: '20px' }}>（单核工作法：每天只聚焦一个最重要的任务）</span><span className="hidden md:inline">（单核工作法：每天只聚焦一个最重要的任务）</span>
+            <span className="oto-quest-marker" style={{ width: '16px', height: '16px', fontSize: '10px', marginRight: '6px', verticalAlign: 'middle' }}>!</span><Icon name="target" size={14} /> 核心任务<br className="md:hidden" /><span className="md:hidden" style={{ fontSize: '9px' }}>（「未计划」状态下可选，仅限「待办」或「进行中」状态的任务）</span><span className="hidden md:inline">（「未计划」状态下可选，仅限「待办」或「进行中」状态的任务）</span>
           </label>
           {allTasks.length === 0 ? (
             <p style={{ ...pxBody, color: 'var(--oto-text-muted)' }}>暂无可选任务，请先在任务管理中创建</p>
@@ -193,7 +197,7 @@ export default function DailyPlans() {
             <textarea value={drafts[f.field] ?? (todayPlan?.[f.field as keyof DailyPlan] as string) ?? ''}
               onChange={e => handleDraftChange(f.field, e.target.value)}
               onBlur={() => handleDraftBlur(f.field)} rows={f.rows}
-              className="oto-textarea w-full" placeholder={f.ph} />
+              className="oto-textarea w-full placeholder:text-[14px] md:placeholder:text-[15px]" placeholder={f.ph} />
           </div>
         ))}
 
@@ -234,7 +238,7 @@ export default function DailyPlans() {
           </div>
           <div className="flex items-center justify-center md:justify-end gap-3 flex-wrap" style={{ ...pxBody, fontSize: '10px', color: 'var(--oto-text-muted)' }}>
             {Object.entries({ UNPLANNED: '未计划', PLANNED: '已计划', COMPLETED: '已完成', FAILED: '未完成', REVIEWED: '已回顾' }).map(([k, v]) => (
-              <span key={k} className="flex items-center gap-1"><span className="w-1.5 h-1.5 md:w-2.5 md:h-2.5" style={{ backgroundColor: STATUS_DOT[k] }} />{v}</span>
+              <span key={k} className="flex items-center gap-1"><span className="w-1 h-1 md:w-1.5 md:h-1.5" style={{ backgroundColor: STATUS_DOT[k] }} />{v}</span>
             ))}
           </div>
         </div>
@@ -262,7 +266,7 @@ export default function DailyPlans() {
                     border: planVisible ? `1px solid ${STATUS_BORDER[planVisible.status] || '#d4b860'}` : '1px solid transparent',
                     outline: isSelected ? '2px solid #4da6ff' : 'none', outlineOffset: '-2px',
                   }}>
-                  <div className="flex items-center gap-1 md:block">
+                  <div className="flex items-center gap-1 md:flex md:justify-center">
                     <span className="inline-flex items-center justify-center w-5 h-5 md:w-6 md:h-6 text-xs font-medium flex-shrink-0"
                       style={{
                         fontFamily: 'var(--oto-font-body)', fontSize: '11px',
@@ -276,16 +280,14 @@ export default function DailyPlans() {
                       <span className="inline-block w-1.5 h-1.5 md:w-2 md:h-2 flex-shrink-0 md:hidden" style={{ backgroundColor: STATUS_DOT[planVisible.status] || '#556' }} />
                     )}
                   </div>
-                  {planVisible && (
-                    <div className="mt-0.5 hidden md:block">
-                      <span className="inline-block w-2 h-2" style={{ backgroundColor: STATUS_DOT[planVisible.status] || '#556' }} />
-                      {planVisible.tasks?.name && <p className="text-xs truncate mt-0.5 leading-tight" style={{ ...pxBody, fontSize: '11px', color: 'var(--oto-text-dim)' }}>{planVisible.tasks?.name}</p>}
-                    </div>
-                  )}
+                  <div className="mt-0.5 hidden md:block text-center">
+                    <p className="text-xs truncate mt-0.5 leading-tight" style={{ ...pxBody, fontSize: '11px', color: 'var(--oto-text-dim)', opacity: planVisible ? 1 : 0.4 }}>{planVisible?.tasks?.name || '未计划'}</p>
+                  </div>
+                  {/* 桌面端：状态方点移至右上角（计划/未计划都显示） */}
+                  <span className="hidden md:block absolute top-1 right-1 w-1.5 h-1.5" style={{ backgroundColor: planVisible ? (STATUS_DOT[planVisible.status] || '#556') : '#222' }} />
                   {planVisible && planVisible.tasks?.name && (
-                    <p className="text-xs mt-0.5 leading-tight md:hidden" style={{ ...pxBody, fontSize: '10px', color: 'var(--oto-text-dim)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{planVisible.tasks?.name}</p>
+                    <p className="text-xs mt-0.5 leading-tight md:hidden line-clamp-2" style={{ ...pxBody, fontSize: '10px', color: 'var(--oto-text-dim)' }}>{planVisible.tasks?.name}</p>
                   )}
-                  {!planVisible && <div className="mt-0.5 hidden md:block"><span className="inline-block w-2 h-2" style={{ backgroundColor: '#222' }} /></div>}
                 </button>
               );
             })}

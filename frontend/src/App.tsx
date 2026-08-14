@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { PomodoroProvider } from './contexts/PomodoroContext'
+import { OnboardingProvider } from './contexts/OnboardingContext'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Layout from './components/Layout'
 import LoginPage from './pages/LoginPage'
@@ -14,6 +15,7 @@ import Onboarding from './pages/Onboarding'
 import QuickMemos from './pages/QuickMemos'
 import Gacha from './pages/Gacha'
 import Showcase from './pages/Showcase'
+import Settings from './pages/Settings'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -27,7 +29,7 @@ export default function App() {
     <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route element={<ProtectedRoute><PomodoroProvider><Layout /></PomodoroProvider></ProtectedRoute>}>
+          <Route element={<ProtectedRoute><OnboardingProvider><PomodoroProvider><Layout /></PomodoroProvider></OnboardingProvider></ProtectedRoute>}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/projects" element={<Projects />} />
@@ -36,6 +38,7 @@ export default function App() {
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/guide" element={<Guide />} />
             <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/quick-memos" element={<QuickMemos />} />
             <Route path="/gacha" element={<Gacha />} />
             <Route path="/showcase" element={<Showcase />} />

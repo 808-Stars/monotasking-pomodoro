@@ -25,7 +25,7 @@ function Card({ icon, title, desc, color }: { icon: IconName; title: string; des
 }
 
 export default function Guide() {
-  const [openSection, setOpenSection] = useState<string | null>('intro');
+  const [openSection, setOpenSection] = useState<string | null>(null);
   const toggle = (id: string) => { setOpenSection(openSection === id ? null : id); };
 
   // 标签颜色

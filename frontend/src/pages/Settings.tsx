@@ -1,0 +1,474 @@
+import { useState, useEffect } from 'react';
+import {
+  isTokenSystemDisabled,
+  setTokenSystemDisabled,
+  isGuideDisabled,
+  setGuideDisabled,
+  isOnboardingDisabled,
+  setOnboardingDisabled,
+  fetchFeedback,
+  submitFeedback,
+  fetchComments,
+  submitComment,
+  type FeedbackEntry,
+  type FeedbackComment,
+} from '../services/api';
+import Icon from '../components/Icons';
+import StatusBadge from '../components/StatusBadge';
+import WhatsNewModal from '../components/WhatsNewModal';
+import { CHANGELOG, type ChangelogEntry } from '../data/changelog';
+
+const FEEDBACK_TYPE_MAP: Record<FeedbackEntry['type'], string> = {
+  bug: 'Bug',
+  suggestion: '建议',
+  question: '疑问',
+  general: '综合',
+};
+
+const FEEDBACK_TYPE_OPTIONS: { value: FeedbackEntry['type']; label: string }[] = [
+  { value: 'bug', label: 'Bug' },
+  { value: 'suggestion', label: '建议' },
+  { value: 'question', label: '疑问' },
+  { value: 'general', label: '综合' },
+];
+
+const pxH2: React.CSSProperties = { fontFamily: 'var(--oto-font-title)', fontSize: '20px', lineHeight: '2' };
+const pxBody = { fontFamily: 'var(--oto-font-body)', fontSize: '18px' };
+const pxSm = { fontFamily: 'var(--oto-font-body)', fontSize: '12px', letterSpacing: '0' };
+
+export default function Settings() {
+  // ── 关闭代币系统 toggle ──
+  const [tokenDisabled, setTokenDisabled] = useState(isTokenSystemDisabled());
+  const handleToggleTokenSystem = () => {
+    const nextDisabled = !tokenDisabled;
+    if (nextDisabled) {
+      if (!confirm('确定要关闭代币系统吗？\n\n• 扭蛋机和藏品室将从侧栏隐藏\n• 完成任务、番茄钟等操作不受影响\n\n可在本页随时重新开启。')) return;
+    }
+    setTokenSystemDisabled(nextDisabled);
+    setTokenDisabled(nextDisabled);
+  };
+
+  // ── 开发者日志弹窗 ──
+  const [modalEntry, setModalEntry] = useState<ChangelogEntry | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
+
+  // ── 关闭操作指南 toggle ──
+  const [guideDisabled, setGuideDisabledState] = useState(isGuideDisabled());
+  const handleToggleGuide = () => {
+    const next = !guideDisabled;
+    if (next) {
+      if (!confirm('确定要关闭操作指南吗？\n\n侧栏将不再显示「操作指南」入口。')) return;
+    }
+    setGuideDisabled(next);
+    setGuideDisabledState(next);
+  };
+
+  // ── 关闭新手教程 toggle ──
+  const [onboardingDisabled, setOnboardingDisabledState] = useState(isOnboardingDisabled());
+  const handleToggleOnboarding = () => {
+    const next = !onboardingDisabled;
+    if (next) {
+      if (!confirm('确定要关闭新手教程吗？\n\n侧栏将不再显示「新手教程」入口。')) return;
+    }
+    setOnboardingDisabled(next);
+    setOnboardingDisabledState(next);
+  };
+
+  // ── 用户反馈 ──
+  const [feedbackType, setFeedbackType] = useState<FeedbackEntry['type']>('bug');
+  const [feedbackContent, setFeedbackContent] = useState('');
+  const [feedbackList, setFeedbackList] = useState<FeedbackEntry[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [loadingFeedback, setLoadingFeedback] = useState(true);
+  const [feedbackError, setFeedbackError] = useState('');
+
+  // ── 评论 ──
+  const [expandedFeedback, setExpandedFeedback] = useState<string | null>(null);
+  const [commentsMap, setCommentsMap] = useState<Record<string, FeedbackComment[]>>({});
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
+  const [commentContent, setCommentContent] = useState('');
+  const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [loadingComments, setLoadingComments] = useState(false);
+
+  useEffect(() => {
+    setLoadingFeedback(true);
+    fetchFeedback()
+      .then(d => {
+        setFeedbackList(d);
+        // 初始化评论计数（通过单独查询或从数据推断）
+        d.forEach(fb => {
+          fetchComments(fb.id).then(comments => {
+            setCommentCounts(prev => ({ ...prev, [fb.id]: comments.length }));
+          }).catch(() => {});
+        });
+      })
+      .catch(() => {})
+      .finally(() => setLoadingFeedback(false));
+  }, []);
+
+  const handleSubmitFeedback = async () => {
+    if (!feedbackContent.trim()) return;
+    setSubmitting(true);
+    setFeedbackError('');
+    try {
+      const entry = await submitFeedback(feedbackContent.trim(), feedbackType);
+      setFeedbackList(prev => [entry, ...prev]);
+      setFeedbackContent('');
+      setFeedbackType('bug');
+    } catch (e: any) {
+      const msg = e?.message || '提交失败，请稍后重试';
+      if (msg.includes('does not exist') || msg.includes('relation') || msg.includes('42P01')) {
+        setFeedbackError('反馈功能需要先执行数据库迁移脚本（feedback 表）');
+      } else {
+        setFeedbackError(msg);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const toggleComments = async (feedbackId: string) => {
+    if (expandedFeedback === feedbackId) {
+      setExpandedFeedback(null);
+      return;
+    }
+    setExpandedFeedback(feedbackId);
+    setCommentContent('');
+    if (!commentsMap[feedbackId]) {
+      setLoadingComments(true);
+      try {
+        const comments = await fetchComments(feedbackId);
+        setCommentsMap(prev => ({ ...prev, [feedbackId]: comments }));
+        setCommentCounts(prev => ({ ...prev, [feedbackId]: comments.length }));
+      } catch { /* ignore */ }
+      setLoadingComments(false);
+    }
+  };
+
+  const handleSubmitComment = async (feedbackId: string) => {
+    if (!commentContent.trim()) return;
+    setCommentSubmitting(true);
+    try {
+      const comment = await submitComment(feedbackId, commentContent.trim());
+      setCommentsMap(prev => ({
+        ...prev,
+        [feedbackId]: [...(prev[feedbackId] || []), comment],
+      }));
+      setCommentCounts(prev => ({ ...prev, [feedbackId]: (prev[feedbackId] || 0) + 1 }));
+      setCommentContent('');
+    } catch (e: any) {
+      const msg = e?.message || '评论失败';
+      if (msg.includes('does not exist') || msg.includes('relation') || msg.includes('42P01')) {
+        alert('评论功能需要先执行数据库迁移脚本（feedback_comments 表）');
+      } else {
+        alert(msg);
+      }
+    } finally {
+      setCommentSubmitting(false);
+    }
+  };
+
+  // ── 通用样式 ──
+  const labelStyle: React.CSSProperties = { ...pxSm, fontSize: '11px', color: 'var(--oto-text-muted)' };
+
+  return (
+    <div className="space-y-6 oto-stagger">
+      {/* Header */}
+      <div className="oto-window rounded-none! p-5 oto-card-stamped" style={{ borderColor: 'var(--oto-gold)', background: 'var(--oto-bg-card)' }}>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 style={{ ...pxH2, color: 'var(--oto-text)' }}><Icon name="gear" size={22} /> 设置</h2>
+            <p style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text-dim)', marginTop: '4px' }}>
+              系统配置与开发记录
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ═══ 1. 系统开关 ═══ */}
+      <div className="oto-window overflow-hidden">
+        <div className="px-4 py-3 flex items-center gap-2" style={{ borderBottom: '1px solid var(--oto-border-light)' }}>
+          <Icon name="lock" size={16} />
+          <h3 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '11px', lineHeight: '1.8', color: 'var(--oto-text)' }}>系统开关</h3>
+        </div>
+        <div className="p-4">
+          <div className="flex items-center justify-between oto-inset p-4">
+            <div>
+              <h4 style={{ ...pxBody, fontSize: '16px', color: 'var(--oto-text)' }}>关闭代币系统</h4>
+              <p className="mt-1" style={{ ...pxSm, fontSize: '10px', color: 'var(--oto-text-muted)', lineHeight: '1.6' }}>
+                隐藏侧栏「扭蛋机」和「藏品室」入口，减少界面元素。
+              </p>
+            </div>
+            <button
+              onClick={handleToggleTokenSystem}
+              className="oto-btn-sm"
+              style={{
+                background: 'var(--oto-bg-inset)',
+                color: tokenDisabled ? 'var(--oto-accent-alt)' : 'var(--oto-green)',
+                borderColor: tokenDisabled ? 'var(--oto-accent-alt)' : 'var(--oto-green)',
+                fontWeight: 600,
+                minWidth: '60px',
+              }}
+            >
+              {tokenDisabled ? '已关闭' : '已开启'}
+            </button>
+          </div>
+          {tokenDisabled && (
+            <p className="mt-3 text-center" style={{ ...pxSm, fontSize: '11px', color: 'var(--oto-green)' }}>
+              ✓ 代币系统已关闭。侧栏已隐藏扭蛋机和藏品室。
+            </p>
+          )}
+
+          {/* 关闭操作指南 */}
+          <div className="flex items-center justify-between oto-inset p-4 mt-3">
+            <div>
+              <h4 style={{ ...pxBody, fontSize: '16px', color: 'var(--oto-text)' }}>关闭操作指南</h4>
+              <p className="mt-1" style={{ ...pxSm, fontSize: '10px', color: 'var(--oto-text-muted)', lineHeight: '1.6' }}>
+                隐藏侧栏「操作指南」入口，减少界面元素。
+              </p>
+            </div>
+            <button
+              onClick={handleToggleGuide}
+              className="oto-btn-sm"
+              style={{
+                background: 'var(--oto-bg-inset)',
+                color: guideDisabled ? 'var(--oto-accent-alt)' : 'var(--oto-green)',
+                borderColor: guideDisabled ? 'var(--oto-accent-alt)' : 'var(--oto-green)',
+                fontWeight: 600,
+                minWidth: '60px',
+              }}
+            >
+              {guideDisabled ? '已关闭' : '已开启'}
+            </button>
+          </div>
+
+          {/* 关闭新手教程 */}
+          <div className="flex items-center justify-between oto-inset p-4 mt-3">
+            <div>
+              <h4 style={{ ...pxBody, fontSize: '16px', color: 'var(--oto-text)' }}>关闭新手教程</h4>
+              <p className="mt-1" style={{ ...pxSm, fontSize: '10px', color: 'var(--oto-text-muted)', lineHeight: '1.6' }}>
+                隐藏侧栏「新手教程」入口，减少界面元素。
+              </p>
+            </div>
+            <button
+              onClick={handleToggleOnboarding}
+              className="oto-btn-sm"
+              style={{
+                background: 'var(--oto-bg-inset)',
+                color: onboardingDisabled ? 'var(--oto-accent-alt)' : 'var(--oto-green)',
+                borderColor: onboardingDisabled ? 'var(--oto-accent-alt)' : 'var(--oto-green)',
+                fontWeight: 600,
+                minWidth: '60px',
+              }}
+            >
+              {onboardingDisabled ? '已关闭' : '已开启'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ═══ 2. 版本信息 ═══ */}
+      <div className="oto-window overflow-hidden">
+        <div className="px-4 py-3 flex items-center gap-2" style={{ borderBottom: '1px solid var(--oto-border-light)' }}>
+          <Icon name="clock" size={16} />
+          <h3 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '11px', lineHeight: '1.8', color: 'var(--oto-text)' }}>版本信息</h3>
+          <span className="ml-auto" />
+          {CHANGELOG.length > 1 && (
+            <button onClick={() => setShowHistory(true)} className="oto-btn-sm oto-btn-gray">
+              <Icon name="history" size={12} /> 开发者日志
+            </button>
+          )}
+        </div>
+        <div className="p-4">
+          {CHANGELOG[0] && (
+            <div className="px-4 py-3 cursor-pointer flex items-center gap-3 hover:brightness-105 oto-window-gold"
+              onClick={() => setModalEntry(CHANGELOG[0])}
+              style={{ background: 'linear-gradient(180deg, var(--oto-bg-card) 0%, var(--oto-bg-inset) 100%)' }}>
+              <span className="flex-shrink-0" style={{
+                fontFamily: 'var(--oto-font-title)', fontSize: '12px', lineHeight: '1',
+                display: 'inline-block',
+              }}>v{CHANGELOG[0].version}</span>
+              <span className="flex-1" style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text)' }}>{CHANGELOG[0].title}</span>
+              <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{CHANGELOG[0].date}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 开发者日志弹窗 */}
+      {showHistory && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center oto-overlay" onClick={() => setShowHistory(false)}>
+          <div className="oto-modal max-w-lg w-[92vw] mx-4 overflow-hidden flex flex-col" style={{ maxHeight: '70vh' }} onClick={e => e.stopPropagation()}>
+            <div className="px-6 pt-5 pb-3 flex-shrink-0 flex items-center gap-2" style={{ borderBottom: '1px solid var(--oto-border-light)', background: 'var(--oto-bg-card)' }}>
+              <Icon name="history" size={16} />
+              <h3 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '13px', lineHeight: '1.8', color: 'var(--oto-text)' }}>开发者日志</h3>
+              <button onClick={() => setShowHistory(false)} className="ml-auto oto-btn-sm oto-btn-gray"><Icon name="close" size={14} /></button>
+            </div>
+            <div className="px-6 py-4 space-y-3 overflow-y-auto flex-1" style={{ background: 'var(--oto-bg-card)' }}>
+              {CHANGELOG.slice(1).map(entry => (
+                <div key={entry.version} className="px-4 py-3 cursor-pointer flex items-center gap-3 hover:brightness-105 oto-window-gold"
+                  onClick={() => { setShowHistory(false); setModalEntry(entry); }}
+                  style={{ background: 'linear-gradient(180deg, var(--oto-bg-card) 0%, var(--oto-bg-inset) 100%)' }}>
+                  <span className="flex-shrink-0" style={{
+                    fontFamily: 'var(--oto-font-title)', fontSize: '12px', lineHeight: '1',
+                    display: 'inline-block',
+                  }}>v{entry.version}</span>
+                  <span className="flex-1" style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text)' }}>{entry.title}</span>
+                  <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{entry.date}</span>
+                </div>
+              ))}
+              {CHANGELOG.length <= 1 && (
+                <p className="text-center py-4" style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>暂无历史日志</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ 3. 用户反馈 ═══ */}
+      <div className="oto-window overflow-hidden">
+        <div className="px-4 py-3 flex items-center gap-2" style={{ borderBottom: '1px solid var(--oto-border-light)' }}>
+          <Icon name="bulb" size={16} />
+          <h3 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '11px', lineHeight: '1.8', color: 'var(--oto-text)' }}>用户反馈</h3>
+        </div>
+        <div className="p-4 space-y-4">
+          {/* 提交表单 */}
+          <div className="oto-inset p-4 space-y-3">
+            <div className="flex items-center gap-3">
+              <label style={labelStyle}>类型</label>
+              <select
+                value={feedbackType}
+                onChange={e => setFeedbackType(e.target.value as FeedbackEntry['type'])}
+                className="oto-select text-sm flex-1"
+                style={{ textIndent: 0 }}
+              >
+                {FEEDBACK_TYPE_OPTIONS.map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <textarea
+                value={feedbackContent}
+                onChange={e => setFeedbackContent(e.target.value)}
+                placeholder="请描述你的反馈..."
+                rows={3}
+                className="oto-textarea w-full placeholder:text-[14px] md:placeholder:text-[15px]"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <span style={{ ...pxSm, color: 'var(--oto-text-muted)', fontSize: '10px' }}>
+                提交后所有用户可查看
+              </span>
+              <button
+                onClick={handleSubmitFeedback}
+                disabled={submitting || !feedbackContent.trim()}
+                className="oto-btn oto-btn-sm"
+                style={{ opacity: feedbackContent.trim() ? 1 : 0.4, cursor: feedbackContent.trim() ? 'pointer' : 'not-allowed' }}
+              >
+                <Icon name="pin" size={12} /> {submitting ? '提交中...' : '提交'}
+              </button>
+            </div>
+            {feedbackError && (
+              <p className="text-sm" style={{ color: 'var(--oto-accent-alt)' }}>{feedbackError}</p>
+            )}
+          </div>
+
+          {/* 反馈列表（公开） */}
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <label style={labelStyle}>全部反馈</label>
+              {feedbackList.length > 0 && (
+                <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{feedbackList.length} 条</span>
+              )}
+            </div>
+            {loadingFeedback ? (
+              <div className="text-center py-6" style={{ color: 'var(--oto-text-muted)' }}>
+                <Icon name="loading" size={20} className="animate-spin" />
+              </div>
+            ) : feedbackList.length === 0 ? (
+              <p className="text-center py-4" style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>暂无反馈</p>
+            ) : (
+              <div className="space-y-3">
+                {feedbackList.map(fb => (
+                  <div key={fb.id} className="px-4 py-3 oto-window" style={{ borderLeft: '3px solid var(--oto-gold)' }}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="font-medium text-sm" style={{ color: 'var(--oto-text)' }}>{fb.username}</span>
+                      <StatusBadge
+                        label={FEEDBACK_TYPE_MAP[fb.type]}
+                        status={fb.type === 'bug' ? 'FAILED' : fb.type === 'suggestion' ? 'COMPLETED' : fb.type === 'question' ? 'PLANNED' : 'ARCHIVED'}
+                      />
+                      <span className="ml-auto" style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>
+                        {new Date(fb.created_at).toLocaleString('zh-CN')}
+                      </span>
+                    </div>
+                    <p className="text-sm whitespace-pre-wrap mb-2" style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>{fb.content}</p>
+
+                    {/* 评论区域 */}
+                    <button
+                      onClick={() => toggleComments(fb.id)}
+                      className="oto-btn-sm oto-btn-gray text-xs flex items-center gap-1"
+                      style={{ fontSize: '11px' }}
+                    >
+                      <Icon name="edit" size={12} /> {commentCounts[fb.id] || 0} 条评论
+                    </button>
+
+                    {expandedFeedback === fb.id && (
+                      <div className="mt-3 pt-3 space-y-2" style={{ borderTop: '1px solid var(--oto-border-light)' }}>
+                        {loadingComments && !commentsMap[fb.id] ? (
+                          <div className="text-center py-2" style={{ color: 'var(--oto-text-muted)' }}>
+                            <Icon name="loading" size={16} className="animate-spin" />
+                          </div>
+                        ) : (commentsMap[fb.id] || []).length === 0 ? (
+                          <p className="text-xs text-center py-2" style={{ color: 'var(--oto-text-muted)' }}>暂无评论</p>
+                        ) : (
+                          (commentsMap[fb.id] || []).map(c => (
+                            <div key={c.id} className="px-3 py-2" style={{ background: 'var(--oto-bg-inset)', borderLeft: '2px solid var(--oto-border-light)' }}>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-medium text-xs" style={{ color: 'var(--oto-text)' }}>{c.username}</span>
+                                <span className="text-xs" style={{ color: 'var(--oto-text-muted)' }}>
+                                  {new Date(c.created_at).toLocaleString('zh-CN')}
+                                </span>
+                              </div>
+                              <p className="text-xs" style={{ color: 'var(--oto-text-dim)' }}>{c.content}</p>
+                            </div>
+                          ))
+                        )}
+
+                        {/* 评论输入 */}
+                        <div className="flex gap-2 mt-2">
+                          <input
+                            type="text"
+                            value={expandedFeedback === fb.id ? commentContent : ''}
+                            onChange={e => setCommentContent(e.target.value)}
+                            placeholder="写下你的评论..."
+                            className="oto-input flex-1 text-xs"
+                            style={{ padding: '6px 10px' }}
+                            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmitComment(fb.id); } }}
+                          />
+                          <button
+                            onClick={() => handleSubmitComment(fb.id)}
+                            disabled={commentSubmitting || !commentContent.trim()}
+                            className="oto-btn-sm"
+                            style={{ opacity: commentContent.trim() ? 1 : 0.4, cursor: commentContent.trim() ? 'pointer' : 'not-allowed' }}
+                          >
+                            <Icon name="pin" size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* 开发者日志详情弹窗 */}
+      {modalEntry && (
+        <WhatsNewModal entry={modalEntry} onClose={() => setModalEntry(null)} />
+      )}
+    </div>
+  );
+}
