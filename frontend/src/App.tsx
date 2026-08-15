@@ -16,6 +16,7 @@ import QuickMemos from './pages/QuickMemos'
 import Gacha from './pages/Gacha'
 import Showcase from './pages/Showcase'
 import Settings from './pages/Settings'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -29,6 +30,7 @@ export default function App() {
     <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route element={<ProtectedRoute><OnboardingProvider><PomodoroProvider><Layout /></PomodoroProvider></OnboardingProvider></ProtectedRoute>}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/tasks" element={<Tasks />} />

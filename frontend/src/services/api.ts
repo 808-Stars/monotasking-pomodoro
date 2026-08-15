@@ -1338,13 +1338,22 @@ export interface FeedbackComment {
 
 export async function fetchFeedback() {
   return cached('feedback', async () => {
-    const { data } = await supabase
+    // 分两步查询，避免 PostgREST join 失败（feedback.user_id → auth.users ← profiles.id 是间接关系）
+    const { data: feedbacks } = await supabase
       .from('feedback')
-      .select('id, content, type, created_at, user_id, profiles(username)')
+      .select('id, content, type, created_at, user_id')
       .order('created_at', { ascending: false })
-    return (data ?? []).map((r: any) => ({
-      ...r,
-      username: r.profiles?.username || '匿名用户',
+    if (!feedbacks || feedbacks.length === 0) return []
+    // 批量查询相关用户的用户名
+    const userIds = [...new Set(feedbacks.map(f => f.user_id))]
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, username')
+      .in('id', userIds)
+    const usernameMap = new Map(profiles?.map(p => [p.id, p.username]) ?? [])
+    return feedbacks.map(f => ({
+      ...f,
+      username: usernameMap.get(f.user_id) || '匿名用户',
     })) as FeedbackEntry[]
   })
 }
@@ -1365,14 +1374,22 @@ export async function submitFeedback(content: string, type: FeedbackEntry['type'
 }
 
 export async function fetchComments(feedbackId: string) {
-  const { data } = await supabase
+  // 同样分两步查询
+  const { data: comments } = await supabase
     .from('feedback_comments')
-    .select('id, feedback_id, content, created_at, user_id, profiles(username)')
+    .select('id, feedback_id, content, created_at, user_id')
     .eq('feedback_id', feedbackId)
     .order('created_at', { ascending: true })
-  return (data ?? []).map((r: any) => ({
-    ...r,
-    username: r.profiles?.username || '匿名用户',
+  if (!comments || comments.length === 0) return []
+  const userIds = [...new Set(comments.map(c => c.user_id))]
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, username')
+    .in('id', userIds)
+  const usernameMap = new Map(profiles?.map(p => [p.id, p.username]) ?? [])
+  return comments.map(c => ({
+    ...c,
+    username: usernameMap.get(c.user_id) || '匿名用户',
   })) as FeedbackComment[]
 }
 
@@ -1426,6 +1443,17 @@ export async function updateEmail(newEmail: string) {
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
   if (!emailRegex.test(newEmail)) throw new Error('请输入有效的邮箱地址')
   const { error } = await supabase.auth.updateUser({ email: newEmail })
+  if (error) throw error
+  return true
+}
+
+/** 发送密码重置邮件 */
+export async function requestPasswordReset(email: string, redirectTo?: string) {
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+  if (!emailRegex.test(email)) throw new Error('请输入有效的邮箱地址')
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: redirectTo || `${window.location.origin}/reset-password`,
+  })
   if (error) throw error
   return true
 }

@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { requestPasswordReset } from '../services/api'
 
 export default function LoginPage() {
   const { signIn, signUp } = useAuth()
@@ -10,7 +11,19 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
   const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  const handleForgotPassword = async () => {
+    if (!email.trim()) { setError('请先输入邮箱'); return; }
+    setSubmitting(true); setError(''); setInfo('');
+    try {
+      await requestPasswordReset(email.trim());
+      setInfo('密码重置邮件已发送，请查收（含垃圾邮件）');
+    } catch (e: any) {
+      setError(e?.message || '发送失败');
+    } finally { setSubmitting(false); }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
