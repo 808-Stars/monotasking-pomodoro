@@ -515,7 +515,7 @@ export default function Settings() {
                 className="oto-btn oto-btn-sm"
                 style={{ opacity: feedbackContent.trim() ? 1 : 0.4, cursor: feedbackContent.trim() ? 'pointer' : 'not-allowed' }}
               >
-                <Icon name="pin" size={12} /> {submitting ? '提交中...' : '提交'}
+                <Icon name="enter" size={12} />
               </button>
             </div>
             <div>
@@ -828,7 +828,7 @@ export default function Settings() {
                               className="oto-btn-sm"
                               style={{ opacity: commentContent.trim() ? 1 : 0.4, cursor: commentContent.trim() ? 'pointer' : 'not-allowed' }}
                             >
-                              <Icon name="pin" size={12} />
+                              <Icon name="enter" size={12} />
                             </button>
                           </div>
                           {/* @提及下拉 */}

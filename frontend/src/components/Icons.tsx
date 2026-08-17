@@ -351,6 +351,12 @@ export const IconPin = (p: IconProps) => <Svg {...p}>
   <circle cx="12" cy="2" r="1.2" fill="currentColor"/>
 </Svg>;
 
+// 回车键（角形向下箭头 ↵）
+export const IconEnter = (p: IconProps) => <Svg {...p}>
+  <path d="M19 4v7a4 4 0 0 1-4 4H4"/>
+  <polyline points="8,11 4,15 8,19"/>
+</Svg>;
+
 // 箭头右
 export const IconArrowRight = (p: IconProps) => <Svg {...p}>
   <path d="M5 12h14"/>
@@ -565,6 +571,7 @@ const icons = {
   loading:      IconLoading,       // 加载
   refresh:      IconRefresh,       // 刷新
   pin:          IconPin,           // 图钉
+  enter:        IconEnter,         // 回车键
   arrowRight:   IconArrowRight,    // 右箭头
   arrowLeft:    IconArrowLeft,     // 左箭头
   chevronDown:  IconChevronDown,   // 展开
