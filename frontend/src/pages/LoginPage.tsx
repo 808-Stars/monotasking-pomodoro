@@ -110,6 +110,32 @@ export default function LoginPage() {
               {error}
             </p>
           )}
+          {info && (
+            <p style={{
+              fontSize: '13px', color: 'var(--oto-green)', marginBottom: '12px',
+              background: '#e4f4e4', padding: '8px', border: '1px solid #98d098',
+            }}>
+              {info}
+            </p>
+          )}
+          {mode === 'login' && (
+            <div style={{ textAlign: 'right', marginBottom: '12px' }}>
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                disabled={submitting}
+                style={{
+                  background: 'transparent', border: 'none', padding: 0,
+                  color: 'var(--oto-gold-dark)', fontSize: '13px',
+                  cursor: submitting ? 'not-allowed' : 'pointer',
+                  fontFamily: 'var(--oto-font-body)',
+                  textDecoration: 'underline',
+                }}
+              >
+                忘记密码？
+              </button>
+            </div>
+          )}
           <button
             type="submit" disabled={submitting}
             className="oto-btn" style={{ width: '100%', padding: '10px 0', fontWeight: 700 }}

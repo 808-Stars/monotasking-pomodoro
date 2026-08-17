@@ -17,3 +17,6 @@ Thumbs.db
 
 # Netlify build artifacts
 .netlify
+
+# TypeScript incremental build cache
+frontend/tsconfig.tsbuildinfo
