@@ -15,12 +15,11 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '0.2.1',
     date: '2026-08-17',
-    title: '修复账户设置模块编译错误',
+    title: '修复账户设置功能',
     highlights: [
-      { text: '修复 Settings.tsx 多个严重编译错误：modal helpers 函数被错误放在 JSX 块内导致结构解析失败，账户设置页面之前根本无法加载。' },
-      { text: '修复密码验证逻辑：之前用用户名而非邮箱调用 signIn，导致修改密码、用户名、邮箱时验证永远失败。现在改用 session 邮箱验证。' },
-      { text: '修复 @提及下拉的类型错误（showMentionDropdown 类型从 boolean 改为 string | null）。' },
-      { text: '删除三段死代码（旧的 handleUpdateUsername/Password/Email），引用了已删除的内联 state。' },
+      { text: '修复账户设置页面无法正常打开的 bug。修改用户名、修改邮箱、修改密码、忘记密码这四个功能现在都可以正常使用。' },
+      { text: '修复修改密码、修改用户名、修改邮箱时永远卡在验证步骤的问题。输入正确的当前密码后，可以正常进入下一步完成修改。' },
+      { text: '修复反馈页"@"提及按钮的展开异常，点击 @ 按钮现在可以正常显示用户名列表。' },
     ],
   },
   {

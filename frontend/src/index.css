@@ -1131,6 +1131,30 @@ a:hover { color: var(--oto-gold-light); text-decoration: underline; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   Drawer frame — 移动端四周外框，桌面端仅左侧外框
+   ═══════════════════════════════════════════════════════════════ */
+.oto-drawer-frame {
+  background: var(--oto-bg-card);
+  border: 2px solid var(--oto-gold-dark);
+  box-shadow:
+    0 0 0 1px var(--oto-bg-card),
+    0 0 0 3px var(--oto-gold),
+    0 0 0 4px var(--oto-gold-dark),
+    0 4px 16px rgba(0,0,0,0.3);
+}
+@media (min-width: 768px) {
+  .oto-drawer-frame {
+    border: none;
+    border-left: 2px solid var(--oto-gold-dark);
+    box-shadow:
+      -1px 0 0 1px var(--oto-bg-card),
+      -3px 0 0 1px var(--oto-gold),
+      -4px 0 0 1px var(--oto-gold-dark),
+      -8px 0 16px -2px rgba(0,0,0,0.3);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
    Sidebar scrollbar — dark wine-red to match theme
    ═══════════════════════════════════════════════════════════════ */
 .oto-sidebar {

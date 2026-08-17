@@ -80,6 +80,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 创建用户资料
     if (data.user) {
       await supabase.from('profiles').insert({ id: data.user.id, username })
+      // 同时把 username 存到 user_metadata，让 JWT 包含 username，导航栏能同步读取
+      await supabase.auth.updateUser({ data: { username } })
     }
     if (!data.session) return { error: '注册成功！请检查邮箱并点击确认链接后登录' }
     return { error: null }

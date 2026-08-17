@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext'
 import {
   isTokenSystemDisabled,
@@ -89,6 +89,19 @@ export default function Settings() {
   const [loadingFeedback, setLoadingFeedback] = useState(true);
   const [feedbackError, setFeedbackError] = useState('');
   const [showAllFeedback, setShowAllFeedback] = useState(false);
+  const [feedbackFilter, setFeedbackFilter] = useState<'all' | FeedbackEntry['type']>('all');
+
+  // 按类型筛选的反馈列表
+  const filteredFeedbackList = useMemo(() => {
+    if (feedbackFilter === 'all') return feedbackList;
+    return feedbackList.filter(fb => fb.type === feedbackFilter);
+  }, [feedbackList, feedbackFilter]);
+  // 每个类型的数量（用于 chips 显示）
+  const feedbackTypeCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: feedbackList.length, bug: 0, suggestion: 0, question: 0, general: 0 };
+    feedbackList.forEach(fb => { counts[fb.type] = (counts[fb.type] || 0) + 1; });
+    return counts;
+  }, [feedbackList]);
 
   // ===== Account settings modals =====
   const [accountModal, setAccountModal] = useState<'username' | 'email' | 'password' | 'forgot' | null>(null);
@@ -106,7 +119,7 @@ export default function Settings() {
   const [accountError, setAccountError] = useState('');
   const [accountSuccess, setAccountSuccess] = useState('');
 
-  const { signIn } = useAuth();
+  const { signIn, user } = useAuth();
   useEffect(() => {
     getCurrentUsername().then(setCurrentUsername).catch(() => {});
   }, []);
@@ -226,58 +239,58 @@ export default function Settings() {
     setAccountSuccess('');
   };
   const handleVerifyPassword = async () => {
-    if (!modalCurrentPw) { setAccountError('Please enter current password'); return; }
+    if (!modalCurrentPw) { setAccountError('请输入当前密码'); return; }
     setAccountLoading(true); setAccountError('');
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const email = session?.user?.email;
-      if (!email) { setAccountError('Unable to retrieve current email'); setAccountLoading(false); return; }
+      if (!email) { setAccountError('无法获取当前用户邮箱'); setAccountLoading(false); return; }
       const { error: verifyErr } = await signIn(email, modalCurrentPw);
-      if (verifyErr) { setAccountError('Current password incorrect'); setAccountLoading(false); return; }
+      if (verifyErr) { setAccountError('当前密码错误'); setAccountLoading(false); return; }
       setAccountLoading(false);
       setModalStep('edit');
-    } catch (e: any) { setAccountError(e?.message || 'Verification failed'); setAccountLoading(false); }
+    } catch (e: any) { setAccountError(e?.message || '验证失败'); setAccountLoading(false); }
   };
   const handleSaveUsername = async () => {
-    if (!modalNewUsername.trim()) { setAccountError('Please enter new username'); return; }
+    if (!modalNewUsername.trim()) { setAccountError('请输入新用户名'); return; }
     setAccountLoading(true); setAccountError('');
     try {
       await updateUsername(modalNewUsername.trim());
       setCurrentUsername(modalNewUsername.trim());
-      setAccountSuccess('Username updated');
+      setAccountSuccess('用户名修改成功');
       setTimeout(closeAccountModal, 800);
-    } catch (e: any) { setAccountError(e?.message || 'Update failed'); }
+    } catch (e: any) { setAccountError(e?.message || '修改失败'); }
     finally { setAccountLoading(false); }
   };
   const handleSaveEmail = async () => {
-    if (!modalNewEmail.trim()) { setAccountError('Please enter new email'); return; }
+    if (!modalNewEmail.trim()) { setAccountError('请输入新邮箱'); return; }
     setAccountLoading(true); setAccountError('');
     try {
       await updateEmail(modalNewEmail.trim());
-      setAccountSuccess('Email updated, please check inbox');
+      setAccountSuccess('邮箱修改成功，请查收确认邮件');
       setTimeout(closeAccountModal, 800);
-    } catch (e: any) { setAccountError(e?.message || 'Update failed'); }
+    } catch (e: any) { setAccountError(e?.message || '修改失败'); }
     finally { setAccountLoading(false); }
   };
   const handleSavePassword = async () => {
-    if (!modalNewPw) { setAccountError('Please enter new password'); return; }
-    if (modalNewPw !== modalConfirmPw) { setAccountError('Passwords do not match'); return; }
+    if (!modalNewPw) { setAccountError('请输入新密码'); return; }
+    if (modalNewPw !== modalConfirmPw) { setAccountError('两次输入的密码不一致'); return; }
     setAccountLoading(true); setAccountError('');
     try {
       await updatePassword(modalNewPw);
-      setAccountSuccess('Password updated');
+      setAccountSuccess('密码修改成功');
       setTimeout(closeAccountModal, 800);
-    } catch (e: any) { setAccountError(e?.message || 'Update failed'); }
+    } catch (e: any) { setAccountError(e?.message || '修改失败'); }
     finally { setAccountLoading(false); }
   };
   const handleForgotPasswordModal = async () => {
-    if (!modalEmail.trim()) { setAccountError('Please enter email'); return; }
+    if (!modalEmail.trim()) { setAccountError('请输入邮箱'); return; }
     setAccountLoading(true); setAccountError('');
     try {
       await requestPasswordReset(modalEmail.trim());
-      setAccountSuccess('Reset email sent, check spam folder');
+      setAccountSuccess('密码重置邮件已发送，请查收（含垃圾邮件）');
       setTimeout(closeAccountModal, 1500);
-    } catch (e: any) { setAccountError(e?.message || 'Send failed'); }
+    } catch (e: any) { setAccountError(e?.message || '发送失败'); }
     finally { setAccountLoading(false); }
   };
 
@@ -377,35 +390,38 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* ===== 2. Account settings ===== */}
+      {/* ===== 2. 账户设置 ===== */}
       <div className="oto-window overflow-hidden">
         <div className="px-4 py-3 flex items-center gap-2" style={{ borderBottom: '1px solid var(--oto-border-light)' }}>
           <Icon name="lock" size={16} />
-          <h3 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '11px', lineHeight: '1.8', color: 'var(--oto-text)' }}>Account settings</h3>
+          <h3 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '11px', lineHeight: '1.8', color: 'var(--oto-text)' }}>账户设置</h3>
           {currentUsername && (
-            <span className="ml-2 text-xs" style={{ color: 'var(--oto-text-muted)' }}>Current user: {currentUsername}</span>
+            <span className="ml-2 text-xs" style={{ color: 'var(--oto-text-muted)' }}>当前用户：{currentUsername}</span>
+          )}
+          {user?.email && (
+            <span className="ml-2 text-xs" style={{ color: 'var(--oto-text-muted)' }}>当前邮箱：{user.email}</span>
           )}
         </div>
         <div className="p-4 grid grid-cols-2 gap-3">
           <button onClick={() => openAccountModal('username')} className="oto-inset p-4 hover:brightness-105 text-left" style={{ background: 'var(--oto-bg-inset)' }}>
             <Icon name="edit" size={20} style={{ color: 'var(--oto-gold-dark)', marginBottom: '8px' }} />
-            <p style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text)' }}>Change username</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--oto-text-muted)' }}>Takes effect immediately</p>
+            <p style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text)' }}>修改用户名</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--oto-text-muted)' }}>立即生效</p>
           </button>
           <button onClick={() => openAccountModal('email')} className="oto-inset p-4 hover:brightness-105 text-left" style={{ background: 'var(--oto-bg-inset)' }}>
             <Icon name="mail" size={20} style={{ color: 'var(--oto-gold-dark)', marginBottom: '8px' }} />
-            <p style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text)' }}>Change email</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--oto-text-muted)' }}>Requires new email confirmation</p>
+            <p style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text)' }}>修改邮箱</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--oto-text-muted)' }}>需要新邮箱确认</p>
           </button>
           <button onClick={() => openAccountModal('password')} className="oto-inset p-4 hover:brightness-105 text-left" style={{ background: 'var(--oto-bg-inset)' }}>
             <Icon name="lock" size={20} style={{ color: 'var(--oto-gold-dark)', marginBottom: '8px' }} />
-            <p style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text)' }}>Change password</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--oto-text-muted)' }}>Requires current password</p>
+            <p style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text)' }}>修改密码</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--oto-text-muted)' }}>需要当前密码验证</p>
           </button>
           <button onClick={() => openAccountModal('forgot')} className="oto-inset p-4 hover:brightness-105 text-left" style={{ background: 'var(--oto-bg-inset)' }}>
             <Icon name="refresh" size={20} style={{ color: 'var(--oto-accent-alt)', marginBottom: '8px' }} />
-            <p style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text)' }}>Forgot password</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--oto-text-muted)' }}>Reset via email</p>
+            <p style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text)' }}>忘记密码</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--oto-text-muted)' }}>通过邮件重置</p>
           </button>
         </div>
       </div>
@@ -515,24 +531,199 @@ export default function Settings() {
               <p className="text-sm" style={{ color: 'var(--oto-accent-alt)' }}>{feedbackError}</p>
             )}
           </div>
+        </div>
+      </div>
 
-          {/* 反馈列表（公开） */}
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <label style={labelStyle}>全部反馈</label>
+      {/* 开发者日志详情弹窗 */}
+      {modalEntry && (
+        <WhatsNewModal entry={modalEntry} onClose={() => setModalEntry(null)} />
+      )}
+
+      {/* ===== Account settings modal ===== */}
+      {accountModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center oto-overlay" onClick={closeAccountModal}>
+          <div className="oto-modal max-w-md w-[92vw] mx-4 overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="px-6 pt-5 pb-3 flex-shrink-0" style={{ borderBottom: '1px solid var(--oto-border-light)', background: 'var(--oto-bg-card)' }}>
+              <h3 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '13px', lineHeight: '1.8', color: 'var(--oto-text)', textAlign: 'center' }}>
+                {accountModal === 'username' && '修改用户名'}
+                {accountModal === 'email' && '修改邮箱'}
+                {accountModal === 'password' && '修改密码'}
+                {accountModal === 'forgot' && '忘记密码'}
+              </h3>
+            </div>
+            <div className="px-6 py-5 space-y-3" style={{ background: 'var(--oto-bg-card)' }}>
+              {(accountModal === 'username' || accountModal === 'email' || accountModal === 'password') && modalStep === 'verify' && (
+                <>
+                  <p className="text-sm" style={{ color: 'var(--oto-text-dim)' }}>为安全起见，请输入您当前的密码：</p>
+                  <input
+                    type="password" autoFocus
+                    value={modalCurrentPw} onChange={e => setModalCurrentPw(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleVerifyPassword(); }}
+                    placeholder="当前密码"
+                    className="oto-input w-full text-sm"
+                    style={{ padding: '8px 12px' }}
+                  />
+                </>
+              )}
+              {accountModal === 'username' && modalStep === 'edit' && (
+                <>
+                  <p className="text-sm" style={{ color: 'var(--oto-green)' }}>身份验证已通过</p>
+                  <input
+                    type="text" autoFocus
+                    value={modalNewUsername} onChange={e => setModalNewUsername(e.target.value)}
+                    placeholder="新用户名（3-20位）"
+                    className="oto-input w-full text-sm"
+                    style={{ padding: '8px 12px' }}
+                  />
+                  <p className="text-xs" style={{ color: 'var(--oto-text-muted)' }}>3-20位：字母、数字、下划线、中文</p>
+                </>
+              )}
+              {accountModal === 'email' && modalStep === 'edit' && (
+                <>
+                  <p className="text-sm" style={{ color: 'var(--oto-green)' }}>身份验证已通过</p>
+                  <input
+                    type="email" autoFocus
+                    value={modalNewEmail} onChange={e => setModalNewEmail(e.target.value)}
+                    placeholder="新邮箱"
+                    className="oto-input w-full text-sm"
+                    style={{ padding: '8px 12px' }}
+                  />
+                </>
+              )}
+              {accountModal === 'password' && modalStep === 'edit' && (
+                <>
+                  <p className="text-sm" style={{ color: 'var(--oto-green)' }}>身份验证已通过</p>
+                  <input
+                    type="password" autoFocus
+                    value={modalNewPw} onChange={e => setModalNewPw(e.target.value)}
+                    placeholder="新密码"
+                    className="oto-input w-full text-sm"
+                    style={{ padding: '8px 12px' }}
+                  />
+                  <input
+                    type="password"
+                    value={modalConfirmPw} onChange={e => setModalConfirmPw(e.target.value)}
+                    placeholder="确认新密码"
+                    className="oto-input w-full text-sm"
+                    style={{ padding: '8px 12px' }}
+                  />
+                </>
+              )}
+              {accountModal === 'forgot' && (
+                <>
+                  <p className="text-sm" style={{ color: 'var(--oto-text-dim)' }}>输入您注册的邮箱以接收重置链接：</p>
+                  <input
+                    type="email" autoFocus
+                    value={modalEmail} onChange={e => setModalEmail(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleForgotPasswordModal(); }}
+                    placeholder="注册邮箱"
+                    className="oto-input w-full text-sm"
+                    style={{ padding: '8px 12px' }}
+                  />
+                </>
+              )}
+              {accountError && (
+                <p style={{ fontSize: '13px', color: 'var(--oto-red)', background: '#fce4e4', padding: '8px', border: '1px solid #d09898' }}>
+                  {accountError}
+                </p>
+              )}
+              {accountSuccess && (
+                <p style={{ fontSize: '13px', color: 'var(--oto-green)', background: '#e0ece0', padding: '8px', border: '1px solid #90b090' }}>
+                  {accountSuccess}
+                </p>
+              )}
+            </div>
+            <div className="px-6 pb-5 pt-2 flex gap-2" style={{ background: 'var(--oto-bg-card)' }}>
+              <button onClick={closeAccountModal} className="oto-btn oto-btn-gray flex-1" style={{ padding: '10px 0' }}>取消</button>
+              {accountModal === 'forgot' ? (
+                <button
+                  onClick={handleForgotPasswordModal}
+                  disabled={accountLoading || !modalEmail.trim()}
+                  className="oto-btn flex-1"
+                  style={{ padding: '10px 0', opacity: modalEmail.trim() ? 1 : 0.4, cursor: modalEmail.trim() ? 'pointer' : 'not-allowed' }}
+                >
+                  {accountLoading ? '发送中...' : '发送邮件'}
+                </button>
+              ) : modalStep === 'verify' ? (
+                <button
+                  onClick={handleVerifyPassword}
+                  disabled={accountLoading || !modalCurrentPw}
+                  className="oto-btn flex-1"
+                  style={{ padding: '10px 0', opacity: modalCurrentPw ? 1 : 0.4, cursor: modalCurrentPw ? 'pointer' : 'not-allowed' }}
+                >
+                  {accountLoading ? '验证中...' : '下一步'}
+                </button>
+              ) : (
+                <button
+                  onClick={
+                    accountModal === 'username' ? handleSaveUsername :
+                    accountModal === 'email' ? handleSaveEmail :
+                    handleSavePassword
+                  }
+                  disabled={accountLoading}
+                  className="oto-btn flex-1"
+                  style={{ padding: '10px 0' }}
+                >
+                  {accountLoading ? '保存中...' : '保存'}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 查看全部反馈弹窗 */}
+      {showAllFeedback && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center oto-overlay" onClick={() => setShowAllFeedback(false)}>
+          <div className="oto-modal max-w-2xl w-[95vw] mx-4 overflow-hidden flex flex-col" style={{ maxHeight: '80vh' }} onClick={e => e.stopPropagation()}>
+            <div className="px-6 pt-5 pb-3 flex-shrink-0 flex items-center gap-2" style={{ borderBottom: '1px solid var(--oto-border-light)', background: 'var(--oto-bg-card)' }}>
+              <Icon name="bulb" size={16} />
+              <h3 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '13px', lineHeight: '1.8', color: 'var(--oto-text)' }}>全部反馈</h3>
               {feedbackList.length > 0 && (
                 <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{feedbackList.length} 条</span>
               )}
+              <button onClick={() => setShowAllFeedback(false)} className="ml-auto oto-btn-sm oto-btn-gray"><Icon name="close" size={14} /></button>
             </div>
-            {loadingFeedback ? (
-              <div className="text-center py-6" style={{ color: 'var(--oto-text-muted)' }}>
-                <Icon name="loading" size={20} className="animate-spin" />
-              </div>
-            ) : feedbackList.length === 0 ? (
-              <p className="text-center py-4" style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>暂无反馈</p>
-            ) : (
-              <div className="space-y-3">
-                {feedbackList.map(fb => (
+            {/* 反馈类型筛选 */}
+            <div className="px-6 py-3 flex items-center gap-2 flex-wrap" style={{ borderBottom: '1px solid var(--oto-border-light)', background: 'var(--oto-bg-card)' }}>
+              <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>筛选：</span>
+              {([
+                { value: 'all', label: '全部' },
+                ...FEEDBACK_TYPE_OPTIONS,
+              ] as { value: 'all' | FeedbackEntry['type']; label: string }[]).map(opt => {
+                const isActive = feedbackFilter === opt.value;
+                const count = feedbackTypeCounts[opt.value] || 0;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => setFeedbackFilter(opt.value)}
+                    className="px-2 py-0.5 text-xs rounded"
+                    style={{
+                          background: isActive ? 'var(--oto-gold)' : 'var(--oto-bg-inset)',
+                          color: isActive ? '#fff' : 'var(--oto-text-dim)',
+                          border: '1px solid',
+                          borderColor: isActive ? 'var(--oto-gold-dark)' : 'var(--oto-border-light)',
+                          fontFamily: 'var(--oto-font-body)',
+                          fontWeight: isActive ? 600 : 400,
+                          cursor: 'pointer',
+                        }}
+                  >
+                    {opt.label} {count}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="px-6 py-4 space-y-3 overflow-y-auto flex-1" style={{ background: 'var(--oto-bg-card)' }}>
+              {loadingFeedback ? (
+                <div className="text-center py-6" style={{ color: 'var(--oto-text-muted)' }}>
+                  <Icon name="loading" size={20} className="animate-spin" />
+                </div>
+              ) : filteredFeedbackList.length === 0 ? (
+                <p className="text-center py-4" style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>
+                  {feedbackList.length === 0 ? '暂无反馈' : `暂无${FEEDBACK_TYPE_MAP[feedbackFilter as FeedbackEntry['type']] || ''}类型的反馈`}
+                </p>
+              ) : (
+                filteredFeedbackList.map(fb => (
                   <div key={fb.id} className="px-4 py-3 oto-window" style={{ borderLeft: '3px solid var(--oto-gold)' }}>
                     <div className="flex items-center gap-2 mb-2">
                       <span className="font-medium text-sm" style={{ color: 'var(--oto-text)' }}>{fb.username}</span>
@@ -544,24 +735,26 @@ export default function Settings() {
                         {new Date(fb.created_at).toLocaleString('zh-CN')}
                       </span>
                     </div>
-                    <p className="text-sm whitespace-pre-wrap mb-2 cursor-pointer" style={{ ...pxBody, color: 'var(--oto-text-dim)', display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden', WebkitLineClamp: expandedContent[fb.id] ? 'unset' : 3 }}
+                    <p className="text-sm whitespace-pre-wrap cursor-pointer" style={{ ...pxBody, color: 'var(--oto-text-dim)', display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden', WebkitLineClamp: expandedContent[fb.id] ? 'unset' : 3 }}
                       onClick={() => setExpandedContent(prev => ({ ...prev, [fb.id]: !prev[fb.id] }))}>
                       {fb.content}
                       {!expandedContent[fb.id] && fb.content.length > 100 && <span style={{ color: 'var(--oto-gold-dark)', marginLeft: 4, fontSize: '12px' }}>展开</span>}
                       {expandedContent[fb.id] && fb.content.length > 100 && <span style={{ color: 'var(--oto-gold-dark)', marginLeft: 4, fontSize: '12px' }}>收起</span>}
                     </p>
 
-                    {/* 评论区域 */}
-                    <div className="flex items-center justify-end mt-1">
+                    {/* 查看评论按钮 */}
+                    <div className="flex items-center justify-end mt-2">
                       <button
                         onClick={() => toggleComments(fb.id)}
                         className="oto-btn-sm oto-btn-gray text-xs flex items-center gap-1"
                         style={{ fontSize: '11px' }}
                       >
-                        <Icon name="edit" size={12} /> {commentCounts[fb.id] || 0} 条评论
+                        <Icon name={expandedFeedback === fb.id ? 'close' : 'edit'} size={12} />
+                        {expandedFeedback === fb.id ? '收起评论' : `评论 ${commentCounts[fb.id] || 0} 条`}
                       </button>
                     </div>
 
+                    {/* 评论展开区域 */}
                     {expandedFeedback === fb.id && (
                       <div className="mt-3 pt-3 space-y-2" style={{ borderTop: '1px solid var(--oto-border-light)' }}>
                         {loadingComments && !commentsMap[fb.id] ? (
@@ -665,195 +858,6 @@ export default function Settings() {
                       </div>
                     )}
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* 开发者日志详情弹窗 */}
-      {modalEntry && (
-        <WhatsNewModal entry={modalEntry} onClose={() => setModalEntry(null)} />
-      )}
-
-      {/* ===== Account settings modal ===== */}
-      {accountModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center oto-overlay" onClick={closeAccountModal}>
-          <div className="oto-modal max-w-md w-[92vw] mx-4 overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="px-6 pt-5 pb-3 flex-shrink-0" style={{ borderBottom: '1px solid var(--oto-border-light)', background: 'var(--oto-bg-card)' }}>
-              <h3 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '13px', lineHeight: '1.8', color: 'var(--oto-text)', textAlign: 'center' }}>
-                {accountModal === 'username' && 'Change Username'}
-                {accountModal === 'email' && 'Change Email'}
-                {accountModal === 'password' && 'Change Password'}
-                {accountModal === 'forgot' && 'Forgot Password'}
-              </h3>
-            </div>
-            <div className="px-6 py-5 space-y-3" style={{ background: 'var(--oto-bg-card)' }}>
-              {(accountModal === 'username' || accountModal === 'email' || accountModal === 'password') && modalStep === 'verify' && (
-                <>
-                  <p className="text-sm" style={{ color: 'var(--oto-text-dim)' }}>For security, please enter your current password:</p>
-                  <input
-                    type="password" autoFocus
-                    value={modalCurrentPw} onChange={e => setModalCurrentPw(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') handleVerifyPassword(); }}
-                    placeholder="Current password"
-                    className="oto-input w-full text-sm"
-                    style={{ padding: '8px 12px' }}
-                  />
-                </>
-              )}
-              {accountModal === 'username' && modalStep === 'edit' && (
-                <>
-                  <p className="text-sm" style={{ color: 'var(--oto-green)' }}>Identity verified</p>
-                  <input
-                    type="text" autoFocus
-                    value={modalNewUsername} onChange={e => setModalNewUsername(e.target.value)}
-                    placeholder="New username (3-20 chars)"
-                    className="oto-input w-full text-sm"
-                    style={{ padding: '8px 12px' }}
-                  />
-                  <p className="text-xs" style={{ color: 'var(--oto-text-muted)' }}>3-20 chars: letters, digits, underscore, Chinese</p>
-                </>
-              )}
-              {accountModal === 'email' && modalStep === 'edit' && (
-                <>
-                  <p className="text-sm" style={{ color: 'var(--oto-green)' }}>Identity verified</p>
-                  <input
-                    type="email" autoFocus
-                    value={modalNewEmail} onChange={e => setModalNewEmail(e.target.value)}
-                    placeholder="New email"
-                    className="oto-input w-full text-sm"
-                    style={{ padding: '8px 12px' }}
-                  />
-                </>
-              )}
-              {accountModal === 'password' && modalStep === 'edit' && (
-                <>
-                  <p className="text-sm" style={{ color: 'var(--oto-green)' }}>Identity verified</p>
-                  <input
-                    type="password" autoFocus
-                    value={modalNewPw} onChange={e => setModalNewPw(e.target.value)}
-                    placeholder="New password"
-                    className="oto-input w-full text-sm"
-                    style={{ padding: '8px 12px' }}
-                  />
-                  <input
-                    type="password"
-                    value={modalConfirmPw} onChange={e => setModalConfirmPw(e.target.value)}
-                    placeholder="Confirm new password"
-                    className="oto-input w-full text-sm"
-                    style={{ padding: '8px 12px' }}
-                  />
-                </>
-              )}
-              {accountModal === 'forgot' && (
-                <>
-                  <p className="text-sm" style={{ color: 'var(--oto-text-dim)' }}>Enter your registered email to receive a reset link:</p>
-                  <input
-                    type="email" autoFocus
-                    value={modalEmail} onChange={e => setModalEmail(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') handleForgotPasswordModal(); }}
-                    placeholder="Registered email"
-                    className="oto-input w-full text-sm"
-                    style={{ padding: '8px 12px' }}
-                  />
-                </>
-              )}
-              {accountError && (
-                <p style={{ fontSize: '13px', color: 'var(--oto-red)', background: '#fce4e4', padding: '8px', border: '1px solid #d09898' }}>
-                  {accountError}
-                </p>
-              )}
-              {accountSuccess && (
-                <p style={{ fontSize: '13px', color: 'var(--oto-green)', background: '#e0ece0', padding: '8px', border: '1px solid #90b090' }}>
-                  {accountSuccess}
-                </p>
-              )}
-            </div>
-            <div className="px-6 pb-5 pt-2 flex gap-2" style={{ background: 'var(--oto-bg-card)' }}>
-              <button onClick={closeAccountModal} className="oto-btn oto-btn-gray flex-1" style={{ padding: '10px 0' }}>Cancel</button>
-              {accountModal === 'forgot' ? (
-                <button
-                  onClick={handleForgotPasswordModal}
-                  disabled={accountLoading || !modalEmail.trim()}
-                  className="oto-btn flex-1"
-                  style={{ padding: '10px 0', opacity: modalEmail.trim() ? 1 : 0.4, cursor: modalEmail.trim() ? 'pointer' : 'not-allowed' }}
-                >
-                  {accountLoading ? 'Sending...' : 'Send Email'}
-                </button>
-              ) : modalStep === 'verify' ? (
-                <button
-                  onClick={handleVerifyPassword}
-                  disabled={accountLoading || !modalCurrentPw}
-                  className="oto-btn flex-1"
-                  style={{ padding: '10px 0', opacity: modalCurrentPw ? 1 : 0.4, cursor: modalCurrentPw ? 'pointer' : 'not-allowed' }}
-                >
-                  {accountLoading ? 'Verifying...' : 'Next'}
-                </button>
-              ) : (
-                <button
-                  onClick={
-                    accountModal === 'username' ? handleSaveUsername :
-                    accountModal === 'email' ? handleSaveEmail :
-                    handleSavePassword
-                  }
-                  disabled={accountLoading}
-                  className="oto-btn flex-1"
-                  style={{ padding: '10px 0' }}
-                >
-                  {accountLoading ? 'Saving...' : 'Save'}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 查看全部反馈弹窗 */}
-      {showAllFeedback && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center oto-overlay" onClick={() => setShowAllFeedback(false)}>
-          <div className="oto-modal max-w-2xl w-[95vw] mx-4 overflow-hidden flex flex-col" style={{ maxHeight: '80vh' }} onClick={e => e.stopPropagation()}>
-            <div className="px-6 pt-5 pb-3 flex-shrink-0 flex items-center gap-2" style={{ borderBottom: '1px solid var(--oto-border-light)', background: 'var(--oto-bg-card)' }}>
-              <Icon name="bulb" size={16} />
-              <h3 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '13px', lineHeight: '1.8', color: 'var(--oto-text)' }}>全部反馈</h3>
-              {feedbackList.length > 0 && (
-                <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>{feedbackList.length} 条</span>
-              )}
-              <button onClick={() => setShowAllFeedback(false)} className="ml-auto oto-btn-sm oto-btn-gray"><Icon name="close" size={14} /></button>
-            </div>
-            <div className="px-6 py-4 space-y-3 overflow-y-auto flex-1" style={{ background: 'var(--oto-bg-card)' }}>
-              {loadingFeedback ? (
-                <div className="text-center py-6" style={{ color: 'var(--oto-text-muted)' }}>
-                  <Icon name="loading" size={20} className="animate-spin" />
-                </div>
-              ) : feedbackList.length === 0 ? (
-                <p className="text-center py-4" style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>暂无反馈</p>
-              ) : (
-                feedbackList.map(fb => (
-                  <div key={fb.id} className="px-4 py-3 oto-window" style={{ borderLeft: '3px solid var(--oto-gold)' }}>
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="font-medium text-sm" style={{ color: 'var(--oto-text)' }}>{fb.username}</span>
-                      <StatusBadge
-                        label={FEEDBACK_TYPE_MAP[fb.type]}
-                        status={fb.type === 'bug' ? 'FAILED' : fb.type === 'suggestion' ? 'COMPLETED' : fb.type === 'question' ? 'PLANNED' : 'ARCHIVED'}
-                      />
-                      {commentCounts[fb.id] > 0 && (
-                        <span className="text-xs" style={{ color: 'var(--oto-text-muted)' }}>
-                          {commentCounts[fb.id]} 条评论
-                        </span>
-                      )}
-                      <span className="ml-auto" style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>
-                        {new Date(fb.created_at).toLocaleString('zh-CN')}
-                      </span>
-                    </div>
-                    <p className="text-sm whitespace-pre-wrap cursor-pointer" style={{ ...pxBody, color: 'var(--oto-text-dim)', display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden', WebkitLineClamp: expandedContent[fb.id] ? 'unset' : 3 }}
-                      onClick={() => setExpandedContent(prev => ({ ...prev, [fb.id]: !prev[fb.id] }))}>
-                      {fb.content}
-                      {!expandedContent[fb.id] && fb.content.length > 100 && <span style={{ color: 'var(--oto-gold-dark)', marginLeft: 4, fontSize: '12px' }}>展开</span>}
-                      {expandedContent[fb.id] && fb.content.length > 100 && <span style={{ color: 'var(--oto-gold-dark)', marginLeft: 4, fontSize: '12px' }}>收起</span>}
-                    </p>
-                  </div>
                 ))
               )}
             </div>
@@ -867,21 +871,21 @@ export default function Settings() {
           <div className="oto-modal max-w-md w-[92vw] mx-4 overflow-hidden" onClick={e => e.stopPropagation()}>
             <div className="px-6 pt-5 pb-3 flex-shrink-0" style={{ borderBottom: '1px solid var(--oto-border-light)', background: 'var(--oto-bg-card)' }}>
               <h3 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '13px', lineHeight: '1.8', color: 'var(--oto-text)', textAlign: 'center' }}>
-                {accountModal === 'username' && 'Change Username'}
-                {accountModal === 'email' && 'Change Email'}
-                {accountModal === 'password' && 'Change Password'}
-                {accountModal === 'forgot' && 'Forgot Password'}
+                {accountModal === 'username' && '修改用户名'}
+                {accountModal === 'email' && '修改邮箱'}
+                {accountModal === 'password' && '修改密码'}
+                {accountModal === 'forgot' && '忘记密码'}
               </h3>
             </div>
             <div className="px-6 py-5 space-y-3" style={{ background: 'var(--oto-bg-card)' }}>
               {(accountModal === 'username' || accountModal === 'email' || accountModal === 'password') && modalStep === 'verify' && (
                 <>
-                  <p className="text-sm" style={{ color: 'var(--oto-text-dim)' }}>For security, please enter your current password:</p>
+                  <p className="text-sm" style={{ color: 'var(--oto-text-dim)' }}>为安全起见，请输入您当前的密码：</p>
                   <input
                     type="password" autoFocus
                     value={modalCurrentPw} onChange={e => setModalCurrentPw(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') handleVerifyPassword(); }}
-                    placeholder="Current password"
+                    placeholder="当前密码"
                     className="oto-input w-full text-sm"
                     style={{ padding: '8px 12px' }}
                   />
@@ -889,24 +893,24 @@ export default function Settings() {
               )}
               {accountModal === 'username' && modalStep === 'edit' && (
                 <>
-                  <p className="text-sm" style={{ color: 'var(--oto-green)' }}>Identity verified</p>
+                  <p className="text-sm" style={{ color: 'var(--oto-green)' }}>身份验证已通过</p>
                   <input
                     type="text" autoFocus
                     value={modalNewUsername} onChange={e => setModalNewUsername(e.target.value)}
-                    placeholder="New username (3-20 chars)"
+                    placeholder="新用户名（3-20位）"
                     className="oto-input w-full text-sm"
                     style={{ padding: '8px 12px' }}
                   />
-                  <p className="text-xs" style={{ color: 'var(--oto-text-muted)' }}>3-20 chars: letters, digits, underscore, Chinese</p>
+                  <p className="text-xs" style={{ color: 'var(--oto-text-muted)' }}>3-20位：字母、数字、下划线、中文</p>
                 </>
               )}
               {accountModal === 'email' && modalStep === 'edit' && (
                 <>
-                  <p className="text-sm" style={{ color: 'var(--oto-green)' }}>Identity verified</p>
+                  <p className="text-sm" style={{ color: 'var(--oto-green)' }}>身份验证已通过</p>
                   <input
                     type="email" autoFocus
                     value={modalNewEmail} onChange={e => setModalNewEmail(e.target.value)}
-                    placeholder="New email"
+                    placeholder="新邮箱"
                     className="oto-input w-full text-sm"
                     style={{ padding: '8px 12px' }}
                   />
@@ -914,18 +918,18 @@ export default function Settings() {
               )}
               {accountModal === 'password' && modalStep === 'edit' && (
                 <>
-                  <p className="text-sm" style={{ color: 'var(--oto-green)' }}>Identity verified</p>
+                  <p className="text-sm" style={{ color: 'var(--oto-green)' }}>身份验证已通过</p>
                   <input
                     type="password" autoFocus
                     value={modalNewPw} onChange={e => setModalNewPw(e.target.value)}
-                    placeholder="New password"
+                    placeholder="新密码"
                     className="oto-input w-full text-sm"
                     style={{ padding: '8px 12px' }}
                   />
                   <input
                     type="password"
                     value={modalConfirmPw} onChange={e => setModalConfirmPw(e.target.value)}
-                    placeholder="Confirm new password"
+                    placeholder="确认新密码"
                     className="oto-input w-full text-sm"
                     style={{ padding: '8px 12px' }}
                   />
@@ -933,12 +937,12 @@ export default function Settings() {
               )}
               {accountModal === 'forgot' && (
                 <>
-                  <p className="text-sm" style={{ color: 'var(--oto-text-dim)' }}>Enter your registered email to receive a reset link:</p>
+                  <p className="text-sm" style={{ color: 'var(--oto-text-dim)' }}>输入您注册的邮箱以接收重置链接：</p>
                   <input
                     type="email" autoFocus
                     value={modalEmail} onChange={e => setModalEmail(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') handleForgotPasswordModal(); }}
-                    placeholder="Registered email"
+                    placeholder="注册邮箱"
                     className="oto-input w-full text-sm"
                     style={{ padding: '8px 12px' }}
                   />
@@ -956,7 +960,7 @@ export default function Settings() {
               )}
             </div>
             <div className="px-6 pb-5 pt-2 flex gap-2" style={{ background: 'var(--oto-bg-card)' }}>
-              <button onClick={closeAccountModal} className="oto-btn oto-btn-gray flex-1" style={{ padding: '10px 0' }}>Cancel</button>
+              <button onClick={closeAccountModal} className="oto-btn oto-btn-gray flex-1" style={{ padding: '10px 0' }}>取消</button>
               {accountModal === 'forgot' ? (
                 <button
                   onClick={handleForgotPasswordModal}
@@ -964,7 +968,7 @@ export default function Settings() {
                   className="oto-btn flex-1"
                   style={{ padding: '10px 0', opacity: modalEmail.trim() ? 1 : 0.4, cursor: modalEmail.trim() ? 'pointer' : 'not-allowed' }}
                 >
-                  {accountLoading ? 'Sending...' : 'Send Email'}
+                  {accountLoading ? '发送中...' : '发送邮件'}
                 </button>
               ) : modalStep === 'verify' ? (
                 <button
@@ -973,7 +977,7 @@ export default function Settings() {
                   className="oto-btn flex-1"
                   style={{ padding: '10px 0', opacity: modalCurrentPw ? 1 : 0.4, cursor: modalCurrentPw ? 'pointer' : 'not-allowed' }}
                 >
-                  {accountLoading ? 'Verifying...' : 'Next'}
+                  {accountLoading ? '验证中...' : '下一步'}
                 </button>
               ) : (
                 <button
@@ -986,7 +990,7 @@ export default function Settings() {
                   className="oto-btn flex-1"
                   style={{ padding: '10px 0' }}
                 >
-                  {accountLoading ? 'Saving...' : 'Save'}
+                  {accountLoading ? '保存中...' : '保存'}
                 </button>
               )}
             </div>

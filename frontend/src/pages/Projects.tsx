@@ -8,6 +8,19 @@ import { useOnboarding } from '../contexts/OnboardingContext';
 
 const EMPTY: Partial<Project> = { name: '', description: '', color: '#687898', status: 'ACTIVE' };
 const COLORS = ['#c83030', '#304868', '#d08030', '#308030', '#b09020', '#684878', '#c0c0c0', '#282020'];
+const MOBILE_BREAKPOINT = 768;
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT
+  );
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return isMobile;
+}
 
 const pxBody = { fontFamily: 'var(--oto-font-body)', fontSize: '17px' };
 const pxSm = { fontFamily: 'var(--oto-font-body)', fontSize: '12px', letterSpacing: '0' };
@@ -24,6 +37,7 @@ export default function Projects() {
   const [tasksLoading, setTasksLoading] = useState(false);
   const [nameExpanded, setNameExpanded] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
+  const [viewingTask, setViewingTask] = useState<Task | null>(null);
   const [showArchive, setShowArchive] = useState(false);
   const [archivedProjects, setArchivedProjects] = useState<Project[]>([]);
   const [sortBy, setSortBy] = useState<string>('created_at');
@@ -61,7 +75,7 @@ export default function Projects() {
   };
   const handleDelete = async (id: string) => {
     if (!confirm('确定删除此项目？关联的任务将被保留。')) return;
-    await deleteProject(id); if (selectedProject?.id === id) setSelectedProject(null); load();
+    await deleteProject(id); if (selectedProject?.id === id) { setSelectedProject(null); setViewingTask(null); } load();
   };
   const handleStatusChange = async (project: Project, newStatus: Project['status']) => {
     await updateProject(project.id, { name: project.name, description: project.description, color: project.color, status: newStatus }); load();
@@ -71,7 +85,7 @@ export default function Projects() {
     try { const data = await fetchTasks({ project_id: p.id }); setProjectTasks(data); }
     catch { setProjectTasks([]); } setTasksLoading(false);
   };
-  const closeDetail = () => { setSelectedProject(null); setProjectTasks([]); };
+  const closeDetail = () => { setSelectedProject(null); setProjectTasks([]); setViewingTask(null); };
   const openArchive = async () => {
     const d = await fetchProjects();
     const all = Array.isArray(d) ? d : [];
@@ -87,6 +101,7 @@ export default function Projects() {
   const todoCount = projectTasks.filter(t => t.status === 'TODO').length;
   const progressCount = projectTasks.filter(t => t.status === 'IN_PROGRESS').length;
   const doneCount = projectTasks.filter(t => t.status === 'DONE').length;
+  const isMobile = useIsMobile();
 
   return (
     <div className="space-y-6 oto-stagger">
@@ -158,11 +173,14 @@ export default function Projects() {
         </div>
       )}
 
-      {/* Detail Slide-out Panel — matches original: fixed right, shadow-2xl */}
+      {/* Detail Panel — 桌面端：右抽屉 / 移动端：居中弹窗（仅渲染当前匹配的容器） */}
       {selectedProject && (
         <>
           <div className="fixed inset-0 z-40" style={{ background: 'rgba(6,8,12,0.75)' }} onClick={closeDetail} />
-          <div className="fixed top-0 right-0 h-full w-full max-w-lg z-50 overflow-auto animate-slide-in-right" style={{ background: 'var(--oto-bg-card)', boxShadow: '0 0 32px rgba(0,0,0,0.6)' }}>
+          <div className={isMobile
+            ? 'fixed inset-0 z-50 flex items-center justify-center p-3 pointer-events-none'
+            : 'fixed top-0 right-0 h-full w-full max-w-lg z-50 overflow-auto animate-slide-in-right oto-drawer-frame'}>
+            <div className={isMobile ? 'w-full max-w-md max-h-[90vh] overflow-auto oto-drawer-frame pointer-events-auto' : 'contents'}>
             <div className="sticky top-0 z-10" style={{ background: 'var(--oto-bg-card)', borderBottom: '2px solid #1a2430' }}>
               <div className="p-5">
                 <div className="flex items-center justify-between mb-3">
@@ -177,7 +195,7 @@ export default function Projects() {
                 </div>
                 {selectedProject.description && <p className={`text-sm break-words cursor-pointer ${descExpanded ? '' : 'line-clamp-2'}`} style={{ ...pxBody, color: 'var(--oto-text-dim)' }} onClick={() => setDescExpanded(!descExpanded)}>{selectedProject.description}</p>}
               </div>
-              <div className="px-5 pb-3 flex gap-4 text-xs" style={{ ...pxBody, fontSize: '15px' }}>
+              <div className="px-5 pb-3 flex gap-4 text-xs flex-wrap" style={{ ...pxBody, fontSize: '15px' }}>
                 <span style={{ color: 'var(--oto-text-dim)' }}>共 <strong style={{ color: '#4a3020' }}>{projectTasks.length}</strong> 个任务</span>
                 <span style={{ color: '#304868' }}>待办 <strong>{todoCount}</strong></span>
                 <span style={{ color: '#f09040' }}>进行中 <strong>{progressCount}</strong></span>
@@ -199,7 +217,7 @@ export default function Projects() {
               ) : (
                 <div className="space-y-2">
                   {projectTasks.map(task => (
-                    <div key={task.id} className="oto-window p-3 hover:brightness-110">
+                    <div key={task.id} className="oto-window p-3 hover:brightness-110 cursor-pointer" onClick={() => setViewingTask(task)}>
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm truncate" style={{ ...pxBody, fontSize: '16px', color: 'var(--oto-text)' }}>{task.name}</p>
@@ -222,8 +240,61 @@ export default function Projects() {
             <div className="sticky bottom-0 p-4" style={{ background: 'var(--oto-bg-card)', borderTop: '2px solid #1a2430' }}>
               <button onClick={closeDetail} className="oto-btn oto-btn-gray w-full">关闭</button>
             </div>
+            </div>
           </div>
         </>
+      )}
+
+      {/* Task Detail Modal */}
+      {viewingTask && (
+        <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(6,8,12,0.85)' }} onClick={() => setViewingTask(null)}>
+          <div className="oto-modal p-6 w-full max-w-lg max-h-[90vh] overflow-auto" onClick={e => e.stopPropagation()}>
+            <h3 style={{ fontFamily: 'var(--oto-font-title)', fontSize: '14px', lineHeight: '1.8', color: 'var(--oto-text)', marginBottom: '16px' }}>
+              <Icon name="task" size={16} /> 任务详情
+            </h3>
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs mb-1" style={{ color: 'var(--oto-text-muted)', ...pxSm }}>任务名称</p>
+                <p className="font-medium break-words" style={{ ...pxBody, fontSize: '18px', color: 'var(--oto-text)' }}>{viewingTask.name}</p>
+              </div>
+              {viewingTask.description && (
+                <div>
+                  <p className="text-xs mb-1" style={{ color: 'var(--oto-text-muted)', ...pxSm }}>描述</p>
+                  <p className="break-words" style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)' }}>{viewingTask.description}</p>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs mb-1" style={{ color: 'var(--oto-text-muted)', ...pxSm }}>优先级</p>
+                  <StatusBadge label={PRIORITY_MAP[viewingTask.priority]} status={viewingTask.priority} />
+                </div>
+                <div>
+                  <p className="text-xs mb-1" style={{ color: 'var(--oto-text-muted)', ...pxSm }}>状态</p>
+                  <StatusBadge label={TASK_STATUS_MAP[viewingTask.status]} status={viewingTask.status} />
+                </div>
+                <div>
+                  <p className="text-xs mb-1" style={{ color: 'var(--oto-text-muted)', ...pxSm }}>番茄钟</p>
+                  <p style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)' }}>{viewingTask.completed_pomodoros}/{viewingTask.estimated_pomodoros} <Icon name="tomato" size={13} /></p>
+                </div>
+                <div>
+                  <p className="text-xs mb-1" style={{ color: 'var(--oto-text-muted)', ...pxSm }}>截止日期</p>
+                  <p style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)' }}>{viewingTask.due_date || '无'}</p>
+                </div>
+                <div>
+                  <p className="text-xs mb-1" style={{ color: 'var(--oto-text-muted)', ...pxSm }}>所属项目</p>
+                  <p className="line-clamp-1" style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)' }}>{selectedProject?.name || '无'}</p>
+                </div>
+                <div>
+                  <p className="text-xs mb-1" style={{ color: 'var(--oto-text-muted)', ...pxSm }}>创建时间</p>
+                  <p style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)' }}>{viewingTask.created_at ? new Date(viewingTask.created_at).toLocaleString('zh-CN') : '无'}</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3 justify-end mt-6">
+              <button onClick={() => setViewingTask(null)} className="oto-btn oto-btn-gray">关闭</button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Form Modal */}

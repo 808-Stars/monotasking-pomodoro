@@ -949,7 +949,30 @@ export async function getWeeklyTasks() {
         progress = Math.min(streak, 7)
       }
 
-      const claimed = claimedKeys.has(t.key)
+      let claimed = claimedKeys.has(t.key)
+
+      // 自动发放：进度达标且未领取
+      if (!claimed && progress >= t.target) {
+        try {
+          const { data: existingClaim } = await supabase
+            .from('weekly_task_claims')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('task_key', t.key)
+            .eq('week_start', ws)
+            .limit(1)
+          if (!existingClaim || existingClaim.length === 0) {
+            await supabase.from('weekly_task_claims').insert({
+              user_id: user.id, task_key: t.key, week_start: ws, amount: t.amount,
+            })
+            await addTokenRecord(t.amount, `周任务·${t.name}`)
+            claimed = true
+          } else {
+            claimed = true
+          }
+        } catch { /* 发放失败，保留 claimed=false，can_claim 为 true 供手动领取 */ }
+      }
+
       return { ...t, progress, claimed, can_claim: !claimed && progress >= t.target }
     }))
 

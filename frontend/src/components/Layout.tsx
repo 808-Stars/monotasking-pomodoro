@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import Icon from './Icons';
 import type { IconName } from './Icons';
 import { useAuth } from '../contexts/AuthContext';
-import { isTokenSystemDisabled, isGuideDisabled, isOnboardingDisabled } from '../services/api';
+import { isTokenSystemDisabled, isGuideDisabled, isOnboardingDisabled, getCurrentUsername } from '../services/api';
 import WhatsNewModal from './WhatsNewModal';
 import { CHANGELOG } from '../data/changelog';
 
@@ -101,6 +101,16 @@ export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // 优先从 JWT user_metadata 同步读 username（避免闪烁）；fallback 到 profiles 表异步查询
+  const usernameFromJwt = (user as any)?.user_metadata?.username as string | undefined;
+  const [currentUsername, setCurrentUsername] = useState<string | null>(usernameFromJwt ?? null);
+
+  // JWT 没 username 时（老账号），异步从 profiles 表查
+  useEffect(() => {
+    if (!user) { setCurrentUsername(null); return; }
+    if (usernameFromJwt) { setCurrentUsername(usernameFromJwt); return; }
+    getCurrentUsername().then(setCurrentUsername).catch(() => setCurrentUsername(null));
+  }, [user, usernameFromJwt]);
 
   // What's New 弹窗：版本更新后首次打开时自动弹出
   const [showWhatsNew, setShowWhatsNew] = useState(() => {
@@ -345,7 +355,7 @@ export default function Layout() {
                 marginLeft: 'auto', fontSize: '11px', color: 'var(--oto-text-dim)',
                 fontFamily: 'var(--oto-font-ui)',
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
-              }}>{user?.email}</span>
+              }}>{currentUsername || user.email}</span>
             )}
           </button>
 
