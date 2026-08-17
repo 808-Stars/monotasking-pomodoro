@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { updatePassword } from '../services/api';
+import { supabase } from '../services/supabase';
 import Icon from '../components/Icons';
 
 export default function ResetPasswordPage() {
@@ -11,6 +12,27 @@ export default function ResetPasswordPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  // 从 URL hash 中解析 Supabase 重置密码 token 并建立 session
+  // 因为 supabase.ts 里设置了 detectSessionInUrl: false，Supabase SDK 不会自动从 URL 检测 session
+  useEffect(() => {
+    if (location.hash.includes('access_token=')) {
+      const params = new URLSearchParams(location.hash.substring(1));
+      const access_token = params.get('access_token');
+      const refresh_token = params.get('refresh_token');
+      if (access_token && refresh_token) {
+        supabase.auth.setSession({ access_token, refresh_token })
+          .then(({ error: setErr }) => {
+            if (setErr) {
+              setError('重置链接无效或已过期，请重新申请');
+            } else {
+              // 清理 URL hash 防止刷新重复处理
+              window.history.replaceState(null, '', window.location.pathname);
+            }
+          });
+      }
+    }
+  }, [location.hash]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
