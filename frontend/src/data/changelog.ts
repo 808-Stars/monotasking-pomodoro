@@ -13,6 +13,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.2.1',
+    date: '2026-08-17',
+    title: '修复账户设置模块编译错误',
+    highlights: [
+      { text: '修复 Settings.tsx 多个严重编译错误：modal helpers 函数被错误放在 JSX 块内导致结构解析失败，账户设置页面之前根本无法加载。' },
+      { text: '修复密码验证逻辑：之前用用户名而非邮箱调用 signIn，导致修改密码、用户名、邮箱时验证永远失败。现在改用 session 邮箱验证。' },
+      { text: '修复 @提及下拉的类型错误（showMentionDropdown 类型从 boolean 改为 string | null）。' },
+      { text: '删除三段死代码（旧的 handleUpdateUsername/Password/Email），引用了已删除的内联 state。' },
+    ],
+  },
+  {
     version: '0.2.0-alpha',
     date: '2026-08-14',
     title: '功能迭代与移动端适配',

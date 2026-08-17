@@ -23,6 +23,7 @@ import Icon from '../components/Icons';
 import StatusBadge from '../components/StatusBadge';
 import WhatsNewModal from '../components/WhatsNewModal';
 import { CHANGELOG, type ChangelogEntry } from '../data/changelog';
+import { supabase } from '../services/supabase';
 
 const FEEDBACK_TYPE_MAP: Record<FeedbackEntry['type'], string> = {
   bug: 'Bug',
@@ -110,44 +111,6 @@ export default function Settings() {
     getCurrentUsername().then(setCurrentUsername).catch(() => {});
   }, []);
 
-  const handleUpdateUsername = async () => {
-    if (!newUsername.trim()) return;
-    setAccountLoading(true); setAccountError(''); setAccountSuccess('');
-    try {
-      await updateUsername(newUsername.trim());
-      setCurrentUsername(newUsername.trim());
-      setNewUsername('');
-      setAccountSuccess('用户名修改成功');
-    } catch (e: any) { setAccountError(e?.message || '修改失败'); }
-    finally { setAccountLoading(false); }
-  };
-
-  const handleUpdatePassword = async () => {
-    if (!currentPassword) { setAccountError('请输入当前密码'); return; }
-    if (!newPassword) { setAccountError('请输入新密码'); return; }
-    if (newPassword !== confirmPassword) { setAccountError('两次输入的密码不一致'); return; }
-    setAccountLoading(true); setAccountError(''); setAccountSuccess('');
-    try {
-      const { error: verifyErr } = await signIn(currentUsername || '', currentPassword);
-      if (verifyErr) { setAccountError('当前密码错误'); setAccountLoading(false); return; }
-      await updatePassword(newPassword);
-      setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
-      setAccountSuccess('密码修改成功');
-    } catch (e: any) { setAccountError(e?.message || '修改失败'); }
-    finally { setAccountLoading(false); }
-  };
-
-  const handleUpdateEmail = async () => {
-    if (!newEmail.trim()) return;
-    setAccountLoading(true); setAccountError(''); setAccountSuccess('');
-    try {
-      await updateEmail(newEmail.trim());
-      setNewEmail('');
-      setAccountSuccess('邮箱修改成功，请查收确认邮件');
-    } catch (e: any) { setAccountError(e?.message || '修改失败'); }
-    finally { setAccountLoading(false); }
-  };
-
   // ── 评论 ──
   const [expandedFeedback, setExpandedFeedback] = useState<string | null>(null);
   const [commentsMap, setCommentsMap] = useState<Record<string, FeedbackComment[]>>({});
@@ -156,7 +119,7 @@ export default function Settings() {
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [loadingComments, setLoadingComments] = useState(false);
   const [mentionUser, setMentionUser] = useState<string | null>(null);
-  const [showMentionDropdown, setShowMentionDropdown] = useState(false);
+  const [showMentionDropdown, setShowMentionDropdown] = useState<string | null>(null);
   const [expandedContent, setExpandedContent] = useState<Record<string, boolean>>({});
   const [expandedComment, setExpandedComment] = useState<Record<string, boolean>>({});
 
@@ -243,6 +206,80 @@ export default function Settings() {
 
   // ── 通用样式 ──
   const labelStyle: React.CSSProperties = { ...pxSm, fontSize: '11px', color: 'var(--oto-text-muted)' };
+
+  // ── 账户设置 modal helpers ──
+  const openAccountModal = (type: 'username' | 'email' | 'password' | 'forgot') => {
+    setAccountModal(type);
+    setModalStep('verify');
+    setModalCurrentPw('');
+    setModalNewUsername('');
+    setModalNewEmail('');
+    setModalNewPw('');
+    setModalConfirmPw('');
+    setModalEmail('');
+    setAccountError('');
+    setAccountSuccess('');
+  };
+  const closeAccountModal = () => {
+    setAccountModal(null);
+    setAccountError('');
+    setAccountSuccess('');
+  };
+  const handleVerifyPassword = async () => {
+    if (!modalCurrentPw) { setAccountError('Please enter current password'); return; }
+    setAccountLoading(true); setAccountError('');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const email = session?.user?.email;
+      if (!email) { setAccountError('Unable to retrieve current email'); setAccountLoading(false); return; }
+      const { error: verifyErr } = await signIn(email, modalCurrentPw);
+      if (verifyErr) { setAccountError('Current password incorrect'); setAccountLoading(false); return; }
+      setAccountLoading(false);
+      setModalStep('edit');
+    } catch (e: any) { setAccountError(e?.message || 'Verification failed'); setAccountLoading(false); }
+  };
+  const handleSaveUsername = async () => {
+    if (!modalNewUsername.trim()) { setAccountError('Please enter new username'); return; }
+    setAccountLoading(true); setAccountError('');
+    try {
+      await updateUsername(modalNewUsername.trim());
+      setCurrentUsername(modalNewUsername.trim());
+      setAccountSuccess('Username updated');
+      setTimeout(closeAccountModal, 800);
+    } catch (e: any) { setAccountError(e?.message || 'Update failed'); }
+    finally { setAccountLoading(false); }
+  };
+  const handleSaveEmail = async () => {
+    if (!modalNewEmail.trim()) { setAccountError('Please enter new email'); return; }
+    setAccountLoading(true); setAccountError('');
+    try {
+      await updateEmail(modalNewEmail.trim());
+      setAccountSuccess('Email updated, please check inbox');
+      setTimeout(closeAccountModal, 800);
+    } catch (e: any) { setAccountError(e?.message || 'Update failed'); }
+    finally { setAccountLoading(false); }
+  };
+  const handleSavePassword = async () => {
+    if (!modalNewPw) { setAccountError('Please enter new password'); return; }
+    if (modalNewPw !== modalConfirmPw) { setAccountError('Passwords do not match'); return; }
+    setAccountLoading(true); setAccountError('');
+    try {
+      await updatePassword(modalNewPw);
+      setAccountSuccess('Password updated');
+      setTimeout(closeAccountModal, 800);
+    } catch (e: any) { setAccountError(e?.message || 'Update failed'); }
+    finally { setAccountLoading(false); }
+  };
+  const handleForgotPasswordModal = async () => {
+    if (!modalEmail.trim()) { setAccountError('Please enter email'); return; }
+    setAccountLoading(true); setAccountError('');
+    try {
+      await requestPasswordReset(modalEmail.trim());
+      setAccountSuccess('Reset email sent, check spam folder');
+      setTimeout(closeAccountModal, 1500);
+    } catch (e: any) { setAccountError(e?.message || 'Send failed'); }
+    finally { setAccountLoading(false); }
+  };
 
   return (
     <div className="space-y-6 oto-stagger">
@@ -400,77 +437,6 @@ export default function Settings() {
           )}
         </div>
       </div>
-
-      {/* ===== Account settings modal helpers ===== */}
-  const openAccountModal = (type: 'username' | 'email' | 'password' | 'forgot') => {
-    setAccountModal(type);
-    setModalStep('verify');
-    setModalCurrentPw('');
-    setModalNewUsername('');
-    setModalNewEmail('');
-    setModalNewPw('');
-    setModalConfirmPw('');
-    setModalEmail('');
-    setAccountError('');
-    setAccountSuccess('');
-  };
-  const closeAccountModal = () => {
-    setAccountModal(null);
-    setAccountError('');
-    setAccountSuccess('');
-  };
-  const handleVerifyPassword = async () => {
-    if (!modalCurrentPw) { setAccountError('Please enter current password'); return; }
-    setAccountLoading(true); setAccountError('');
-    try {
-      const { error: verifyErr } = await signIn(currentUsername || '', modalCurrentPw);
-      if (verifyErr) { setAccountError('Current password incorrect'); setAccountLoading(false); return; }
-      setAccountLoading(false);
-      setModalStep('edit');
-    } catch (e: any) { setAccountError(e?.message || 'Verification failed'); setAccountLoading(false); }
-  };
-  const handleSaveUsername = async () => {
-    if (!modalNewUsername.trim()) { setAccountError('Please enter new username'); return; }
-    setAccountLoading(true); setAccountError('');
-    try {
-      await updateUsername(modalNewUsername.trim());
-      setCurrentUsername(modalNewUsername.trim());
-      setAccountSuccess('Username updated');
-      setTimeout(closeAccountModal, 800);
-    } catch (e: any) { setAccountError(e?.message || 'Update failed'); }
-    finally { setAccountLoading(false); }
-  };
-  const handleSaveEmail = async () => {
-    if (!modalNewEmail.trim()) { setAccountError('Please enter new email'); return; }
-    setAccountLoading(true); setAccountError('');
-    try {
-      await updateEmail(modalNewEmail.trim());
-      setAccountSuccess('Email updated, please check inbox');
-      setTimeout(closeAccountModal, 800);
-    } catch (e: any) { setAccountError(e?.message || 'Update failed'); }
-    finally { setAccountLoading(false); }
-  };
-  const handleSavePassword = async () => {
-    if (!modalNewPw) { setAccountError('Please enter new password'); return; }
-    if (modalNewPw !== modalConfirmPw) { setAccountError('Passwords do not match'); return; }
-    setAccountLoading(true); setAccountError('');
-    try {
-      await updatePassword(modalNewPw);
-      setAccountSuccess('Password updated');
-      setTimeout(closeAccountModal, 800);
-    } catch (e: any) { setAccountError(e?.message || 'Update failed'); }
-    finally { setAccountLoading(false); }
-  };
-  const handleForgotPasswordModal = async () => {
-    if (!modalEmail.trim()) { setAccountError('Please enter email'); return; }
-    setAccountLoading(true); setAccountError('');
-    try {
-      await requestPasswordReset(modalEmail.trim());
-      setAccountSuccess('Reset email sent, check spam folder');
-      setTimeout(closeAccountModal, 1500);
-    } catch (e: any) { setAccountError(e?.message || 'Send failed'); }
-    finally { setAccountLoading(false); }
-  };
 
       {/* 开发者日志弹窗 */}
       {showHistory && (
@@ -676,7 +642,7 @@ export default function Settings() {
                           {showMentionDropdown === fb.id && (
                             <div className="absolute z-10 mt-1 w-full oto-window overflow-auto max-h-32" style={{ background: 'var(--oto-bg-card)' }}>
                               {(() => {
-                                const usernames = [...new Set((commentsMap[fb.id] || []).map(c => c.username).filter(Boolean))];
+                                const usernames = [...new Set((commentsMap[fb.id] || []).map(c => c.username).filter((u): u is string => Boolean(u)))];
                                 if (feedbackList.find(f => f.id === fb.id)?.username) {
                                   const author = feedbackList.find(f => f.id === fb.id)!.username!;
                                   if (!usernames.includes(author)) usernames.unshift(author);
