@@ -58,19 +58,19 @@ export default function Guide() {
   const RED    = { tagBg: '#f0e0e0', tagColor: '#6a2028', tagBorder: '#c08080' };
 
   const sections: Section[] = [
-    // ──────────── 1. 系统简介 ────────────
+      // ──────────── 1. 系统简介 ────────────
     {
-      id: 'intro', icon: 'book', title: '系统简介：两种方法的融合', tag: '系统',
+      id: 'intro', icon: 'book', title: '系统简介', tag: '系统',
       ...PURPLE,
       content: (
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="oto-window p-4" style={{ borderColor: 'var(--oto-gold)' }}>
               <div className="flex items-center gap-2 mb-2"><Icon name="target" size={28} /><h4 style={{ ...pxH3, color: '#304868' }}>单核工作法 · 战略层</h4></div>
-              <p className="text-sm leading-relaxed" style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>
+              <p className="text-sm leading-relaxed" style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)' }}>
                 <strong style={{ color: '#4a3020' }}>核心理念：</strong>每天只聚焦<strong style={{ color: '#304868' }}>一件最重要的事</strong>。
               </p>
-              <ul className="text-sm mt-2 space-y-1 list-disc list-inside" style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)' }}>
+              <ul className="text-sm mt-2 space-y-1 list-disc list-inside" style={{ ...pxBody, fontSize: '13px', color: 'var(--oto-text-dim)' }}>
                 <li>早晨设定今日唯一核心任务</li>
                 <li>写晨间规划明确当天目标</li>
                 <li>全天围绕核心任务展开工作</li>
@@ -79,10 +79,10 @@ export default function Guide() {
             </div>
             <div className="oto-window p-4" style={{ borderColor: 'var(--oto-gold)' }}>
               <div className="flex items-center gap-2 mb-2"><Icon name="tomato" size={28} /><h4 style={{ ...pxH3, color: '#8a3030' }}>番茄工作法 · 执行层</h4></div>
-              <p className="text-sm leading-relaxed" style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>
+              <p className="text-sm leading-relaxed" style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)' }}>
                 <strong style={{ color: '#4a3020' }}>核心理念：</strong><strong style={{ color: '#8a3030' }}>25 分钟专注 + 5 分钟休息</strong> 为一个番茄周期。
               </p>
-              <ul className="text-sm mt-2 space-y-1 list-disc list-inside" style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)' }}>
+              <ul className="text-sm mt-2 space-y-1 list-disc list-inside" style={{ ...pxBody, fontSize: '13px', color: 'var(--oto-text-dim)' }}>
                 <li>25 分钟专注工作</li>
                 <li>5 分钟短休息放松</li>
                 <li>随手清单快速捕捉临时想法</li>
@@ -91,7 +91,7 @@ export default function Guide() {
             </div>
           </div>
           <div className="oto-window p-4 text-center">
-            <p style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>
+            <p style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)' }}>
               <strong>融合逻辑：</strong>单核回答<strong style={{ color: '#304868' }}>「做什么」</strong>，番茄回答<strong style={{ color: '#8a3030' }}>「怎么做」</strong>。两者配合，让每一天都高效而充实。
             </p>
           </div>
@@ -101,50 +101,27 @@ export default function Guide() {
 
     // ──────────── 2. 快速上手 ────────────
     {
-      id: 'quickstart', icon: 'rocket', title: '快速上手：注册与首次引导', tag: '系统',
+      id: 'quickstart', icon: 'graduate', title: '新手教程', tag: '系统',
       ...PURPLE,
       content: (
         <div className="space-y-4">
-          <div className="oto-window p-4">
-            <h4 style={{ ...pxH3, color: '#4a3020' }}> 首次访问会发生什么？</h4>
-            <ol className="list-decimal list-inside space-y-1 mt-2 text-sm" style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)' }}>
-              <li>打开网站 → <strong>延迟 800ms</strong> 自动弹出欢迎引导</li>
-              <li>点击「开始新手教程」进入 8 步引导</li>
-              <li>点击「跳过，直接使用」永久跳过（不能再触发）</li>
-              <li>侧栏点击「新手教程」可进入完整教程（永久可访问）</li>
-            </ol>
-          </div>
+          <Tip>注册后侧栏点击「新手教程」可随时进入 8 步引导。完成全部步骤大约需要 5 分钟。</Tip>
 
-          <Tip>欢迎引导的「跳过」是<strong>永久生效</strong>的——写入 localStorage 后不会再弹。设置页面<strong>没有重新触发的 UI 入口</strong>。若想再次看到，需要在浏览器控制台执行 <code>localStorage.removeItem('pomodoro_tutorial_done')</code>。</Tip>
-
-          <h4 style={{ ...pxH3, color: '#4a3020' }}> 新手教程（8 步顺序制）</h4>
-          <p className="text-xs mb-2" style={{ ...pxBody, color: 'var(--oto-text-muted)' }}>必须按 1→8 顺序完成，后端 API 实时验证进度。</p>
+          <h4 style={{ ...pxH3, color: '#4a3020' }}> 8 步新手教程</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {[
-              '创建项目', '创建任务', '确定核心任务', '写晨间规划',
-              '完成番茄钟', '写笔记', '完成最后一步', '查看最终页面',
-            ].map((s, i) => (
-              <div key={s} className="flex items-center gap-2 p-2 oto-inset" style={{ fontSize: '13px' }}>
-                <span className="inline-flex items-center justify-center w-5 h-5 font-bold flex-shrink-0" style={{ background: '#504068', color: '#fff', fontSize: '11px' }}>{i+1}</span>
-                <span style={{ ...pxBody, color: '#4a3020' }}>{s}</span>
-              </div>
-            ))}
-          </div>
-
-          <Tip>教程进度用 localStorage 持久化，<strong>已完成步骤永不回退</strong>。关闭浏览器、切换设备后进度仍保留。</Tip>
-          <Tip>系统预置的「<code>[示例]</code>」开头的项目/任务<strong>不算</strong>教程进度。必须自己手动创建。</Tip>
-          <Warn>部分教程步骤可能依赖特定功能。如果相关功能未开启，请先到「设置」页面开启后再继续。</Warn>
-
-          <h4 style={{ ...pxH3, color: '#4a3020' }}> 导航栏三个分区</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-            {[
-              { c: '#c8a040', t: '共享功能', d: '工作看板、任务、项目' },
-              { c: '#304868', t: '单核工作法', d: '每日计划、笔记本' },
-              { c: '#8a3030', t: '番茄工作法', d: '番茄钟、随手清单' },
-            ].map(s => (
-              <div key={s.t} className="p-2 oto-inset" style={{ borderLeft: `3px solid ${s.c}` }}>
-                <h5 style={{ ...pxH3, fontSize: '11px', color: s.c }}>{s.t}</h5>
-                <p className="text-xs mt-1" style={{ ...pxBody, fontSize: '13px', color: 'var(--oto-text-dim)' }}>{s.d}</p>
+              { n: 1, t: '创建项目' },
+              { n: 2, t: '创建任务' },
+              { n: 3, t: '确定核心任务' },
+              { n: 4, t: '写晨间规划' },
+              { n: 5, t: '完成番茄钟' },
+              { n: 6, t: '写笔记' },
+              { n: 7, t: '完成最后一步' },
+              { n: 8, t: '查看最终页面' },
+            ].map(({ n, t }) => (
+              <div key={n} className="flex items-center gap-2 p-2 oto-inset" style={{ fontSize: '11px' }}>
+                <span className="inline-flex items-center justify-center w-5 h-5 font-bold flex-shrink-0" style={{ background: '#504068', color: '#fff', fontSize: '10px' }}>{n}</span>
+                <span style={{ ...pxBody, fontSize: '11px', color: '#4a3020' }}>{t}</span>
               </div>
             ))}
           </div>
@@ -152,9 +129,34 @@ export default function Guide() {
       ),
     },
 
+    // ──────────── 11. 连续打卡 ────────────
+    {
+      id: 'streak', icon: 'star', title: '连续打卡', tag: '系统',
+      ...PURPLE,
+      content: (
+        <div className="space-y-4">
+          <Warn>打卡判断以<strong>凌晨 4 点</strong>为逻辑日起点，不是 0 点。凌晨 3 点完成的操作算前一天，凌晨 5 点算新的一天。</Warn>
+
+          <h4 style={{ ...pxH3, color: '#4a3020' }}> 什么算"打卡"？</h4>
+          <p className="text-xs mb-2" style={{ ...pxBody, fontSize: '11px', color: 'var(--oto-text-muted)' }}>当天完成以下任意操作即可（共 13 种来源）：</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {['番茄钟', '休息', '首次番茄钟', '创建任务', '完成任务', '确定核心任务', '晨间规划', '晚间回顾', '每日计划完成', '写笔记', '创建清单', '完成清单', '抽扭蛋'].map(s => (
+              <div key={s} className="p-2 oto-inset text-center" style={{ ...pxSm, fontSize: '12px' }}>{s}</div>
+            ))}
+          </div>
+
+          <h4 style={{ ...pxH3, color: '#4a3020' }}> 打卡计算逻辑</h4>
+          <div className="space-y-2">
+            <Tip>连续打卡从今天开始<strong>往回数</strong>。如果今天没有任何正向操作记录，即使昨天做了也白搭。</Tip>
+            <Tip>只要当天有<strong>任意一条</strong>正向操作记录，该天就算打卡成功。</Tip>
+          </div>
+        </div>
+      ),
+    },
+
     // ──────────── 3. 工作看板 ────────────
     {
-      id: 'dashboard', icon: 'dashboard', title: '工作看板：总览中心', tag: '功能',
+      id: 'dashboard', icon: 'dashboard', title: '工作看板', tag: '功能',
       ...YELLOW,
       content: (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -164,69 +166,34 @@ export default function Guide() {
             { icon: 'task' as IconName, title: '任务总览', desc: '今日待办任务列表，按优先级排序。可快速切换任务状态。' },
             { icon: 'clock' as IconName, title: '今日番茄记录', desc: '今天完成的番茄钟时间线，显示关联任务和时段。' },
             { icon: 'bars' as IconName, title: '本周摘要', desc: '本周核心任务完成天数、番茄钟总数、收入概览。' },
-            { icon: 'graduate' as IconName, title: '新手引导入口', desc: '侧栏「新手教程」永久可访问，随时回顾 8 步教程。' },
+            { icon: 'dashboard' as IconName, title: '顶部信息', desc: '实时显示连续打卡天数与日期、时间。' },
           ].map(item => <Card key={item.title} {...item} />)}
-        </div>
-      ),
-    },
-
-    // ──────────── 4. 每日计划 ────────────
-    {
-      id: 'daily-plan', icon: 'target', title: '每日计划：单核聚焦', tag: '战略层',
-      ...BLUE,
-      content: (
-        <div className="space-y-4">
-          <div className="oto-window p-4" style={{ borderColor: '#90a0c8' }}>
-            <p style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>
-              每日计划是单核工作法的核心——<strong style={{ color: '#304868' }}>每天只聚焦一件最重要的事</strong>。
-            </p>
-            <div className="mt-3 p-3 text-center" style={{ background: '#f8f4f0', fontFamily: 'var(--oto-font-body)', fontSize: '12px', color: '#4a3020', lineHeight: 2.2 }}>
-              <div className="md:text-[14px] whitespace-nowrap overflow-x-auto">
-                <strong>未计划</strong> → <strong style={{ color: '#687898' }}>已计划</strong> → <strong style={{ color: '#689050' }}>已完成</strong> → <strong style={{ color: '#786890' }}>已回顾</strong>
-              </div>
-              <span style={{ color: '#a03038' }}>　　　　　↘ 未完成</span><br />
-              <span style={{ color: 'var(--oto-text-muted)', fontSize: '12px' }}>
-                已计划可回退至未计划 · 已完成/未完成可回退至已计划 · 已回顾可回退至已完成
-              </span>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {[
-              { icon: 'target' as IconName, title: '核心任务选择', desc: '从任务列表中选择今日唯一核心任务。', color: '#304868' },
-              { icon: 'sun' as IconName, title: '晨间规划', desc: '填写今天的目标和计划。自动保存（800ms 防抖）。', color: '#8a6820' },
-              { icon: 'moon' as IconName, title: '晚间回顾', desc: '填写完成情况和反思。', color: '#504868' },
-              { icon: 'check' as IconName, title: '计划完成', desc: '标记为「已完成」或「未完成」，各状态均可回退。', color: '#305830' },
-              { icon: 'calendar' as IconName, title: '历史日历', desc: '按月查看历史计划。不同状态用不同颜色标记。', color: '#304868' },
-            ].map(item => <Card key={item.title} {...item} />)}
-          </div>
-          <Tip>核心任务、晨间规划、晚间回顾、计划完成——这 4 个操作相互独立，可单独完成。</Tip>
         </div>
       ),
     },
 
     // ──────────── 5. 任务管理 ────────────
     {
-      id: 'tasks', icon: 'task', title: '任务管理：创建与追踪', tag: '功能',
+      id: 'tasks', icon: 'task', title: '任务管理', tag: '功能',
       ...YELLOW,
       content: (
         <div className="space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {[
               { icon: 'plus' as IconName, title: '新建任务', desc: '设置名称、描述、优先级、所属项目、预估番茄钟数、截止日期。' },
-              { icon: 'refresh' as IconName, title: '状态流转', desc: '待办 → 进行中 → 已完成 → 已归档。每步可回退。' },
+              { icon: 'refresh' as IconName, title: '状态流转与归档', desc: '待办 → 进行中 → 已完成 → 已归档。每步可回退。归档后顶部「已归档」查看。' },
               { icon: 'tomato' as IconName, title: '番茄钟进度', desc: '每个任务显示「已完成/预估」番茄钟数，完成番茄钟时自动累加。' },
               { icon: 'search' as IconName, title: '筛选与搜索', desc: '按状态、优先级、项目筛选。支持关键词搜索。' },
             ].map(item => <Card key={item.title} {...item} />)}
           </div>
-          <Tip>任务详情弹窗中点击任务名称或描述可展开/收起完整内容。</Tip>
-          <Tip>长内容会自动截断（任务 100 字、评论 60 字），点击文字区域可展开/收起。</Tip>
+          <Tip>任务详情弹窗中点击任务名称或描述可展开/收起完整内容。长内容会自动截断（任务 100 字、评论 60 字）。</Tip>
         </div>
       ),
     },
 
     // ──────────── 6. 项目管理 ────────────
     {
-      id: 'projects', icon: 'folder', title: '项目管理：分组与归档', tag: '功能',
+      id: 'projects', icon: 'folder', title: '项目管理', tag: '功能',
       ...YELLOW,
       content: (
         <div className="space-y-3">
@@ -235,200 +202,18 @@ export default function Guide() {
               { icon: 'plus' as IconName, title: '创建项目', desc: '设置名称、描述和标签颜色（8 种）。颜色在任务列表中快速识别归属。' },
               { icon: 'task' as IconName, title: '任务关联', desc: '创建任务时选择所属项目。项目详情自动聚合所有关联任务。' },
               { icon: 'refresh' as IconName, title: '项目状态', desc: '进行中 → 已完成 → 已归档。可随时切换。' },
+              { icon: 'archive' as IconName, title: '归档机制', desc: '手动归档：列表/详情点「归档」按钮。归档后从主列表消失，顶部「已归档」查看。可在弹窗中切换状态。' },
             ].map(item => <Card key={item.title} {...item} />)}
           </div>
-          <Tip>项目详情在<strong>桌面端</strong>显示为右侧抽屉（带金色外框），在<strong>移动端</strong>显示为居中弹窗。两种形式功能完全相同。</Tip>
           <Tip>项目详情里点击任务卡片可展开任务详情弹窗，查看优先级、状态、番茄钟进度、截止日期等信息。</Tip>
           <Warn>删除项目时<strong>关联的任务不会被删除</strong>，会变为"无项目"状态。</Warn>
         </div>
       ),
     },
 
-    // ──────────── 7. 番茄钟 ────────────
-    {
-      id: 'pomodoro', icon: 'tomato', title: '番茄钟：专注计时', tag: '执行层',
-      ...RED,
-      content: (
-        <div className="space-y-4">
-          <div className="oto-window p-4" style={{ borderColor: '#c08080' }}>
-            <p style={{ ...pxBody, fontWeight: 'bold', color: '#4a3020', marginBottom: 8 }}>番茄钟核心原则：</p>
-            <ol className="list-decimal list-inside space-y-1 text-sm" style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)' }}>
-              <li>一个番茄钟（25 分钟）不可分割</li>
-              <li>番茄钟期间只做一件事</li>
-              <li>休息时彻底放松</li>
-              <li>被打断则标记作废</li>
-              <li>完成即奖励</li>
-            </ol>
-          </div>
-
-          <h4 style={{ ...pxH3, color: '#8a3030' }}> 模式与时长</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {[
-              { icon: 'target' as IconName, title: '工作', desc: '25 分钟专注。完成会奖励。' },
-              { icon: 'coffee' as IconName, title: '短休息', desc: '5 分钟放松。工作后自动建议。' },
-              { icon: 'meditate' as IconName, title: '长休息', desc: '15 分钟恢复。每 4 个工作后自动建议。' },
-            ].map(item => <Card key={item.title} {...item} />)}
-          </div>
-
-          <h4 style={{ ...pxH3, color: '#8a3030' }}> 你可能不知道的规则</h4>
-          <div className="space-y-2">
-            <Tip>点「快进」跳过和正常完成效果完全等价——都会触发完整的完成流程。快进只是跳过了等待时间。</Tip>
-            <Tip>暂停再继续不影响最终结果。完成流程只看是否被调用，不看实际专注时长。</Tip>
-            <Warn>工作模式<strong>必须绑定任务</strong>。如果没有待办任务，无法开始工作番茄钟。休息模式不需要绑定任务。</Warn>
-          </div>
-
-          <h4 style={{ ...pxH3, color: '#8a3030' }}> 统计与归档</h4>
-          <p className="text-xs" style={{ ...pxBody, color: 'var(--oto-text-muted)' }}>历史记录页可按时间筛选、删除。统计面板显示今日/本周/本月/总计数量。</p>
-        </div>
-      ),
-    },
-
-    // ──────────── 8. 随手清单 ────────────
-    {
-      id: 'quick-memos', icon: 'memo', title: '随手清单：快速捕捉', tag: '执行层',
-      ...RED,
-      content: (
-        <div className="space-y-3">
-          <div className="oto-window p-3">
-            <p style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-dim)' }}>番茄钟期间的临时想法不要当场处理——记到随手清单，休息时再整理。</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {[
-              { icon: 'plus' as IconName, title: '快速添加', desc: '输入后回车添加。轻量级，无分类无标签。' },
-              { icon: 'check' as IconName, title: '勾选完成', desc: '点击复选框标记完成。可随时取消完成。' },
-              { icon: 'trash' as IconName, title: '删除与清空', desc: '单项删除或一键清空所有已完成项。' },
-              { icon: 'bars' as IconName, title: '计数显示', desc: '底部显示「X 条待办 / Y 条已完成」。' },
-            ].map(item => <Card key={item.title} {...item} />)}
-          </div>
-          <Tip>创建清单和完成清单各有奖励，每天各限 1 次。</Tip>
-        </div>
-      ),
-    },
-
-    // ──────────── 9. 笔记本 ────────────
-    {
-      id: 'notebook', icon: 'notebook', title: '笔记本：记录与回顾', tag: '战略层',
-      ...BLUE,
-      content: (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {[
-            { icon: 'notebook' as IconName, title: '日记', desc: '记录每天的工作内容和反思。', color: '#304868' },
-            { icon: 'bars' as IconName, title: '周记', desc: '每周总结工作成果。', color: '#8a6820' },
-            { icon: 'calendar' as IconName, title: '月记', desc: '每月复盘目标完成情况。系统自动关联当月数据。', color: '#504868' },
-            { icon: 'search' as IconName, title: '筛选与统计', desc: '按类型、日期筛选。统计面板显示笔记总数和连续写作天数。', color: '#305830' },
-            { icon: 'check' as IconName, title: '编辑与删除', desc: '笔记创建后可随时编辑。已删除的笔记无法恢复。', color: '#4a3020' },
-          ].map(item => <Card key={item.title} {...item} />)}
-        </div>
-      ),
-    },
-
-    // ──────────── 10. 代币系统 ────────────
-    {
-      id: 'tokens', icon: 'coins', title: '代币系统：赚取与消费', tag: '系统',
-      ...PURPLE,
-      content: (
-        <div className="space-y-4">
-          <Warn>每月 1 号 0 点余额自动清零，不会通知你。旧记录不删除，只是不再计入余额。请及时使用代币。</Warn>
-
-          <Tip>所有代币任务（日任务、周任务、番茄钟阶梯、打卡奖励）全部自动发放，完成操作后立即到账，不需要手动领取。</Tip>
-
-          <h4 style={{ ...pxH3, color: '#4a3020' }}> 日任务（12 项，每日限 1 次）</h4>
-          <p className="text-xs mb-2" style={{ ...pxBody, color: 'var(--oto-text-muted)' }}>完成对应操作后自动到账，每项每天最多触发一次。</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {[
-              { name: '首次番茄钟', amount: 60, note: '今日第一个工作番茄钟' },
-              { name: '休息', amount: 20, note: '完成一个休息时段' },
-              { name: '创建任务', amount: 20, note: '新建任意任务' },
-              { name: '完成任务', amount: 20, note: '将任务标记为已完成' },
-              { name: '确定核心任务', amount: 20, note: '在每日计划中选定核心要事' },
-              { name: '晨间规划', amount: 40, note: '填写晨间反思' },
-              { name: '晚间回顾', amount: 40, note: '填写晚间回顾' },
-              { name: '每日计划完成', amount: 60, note: '将每日计划标记为已完成' },
-              { name: '写笔记', amount: 40, note: '新建一篇笔记' },
-              { name: '创建清单', amount: 20, note: '新建一条随手清单' },
-              { name: '完成清单', amount: 20, note: '勾选完成一条清单' },
-              { name: '抽扭蛋', amount: 40, note: '完成一次扭蛋抽取' },
-            ].map(t => (
-              <div key={t.name} className="flex items-center justify-between p-2 oto-inset" style={{ fontSize: '13px' }}>
-                <span style={{ ...pxBody, color: '#4a3020' }}>{t.name}</span>
-                <span style={{ ...pxBody, color: '#8a6820', fontWeight: 'bold' }}>+{t.amount}</span>
-              </div>
-            ))}
-          </div>
-
-          <h4 style={{ ...pxH3, color: '#4a3020' }}> 番茄钟阶梯奖励（每次完成工作番茄钟自动发放）</h4>
-          <div className="flex gap-3">
-            {[
-              { tier: '入门', range: '1-4 个/天', amount: 40 },
-              { tier: '进阶', range: '5-8 个/天', amount: 50 },
-              { tier: '大师', range: '9+ 个/天', amount: 60 },
-            ].map(t => (
-              <div key={t.tier} className="flex-1 p-3 oto-inset text-center">
-                <div style={{ ...pxH3, color: '#4a3020' }}>{t.tier}</div>
-                <div style={{ ...pxSm, color: 'var(--oto-text-dim)' }}>{t.range}</div>
-                <div style={{ ...pxH3, color: '#8a6820', fontWeight: 'bold' }}>+{t.amount}</div>
-              </div>
-            ))}
-          </div>
-          <Tip>阶梯是累进制：第 1-4 个每个 40 币，第 5 个起每个 50 币，第 9 个起每个 60 币。不是"达到阈值后全部按高档算"。第 1 个番茄钟同时触发"首次番茄钟"60 币，合计 100 币。</Tip>
-
-          <h4 style={{ ...pxH3, color: '#4a3020' }}> 周任务（4 项，每周自动结算）</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {[
-              { name: '完成核心任务 5 天', amount: 400, note: '本周至少 5 天完成核心任务' },
-              { name: '番茄钟 40 个', amount: 400, note: '本周累计完成 40 个工作番茄钟' },
-              { name: '写日记 3 篇 + 周记 1 篇', amount: 200, note: '本周新建 3 篇日记和 1 篇周记' },
-              { name: '连续打卡 7 天', amount: 400, note: '本周每天至少获得 1 次代币' },
-            ].map(t => (
-              <div key={t.name} className="flex items-center justify-between p-2 oto-inset" style={{ fontSize: '13px' }}>
-                <span style={{ ...pxBody, color: '#4a3020' }}>{t.name}</span>
-                <span style={{ ...pxBody, color: '#8a6820', fontWeight: 'bold' }}>+{t.amount}</span>
-              </div>
-            ))}
-          </div>
-          <Tip>周任务在进度达标时自动发放代币，不需要手动领取。如果自动发放失败（网络问题），代币任务页面会显示"可领取"按钮供手动补领。</Tip>
-
-          <h4 style={{ ...pxH3, color: '#4a3020' }}> 每日首免</h4>
-          <Tip>每天第一次单抽扭蛋免费（不消耗代币）。十连抽不享受免费。页面刷新后自动识别今日是否已使用。</Tip>
-        </div>
-      ),
-    },
-
-    // ──────────── 11. 连续打卡 ────────────
-    {
-      id: 'streak', icon: 'star', title: '连续打卡：规则与陷阱', tag: '系统',
-      ...PURPLE,
-      content: (
-        <div className="space-y-4">
-          <div className="oto-window p-4" style={{ borderColor: '#d4b060' }}>
-            <p style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>
-              连续打卡是周任务之一（连续打卡 7 天 → 400 币），也是衡量你工作连续性的核心指标。奖励 = 连续天数 × 10 币，自动发放。
-            </p>
-          </div>
-
-          <Warn>打卡判断以<strong>凌晨 4 点</strong>为逻辑日起点，不是 0 点。凌晨 3 点完成的操作算前一天，凌晨 5 点算新的一天。</Warn>
-
-          <h4 style={{ ...pxH3, color: '#4a3020' }}> 什么算"打卡"？</h4>
-          <p className="text-xs mb-2" style={{ ...pxBody, color: 'var(--oto-text-muted)' }}>当天完成以下任意操作即可（共 13 种来源）：</p>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {['番茄钟', '休息', '首次番茄钟', '创建任务', '完成任务', '确定核心任务', '晨间规划', '晚间回顾', '每日计划完成', '写笔记', '创建清单', '完成清单', '抽扭蛋'].map(s => (
-              <div key={s} className="p-2 oto-inset text-center" style={{ ...pxSm, fontSize: '12px' }}>{s}</div>
-            ))}
-          </div>
-
-          <h4 style={{ ...pxH3, color: '#4a3020' }}> 打卡计算逻辑</h4>
-          <div className="space-y-2">
-            <Tip>连续打卡从今天开始<strong>往回数</strong>。如果今天没有任何代币记录，streak = 0，即使昨天做了也白搭。</Tip>
-            <Tip>只要当天有<strong>任意一条</strong>正向代币记录（不论是否已领取），该天就算打卡成功。</Tip>
-            <Warn>连续天数是倒推的，不是正推的。周一到周四都打卡，周五断了，周六再打卡，streak = 1（从周六往回数），不是 5。</Warn>
-          </div>
-        </div>
-      ),
-    },
-
     // ──────────── 12. 扭蛋机 ────────────
     {
-      id: 'gacha', icon: 'joystick', title: '扭蛋机：抽取与收集', tag: '功能',
+      id: 'gacha', icon: 'joystick', title: '扭蛋机', tag: '功能',
       ...YELLOW,
       content: (
         <div className="space-y-4">
@@ -444,14 +229,14 @@ export default function Guide() {
           </div>
 
           <h4 style={{ ...pxH3, color: '#4a3020' }}> 月度重置</h4>
-          <Warn>每月 1 号图鉴自动重置——当月收集数量清零。SSR 锁定门槛也按月重置（需重新抽满 300 次）。所有抽取记录按月统计，每月 1 号 0 点清零。</Warn>
+          <Warn>每月 1 号图鉴自动重置——当月收集数量清零。SSR 锁定门槛也按月重置（需重新抽满 300 次）。所有抽取记录按月统计，每月 1 号清零。</Warn>
         </div>
       ),
     },
 
     // ──────────── 13. 藏品室 ────────────
     {
-      id: 'showcase', icon: 'building', title: '藏品室：成就与收藏', tag: '功能',
+      id: 'showcase', icon: 'building', title: '藏品室', tag: '功能',
       ...YELLOW,
       content: (
         <div className="space-y-4">
@@ -481,9 +266,191 @@ export default function Guide() {
       ),
     },
 
+    // ──────────── 4. 每日计划 ────────────
+    {
+      id: 'daily-plan', icon: 'target', title: '每日计划', tag: '战略层',
+      ...BLUE,
+      content: (
+        <div className="space-y-4">
+          <div className="oto-window p-4" style={{ borderColor: '#90a0c8' }}>
+            <p style={{ ...pxBody, color: 'var(--oto-text-dim)' }}>
+              每日计划是单核工作法的核心——<strong style={{ color: '#304868' }}>每天只聚焦一件最重要的事</strong>。
+            </p>
+            <div className="mt-3 p-3 text-center" style={{ background: '#f8f4f0', fontFamily: 'var(--oto-font-body)', fontSize: '12px', color: '#4a3020', lineHeight: 2.2 }}>
+              <div className="md:text-[14px] whitespace-nowrap overflow-x-auto">
+                <strong>未计划</strong> → <strong style={{ color: '#687898' }}>已计划</strong> → <strong style={{ color: '#689050' }}>已完成</strong> → <strong style={{ color: '#786890' }}>已回顾</strong>
+              </div>
+              <span style={{ color: '#a03038' }}>　　　　　↘ 未完成</span><br />
+              <span style={{ color: 'var(--oto-text-muted)', fontSize: '12px' }}>
+                已计划可回退至未计划 · 已完成/未完成可回退至已计划 · 已回顾可回退至已完成
+              </span>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {[
+              { icon: 'target' as IconName, title: '核心任务选择', desc: '从任务列表中选择今日唯一核心任务。', color: '#304868' },
+              { icon: 'sun' as IconName, title: '晨间规划', desc: '填写今天的目标和计划。自动保存。', color: '#8a6820' },
+              { icon: 'moon' as IconName, title: '晚间回顾', desc: '填写完成情况和反思。', color: '#504868' },
+              { icon: 'check' as IconName, title: '计划完成', desc: '标记为「已完成」或「未完成」，各状态均可回退。', color: '#305830' },
+              { icon: 'calendar' as IconName, title: '历史日历', desc: '按月查看历史计划。不同状态用不同颜色标记。', color: '#304868' },
+            ].map(item => <Card key={item.title} {...item} />)}
+          </div>
+          <Tip>核心任务、晨间规划、晚间回顾、计划完成——这 4 个操作相互独立，可单独完成。</Tip>
+        </div>
+      ),
+    },
+
+    // ──────────── 9. 笔记本 ────────────
+    {
+      id: 'notebook', icon: 'notebook', title: '笔记本', tag: '战略层',
+      ...BLUE,
+      content: (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {[
+            { icon: 'notebook' as IconName, title: '日记', desc: '记录每天的工作内容和反思。', color: '#304868' },
+            { icon: 'bars' as IconName, title: '周记', desc: '每周总结工作成果。', color: '#8a6820' },
+            { icon: 'calendar' as IconName, title: '月记', desc: '每月复盘目标完成情况。系统自动关联当月数据。', color: '#504868' },
+            { icon: 'search' as IconName, title: '筛选与统计', desc: '按类型、日期筛选。统计面板显示笔记总数和连续写作天数。', color: '#305830' },
+            { icon: 'check' as IconName, title: '编辑与删除', desc: '笔记创建后可随时编辑。已删除的笔记无法恢复。', color: '#4a3020' },
+          ].map(item => <Card key={item.title} {...item} />)}
+        </div>
+      ),
+    },
+
+    // ──────────── 7. 番茄钟 ────────────
+    {
+      id: 'pomodoro', icon: 'tomato', title: '番茄钟', tag: '执行层',
+      ...RED,
+      content: (
+        <div className="space-y-4">
+          <div className="oto-window p-4" style={{ borderColor: '#c08080' }}>
+            <p style={{ ...pxBody, fontWeight: 'bold', color: '#4a3020', marginBottom: 8 }}>番茄钟核心原则：</p>
+            <ol className="list-decimal list-inside space-y-1 text-sm" style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)' }}>
+              <li>一个番茄钟（25 分钟）不可分割</li>
+              <li>番茄钟期间只做一件事</li>
+              <li>休息时彻底放松</li>
+            </ol>
+          </div>
+
+          <h4 style={{ ...pxH3, color: '#8a3030' }}> 模式与时长</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {[
+              { icon: 'target' as IconName, title: '工作', desc: '25 分钟专注。完成会奖励。' },
+              { icon: 'coffee' as IconName, title: '短休息', desc: '5 分钟放松。工作后自动建议。' },
+              { icon: 'meditate' as IconName, title: '长休息', desc: '15 分钟恢复。每 4 个工作后自动建议。' },
+            ].map(item => <Card key={item.title} {...item} />)}
+          </div>
+
+          <Warn>工作模式<strong>必须绑定任务</strong>。如果没有待办任务，无法开始工作番茄钟。休息模式不需要绑定任务。</Warn>
+
+          <h4 style={{ ...pxH3, color: '#8a3030' }}> 统计与归档</h4>
+          <Warn>历史记录页默认<strong>只显示最近 10 条</strong>，超出的自动归档到「已归档」弹窗。归档项可逐条删除（不可恢复），但<strong>不影响统计面板</strong>。</Warn>
+        </div>
+      ),
+    },
+
+    // ──────────── 8. 随手清单 ────────────
+    {
+      id: 'quick-memos', icon: 'memo', title: '随手清单', tag: '执行层',
+      ...RED,
+      content: (
+        <div className="space-y-3">
+          <div className="oto-window p-3">
+            <p style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-dim)' }}>番茄钟期间的临时想法不要当场处理——记到随手清单，休息时再整理。</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {[
+              { icon: 'plus' as IconName, title: '快速添加', desc: '输入后回车添加。轻量级，无分类无标签。' },
+              { icon: 'check' as IconName, title: '勾选完成', desc: '点击复选框标记完成。可随时取消完成。' },
+              { icon: 'trash' as IconName, title: '删除与清空', desc: '单项删除或一键清空所有已完成项。' },
+              { icon: 'archive' as IconName, title: '自动归档', desc: '已完成区域默认只显示最近 20 条，超出的自动归档到「已归档」弹窗。归档可逐条查看，「归档 X」按钮在总数超 20 时出现。' },
+              { icon: 'coins' as IconName, title: '代币奖励', desc: '创建清单 +20、完成清单 +20。' },
+              { icon: 'bars' as IconName, title: '计数显示', desc: '底部显示「X 条待办 / Y 条已完成」。' },
+            ].map(item => <Card key={item.title} {...item} />)}
+          </div>
+          <Warn>归档项<strong>逐条删除</strong>（不可恢复），「清空」按钮一键物理删除所有已完成项。</Warn>
+        </div>
+      ),
+    },
+
+    // ──────────── 10. 代币系统 ────────────
+    {
+      id: 'tokens', icon: 'coins', title: '代币系统', tag: '系统',
+      ...PURPLE,
+      content: (
+        <div className="space-y-4">
+          <Warn>每月 1 号余额自动清零。旧记录不删除，只是不再计入余额。请及时使用代币。</Warn>
+
+          <Tip>所有代币任务（日任务、周任务、番茄钟阶梯、打卡奖励）全部自动发放，完成操作后立即到账，不需要手动领取。</Tip>
+
+          <h4 style={{ ...pxH3, color: '#4a3020' }}> 日任务（12 项，每日限 1 次）</h4>
+          <p className="text-xs mb-2" style={{ ...pxBody, fontSize: '11px', color: 'var(--oto-text-muted)' }}>完成对应操作后自动到账，每项每天最多触发一次。</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {[
+              { name: '首次番茄钟', amount: 60, note: '今日第一个工作番茄钟' },
+              { name: '休息', amount: 20, note: '完成一个休息时段' },
+              { name: '创建任务', amount: 20, note: '新建任意任务' },
+              { name: '完成任务', amount: 20, note: '将任务标记为已完成' },
+              { name: '确定核心任务', amount: 20, note: '在每日计划中选定核心要事' },
+              { name: '晨间规划', amount: 40, note: '填写晨间反思' },
+              { name: '晚间回顾', amount: 40, note: '填写晚间回顾' },
+              { name: '每日计划完成', amount: 60, note: '将每日计划标记为已完成' },
+              { name: '写笔记', amount: 40, note: '新建一篇笔记' },
+              { name: '创建清单', amount: 20, note: '新建一条随手清单' },
+              { name: '完成清单', amount: 20, note: '勾选完成一条清单' },
+              { name: '抽扭蛋', amount: 40, note: '完成一次扭蛋抽取' },
+            ].map(t => (
+              <div key={t.name} className="flex items-center justify-between p-2 oto-inset" style={{ fontSize: '11px' }}>
+                <span style={{ ...pxBody, fontSize: '11px', color: '#4a3020' }}>{t.name}</span>
+                <span style={{ ...pxBody, fontSize: '11px', color: '#8a6820', fontWeight: 'bold' }}>+{t.amount}</span>
+              </div>
+            ))}
+          </div>
+
+          <h4 style={{ ...pxH3, color: '#4a3020' }}> 番茄钟阶梯奖励（每次完成工作番茄钟自动发放）</h4>
+          <div className="flex gap-3">
+            {[
+              { tier: '入门', range: '1-4 个/天', amount: 40 },
+              { tier: '进阶', range: '5-8 个/天', amount: 50 },
+              { tier: '大师', range: '9+ 个/天', amount: 60 },
+            ].map(t => (
+              <div key={t.tier} className="flex-1 p-3 oto-inset text-center">
+                <div style={{ ...pxH3, color: '#4a3020' }}>{t.tier}</div>
+                <div style={{ ...pxSm, color: 'var(--oto-text-dim)' }}>{t.range}</div>
+                <div style={{ ...pxH3, color: '#8a6820', fontWeight: 'bold' }}>+{t.amount}</div>
+              </div>
+            ))}
+          </div>
+          <Tip>阶梯是累进制：第 1-4 个每个 40 币，第 5 个起每个 50 币，第 9 个起每个 60 币。不是"达到阈值后全部按高档算"。第 1 个番茄钟同时触发"首次番茄钟"60 币，合计 100 币。</Tip>
+
+          <h4 style={{ ...pxH3, color: '#4a3020' }}> 周任务（4 项，每周自动结算）</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {[
+              { name: '完成核心任务 5 天', amount: 400, note: '本周至少 5 天完成核心任务' },
+              { name: '番茄钟 40 个', amount: 400, note: '本周累计完成 40 个工作番茄钟' },
+              { name: '写日记 3 篇 + 周记 1 篇', amount: 200, note: '本周新建 3 篇日记和 1 篇周记' },
+              { name: '连续打卡 7 天', amount: 400, note: '本周每天至少获得 1 次代币' },
+            ].map(t => (
+              <div key={t.name} className="flex items-center justify-between p-2 oto-inset" style={{ fontSize: '11px' }}>
+                <span style={{ ...pxBody, fontSize: '11px', color: '#4a3020' }}>{t.name}</span>
+                <span style={{ ...pxBody, fontSize: '11px', color: '#8a6820', fontWeight: 'bold' }}>+{t.amount}</span>
+              </div>
+            ))}
+          </div>
+          <Tip>周任务在进度达标时自动发放代币，不需要手动领取。如果自动发放失败（网络问题），代币任务页面会显示"可领取"按钮供手动补领。</Tip>
+
+          <h4 style={{ ...pxH3, color: '#4a3020' }}> 连续打卡奖励（每日自动发放）</h4>
+          <Tip>连续打卡奖励 = 连续天数 × 10 币,自动发放(无需手动领取)。详情见「连续打卡」板块。</Tip>
+
+          <h4 style={{ ...pxH3, color: '#4a3020' }}> 每日首免</h4>
+          <Tip>每天第一次单抽扭蛋免费（不消耗代币）。十连抽不享受免费。页面刷新后自动识别今日是否已使用。</Tip>
+        </div>
+      ),
+    },
+
     // ──────────── 14. 设置与账户 ────────────
     {
-      id: 'settings', icon: 'gear', title: '设置与账户管理', tag: '系统',
+      id: 'settings', icon: 'gear', title: '设置', tag: '系统',
       ...PURPLE,
       content: (
         <div className="space-y-4">
@@ -500,19 +467,19 @@ export default function Guide() {
               </div>
             ))}
           </div>
-          <Tip>三个开关只控制侧栏显示/隐藏，不短路 API。关闭后不影响其他功能正常使用，重新开启后恢复正常。</Tip>
+          <Tip>三个开关只控制侧栏显示/隐藏。关闭后不影响其他功能正常使用，重新开启后恢复正常。</Tip>
 
           <h4 style={{ ...pxH3, color: '#4a3020' }}> 账户设置</h4>
-          <p className="text-xs mb-2" style={{ ...pxBody, color: 'var(--oto-text-muted)' }}>点击入口 → 验证当前密码 → 输入新值 → 保存。</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {['修改用户名', '修改邮箱', '修改密码', '忘记密码'].map(t => (
+          <p className="text-xs mb-2" style={{ ...pxBody, fontSize: '11px', color: 'var(--oto-text-muted)' }}>点击入口 → 验证当前密码 → 输入新值 → 保存。</p>
+          <div className="grid grid-cols-3 md:grid-cols-3 gap-2">
+            {['修改用户名', '修改密码', '忘记密码'].map(t => (
               <div key={t} className="p-2 oto-inset text-center" style={{ ...pxSm, fontSize: '12px' }}>{t}</div>
             ))}
           </div>
-          <Tip>修改用户名、邮箱、密码前必须先验证当前密码。「忘记密码」不需要验证，但需要配置 SMTP 才能发送重置邮件（可能进垃圾箱）。</Tip>
+          <Tip>修改用户名、密码前必须先验证当前密码。「忘记密码」不需要验证，但需要接收重置邮件（可能进垃圾箱）。</Tip>
 
           <h4 style={{ ...pxH3, color: '#4a3020' }}> 用户反馈</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {[
               { icon: 'pin' as IconName, title: '提交反馈', desc: '支持 Bug、建议、疑问、综合四种类型。提交后所有用户可见。' },
               { icon: 'edit' as IconName, title: '评论与@提及', desc: '在「全部反馈」弹窗里，每条反馈可展开评论。支持 @提及用户名。' },
@@ -557,46 +524,72 @@ export default function Guide() {
       ),
     },
 
-    // ──────────── 16. 隐藏规则速查 ────────────
+    // ──────────── 16. 常见问题 ────────────
     {
-      id: 'hidden-rules', icon: 'bulb', title: '隐藏规则速查', tag: '系统',
+      id: 'faq', icon: 'question', title: '常见问题', tag: '系统',
       ...PURPLE,
       content: (
         <div className="space-y-4">
-          <p style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-dim)' }}>
-            跨多个功能模块的重要隐藏规则汇总。新用户最容易踩坑的点都在这里。
-          </p>
-
           <h4 style={{ ...pxH3, color: '#4a3020' }}> 番茄钟</h4>
           <div className="space-y-2">
-            <Tip>快进（Skip）跳过和正常完成效果完全等价。暂停再继续不影响最终结果。</Tip>
-            <Warn>工作模式必须先绑定任务才能启动。休息模式不需要任务。</Warn>
+            <div className="oto-inset p-3">
+              <p style={{ ...pxBody, fontSize: '14px', color: '#4a3020', lineHeight: 1.7 }}><strong>Q: 番茄钟计时准确吗?</strong><br className="md:hidden" /> A: 准确。页面关闭或后台标签页都能继续计时,以本地时间为准。</p>
+            </div>
+            <div className="oto-inset p-3">
+              <p style={{ ...pxBody, fontSize: '14px', color: '#4a3020', lineHeight: 1.7 }}><strong>Q: 工作模式可以不选任务吗?</strong><br className="md:hidden" /> A: 不行,必须先选择任务才能开始工作番茄钟。</p>
+            </div>
           </div>
 
-          <h4 style={{ ...pxH3, color: '#4a3020' }}> 首次访问</h4>
+          <h4 style={{ ...pxH3, color: '#4a3020' }}> 代币系统</h4>
           <div className="space-y-2">
-            <Tip>欢迎引导延迟 800ms 自动弹出，点"跳过"会<strong>永久</strong>不再弹。设置页面无重新触发入口，需要清 localStorage。</Tip>
-            <Tip>新手教程 8 步必须按顺序完成。已完成的步骤永不回退。</Tip>
+            <div className="oto-inset p-3">
+              <p style={{ ...pxBody, fontSize: '14px', color: '#4a3020', lineHeight: 1.7 }}><strong>Q: 代币会过期吗?</strong><br className="md:hidden" /> A: 会。每月 1 号余额自动清零,旧记录不删除。</p>
+            </div>
+            <div className="oto-inset p-3">
+              <p style={{ ...pxBody, fontSize: '14px', color: '#4a3020', lineHeight: 1.7 }}><strong>Q: 代币任务需要手动领取吗?</strong><br className="md:hidden" /> A: 不需要。日任务/周任务/番茄阶梯/打卡奖励全部自动发放。</p>
+            </div>
+            <div className="oto-inset p-3">
+              <p style={{ ...pxBody, fontSize: '14px', color: '#4a3020', lineHeight: 1.7 }}><strong>Q: 扭蛋概率怎么算?</strong><br className="md:hidden" /> A: SSR 2% / SR 8% / R 50% / N 40%。连续 50 抽未出 SSR 后每抽概率+2%。</p>
+            </div>
           </div>
 
-          <h4 style={{ ...pxH3, color: '#4a3020' }}> 设备差异</h4>
+          <h4 style={{ ...pxH3, color: '#4a3020' }}> 任务与项目</h4>
           <div className="space-y-2">
-            <Tip>项目详情：<strong>桌面端</strong>显示为右侧抽屉，<strong>移动端</strong>显示为居中弹窗。两种形式功能相同。</Tip>
-            <Tip>导航栏底部"退出登录"旁的用户名从 JWT 同步读取（避免闪烁），老账号需要手动在 Supabase Dashboard 补 user_metadata。</Tip>
+            <div className="oto-inset p-3">
+              <p style={{ ...pxBody, fontSize: '14px', color: '#4a3020', lineHeight: 1.7 }}><strong>Q: 任务状态有哪些?</strong><br className="md:hidden" /> A: 待办 → 进行中 → 已完成 → 已归档。每步可回退。</p>
+            </div>
+            <div className="oto-inset p-3">
+              <p style={{ ...pxBody, fontSize: '14px', color: '#4a3020', lineHeight: 1.7 }}><strong>Q: 删除项目会删除任务吗?</strong><br className="md:hidden" /> A: 不会。任务会变为"无项目"状态。</p>
+            </div>
+            <div className="oto-inset p-3">
+              <p style={{ ...pxBody, fontSize: '14px', color: '#4a3020', lineHeight: 1.7 }}><strong>Q: 归档后能恢复吗?</strong><br className="md:hidden" /> A: 能。已归档任务可回退到待办,项目可切换到进行中/已完成。</p>
+            </div>
           </div>
 
-          <h4 style={{ ...pxH3, color: '#4a3020' }}> 账户与安全</h4>
+          <h4 style={{ ...pxH3, color: '#4a3020' }}> 账户与设置</h4>
           <div className="space-y-2">
-            <Tip>修改用户名、邮箱、密码前必须先验证当前密码（弹窗两步流程）。</Tip>
-            <Tip>「忘记密码」依赖 SMTP 配置，未配置时邮件不会发送，配置后可能在垃圾箱。</Tip>
-            <Tip>「设置」页面的系统开关只控制侧栏显示/隐藏，不短路 API。</Tip>
+            <div className="oto-inset p-3">
+              <p style={{ ...pxBody, fontSize: '14px', color: '#4a3020', lineHeight: 1.7 }}><strong>Q: 修改用户名/密码需要当前密码吗?</strong><br className="md:hidden" /> A: 需要。修改前会弹窗验证当前密码。</p>
+            </div>
+            <div className="oto-inset p-3">
+              <p style={{ ...pxBody, fontSize: '14px', color: '#4a3020', lineHeight: 1.7 }}><strong>Q: 忘记密码怎么找回?</strong><br className="md:hidden" /> A: 输入注册邮箱,系统发送重置链接。链接可能在垃圾箱。</p>
+            </div>
+            <div className="oto-inset p-3">
+              <p style={{ ...pxBody, fontSize: '14px', color: '#4a3020', lineHeight: 1.7 }}><strong>Q: 设置里的开关关闭后数据还在吗?</strong><br className="md:hidden" /> A: 在。开关只控制侧栏显示/隐藏,不影响任何数据。</p>
+            </div>
           </div>
 
-          <h4 style={{ ...pxH3, color: '#4a3020' }}> 数据保护</h4>
+          <h4 style={{ ...pxH3, color: '#4a3020' }}> 月度重置</h4>
           <div className="space-y-2">
-            <Warn>删除项目不会删除关联任务，只会把任务变为"无项目"状态。</Warn>
-            <Tip>已删除的笔记无法恢复。</Tip>
-            <Tip>月度相关的进度（如打卡的同步、收藏品快照）需要手动保存，否则每月 1 号重置后丢失。</Tip>
+            <div className="oto-inset p-3">
+              <p style={{ ...pxBody, fontSize: '14px', color: '#4a3020', lineHeight: 1.7 }}><strong>Q: 每月 1 号重置什么?</strong><br className="md:hidden" /> A: 代币余额、扭蛋图鉴、藏品室等级。笔记/任务/计划不受影响。</p>
+            </div>
+            <div className="oto-inset p-3">
+              <p style={{ ...pxBody, fontSize: '14px', color: '#4a3020', lineHeight: 1.7 }}><strong>Q: 藏品室等级会丢失吗?</strong><br className="md:hidden" /> A: 会。月度重置后等级清零,需手动点击「同步到月度记录」保存快照。</p>
+            </div>
+            <div className="oto-inset p-3">
+              <p style={{ ...pxBody, fontSize: '14px', color: '#4a3020', lineHeight: 1.7 }}><strong>Q: 扭蛋机 SSR 锁定会丢失吗?</strong><br className="md:hidden" /> A: 会。每月需重新抽满 300 次才能再次锁定。</p>
+            </div>
           </div>
         </div>
       ),

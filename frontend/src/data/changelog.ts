@@ -13,16 +13,6 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
-    version: '0.2.1',
-    date: '2026-08-17',
-    title: '修复账户设置功能',
-    highlights: [
-      { text: '修复账户设置页面无法正常打开的 bug。修改用户名、修改邮箱、修改密码、忘记密码这四个功能现在都可以正常使用。' },
-      { text: '修复修改密码、修改用户名、修改邮箱时永远卡在验证步骤的问题。输入正确的当前密码后，可以正常进入下一步完成修改。' },
-      { text: '修复反馈页"@"提及按钮的展开异常，点击 @ 按钮现在可以正常显示用户名列表。' },
-    ],
-  },
-  {
     version: '0.2.0-alpha',
     date: '2026-08-14',
     title: '功能迭代与移动端适配',

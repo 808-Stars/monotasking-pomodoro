@@ -1461,15 +1461,6 @@ export async function updatePassword(newPassword: string) {
   return true
 }
 
-/** 修改邮箱 */
-export async function updateEmail(newEmail: string) {
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-  if (!emailRegex.test(newEmail)) throw new Error('请输入有效的邮箱地址')
-  const { error } = await supabase.auth.updateUser({ email: newEmail })
-  if (error) throw error
-  return true
-}
-
 /** 发送密码重置邮件 */
 export async function requestPasswordReset(email: string, redirectTo?: string) {
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/

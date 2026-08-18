@@ -6,7 +6,7 @@ export default function PomodoroTimer() {
   const {
     phase, mode, seconds, selectedTask, tasks, notes,
     startTime, currentTime, totalSeconds, endTime,
-    toggleTimer, handleSkip, resetTimer, switchMode,
+    toggleTimer, resetTimer, switchMode,
     setSelectedTask, setNotes, refreshTasks,
   } = usePomodoro();
 

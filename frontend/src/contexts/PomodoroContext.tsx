@@ -25,7 +25,6 @@ interface PomodoroContextType {
   totalSeconds: number;
   endTime: Date | null;
   toggleTimer: () => void;
-  handleSkip: () => void;
   resetTimer: () => void;
   switchMode: (newMode: TimerMode) => void;
   setSelectedTask: (id: string | null) => void;
@@ -246,15 +245,6 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
     }
   }, [phase, mode, selectedTask, totalSeconds, seconds, activeQuest, completeQuest]);
 
-  const handleSkip = useCallback(() => {
-    clearTimer();
-    needsCompleteRef.current = false;
-    elapsedRef.current = mode === 'WORK' ? WORK_TIME : mode === 'SHORT_BREAK' ? SHORT_BREAK : LONG_BREAK;
-    setPhase('idle');
-    setSeconds(mode === 'WORK' ? WORK_TIME : mode === 'SHORT_BREAK' ? SHORT_BREAK : LONG_BREAK);
-    handleCompleteRef.current?.();
-  }, [mode]);
-
   const resetTimer = useCallback(() => {
     clearTimer();
     setPhase('idle');
@@ -288,7 +278,7 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
     <PomodoroContext.Provider value={{
       phase, mode, seconds, selectedTask, tasks, notes,
       startTime, currentTime, totalSeconds, endTime,
-      toggleTimer, handleSkip, resetTimer, switchMode,
+      toggleTimer, resetTimer, switchMode,
       setSelectedTask, setNotes, refreshTasks,
     }}>
       {children}
