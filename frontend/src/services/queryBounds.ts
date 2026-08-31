@@ -36,14 +36,6 @@ export function getLogicalMonthStartIso(input: string | Date = new Date()): stri
   return new Date(`${getLogicalMonthKey(input)}-01T04:00:00+08:00`).toISOString()
 }
 
-/** Return the 04:00 Asia/Shanghai start N logical days before a YYYY-MM-DD key. */
-export function getLogicalLookbackStartIso(startKey: string, days = 28): string {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(startKey)) throw new Error(`Invalid logical date: ${startKey}`)
-  const anchor = new Date(`${startKey}T12:00:00Z`)
-  if (Number.isNaN(anchor.getTime())) throw new Error(`Invalid logical date: ${startKey}`)
-  anchor.setUTCDate(anchor.getUTCDate() - Math.max(1, Math.floor(days)))
-  return new Date(`${anchor.toISOString().slice(0, 10)}T04:00:00+08:00`).toISOString()
-}
 
 /** Format an ISO timestamp as a compact Asia/Shanghai local date and time. */
 export function formatShanghaiDateTime(input: string | Date): string {

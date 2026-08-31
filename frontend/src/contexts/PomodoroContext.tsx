@@ -109,6 +109,7 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
 
   const totalSeconds = mode === 'WORK' ? WORK_TIME : mode === 'CUSTOM' ? customMinutes * 60 : mode === 'CUSTOM_BREAK' ? Math.min(customMinutes, MAX_REST_DURATION_MINUTES) * 60 : mode === 'COUNT_UP' ? MAX_WORK_DURATION_MINUTES * 60 : mode === 'COUNT_UP_BREAK' ? MAX_REST_DURATION_MINUTES * 60 : mode === 'SHORT_BREAK' ? SHORT_BREAK : LONG_BREAK;
 
+
   // Load tasks
   const refreshTasks = useCallback(async () => {
     try {
@@ -301,9 +302,6 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
   }, [phase, mode, totalSeconds, seconds]);
 
   const resetTimer = useCallback(() => {
-    if (phase !== 'idle') {
-      const elapsed = mode === 'COUNT_UP' || mode === 'COUNT_UP_BREAK' ? elapsedRef.current : Math.max(elapsedRef.current, totalSeconds - seconds);
-    }
     clearTimer();
     setPhase('idle');
     setSeconds(mode === 'WORK' ? WORK_TIME : mode === 'CUSTOM' || mode === 'CUSTOM_BREAK' ? customMinutes * 60 : mode === 'COUNT_UP' || mode === 'COUNT_UP_BREAK' ? 0 : mode === 'SHORT_BREAK' ? SHORT_BREAK : LONG_BREAK);
@@ -312,7 +310,7 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
     setEndTimeState(null);
     elapsedRef.current = 0;
     countUpRunStartedAtRef.current = null;
-  }, [phase, mode, customMinutes, totalSeconds, seconds]);
+  }, [mode, customMinutes]);
 
   const switchMode = useCallback((newMode: TimerMode) => {
     clearTimer();

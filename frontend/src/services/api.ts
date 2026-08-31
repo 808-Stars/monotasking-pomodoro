@@ -84,6 +84,7 @@ function invalidate(...keys: string[]) {
   }
   if (expanded.has('token-balance') || expanded.has('gacha-summary')) expanded.add('token-records')
   if ([...expanded].some(key => ['tasks', 'pomo', 'daily-plan', 'today-plan', 'reviews', 'token'].some(prefix => key.startsWith(prefix)))) {
+    expanded.add('reports')
   }
   requestCache.invalidate(...expanded)
 }
