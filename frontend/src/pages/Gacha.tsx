@@ -3,7 +3,7 @@ import Icon from '../components/Icons';
 import type { IconName } from '../components/Icons';
 import { localDate } from '../utils/date';
 import {
-  fetchGachaItems, fetchGachaRecords, gachaPull,
+  getGachaSummary, fetchGachaRecords, gachaPull,
   getTokenBalance, addTokenRecord, getDailyTasks,
   claimDailyTokens, claimAllDailyTokens,
   getWeeklyTasks, claimWeeklyTask,
@@ -126,6 +126,7 @@ export default function Gacha() {
   const [todayCounts, setTodayCounts] = useState<Record<string, number>>({});
   const [settingSSRTarget, setSettingSSRTarget] = useState(false);
   const [streakTask, setStreakTask] = useState<StreakTaskStatus>({ streak: 0, amount: 0, distributed: true });
+  const [secondaryLoading, setSecondaryLoading] = useState(true);
 
   const refreshDaily = useCallback(async () => {
     try {
@@ -144,28 +145,35 @@ export default function Gacha() {
   }, []);
 
   const load = useCallback(async () => {
-    const [itemsData, recordsData, balanceData, dailyData, weeklyData, ssrData, todayCountsData, streakData, tokenRecordsData] = await Promise.all([
-      fetchGachaItems(),
-      fetchGachaRecords(),
-      getTokenBalance(),
-      getDailyTasks().catch(() => ({ date: '', today_earned: 0, daily_target: 400, tasks: [] as DailyTaskStatus[] } as DailyTasksResponse)),
-      getWeeklyTasks().catch(() => ({ tasks: [] as WeeklyTask[], week_start: '', week_earned: 0, week_target: 0 })),
-      getSSRTargetStatus().catch(() => ({ target: null, total_pulls: 0, eligible: false, monthly_used: false })),
-      getTodayCounts().catch(() => ({})),
-      getStreakTaskStatus().catch(() => ({ streak: 0, amount: 0, distributed: true })),
-      fetchTokenRecords(20).catch(() => [] as TokenRecord[]),
-    ]);
-    setItems(itemsData);
-    setRecords(recordsData);
-    setBalance(balanceData);
-    setSSRTargetStatus(ssrData);
-    setTokenRecords(tokenRecordsData);
+    // 首屏：一次汇总请求只获取抽取所需的核心状态。
+    const summary = await getGachaSummary();
+    if (!summary) {
+      setLoading(false);
+      setSecondaryLoading(false);
+      return;
+    }
 
-    // Today tomato count for tier display
-    const todayCounts = todayCountsData as Record<string, number>;
+    setItems(summary.items ?? []);
+    setBalance(summary.balance ?? { balance: 0, total_earned: 0, total_spent: 0 });
+    setSSRTargetStatus(summary.ssr_target ?? { target: null, total_pulls: 0, eligible: false, monthly_used: false });
+
+    const todayCounts = (summary.today_counts ?? {}) as Record<string, number>;
     setTodayCounts(todayCounts);
     setTodayTomatoCount(todayCounts['番茄钟'] ?? 0);
     if (todayCounts['_free_pull_used']) setFreePullUsed(true);
+
+    // 核心数据完成后立即显示页面；历史、任务和流水在后台补齐。
+    setLoading(false);
+
+    const [recordsData, dailyData, weeklyData, streakData, tokenRecordsData] = await Promise.all([
+      fetchGachaRecords().catch(() => [] as GachaRecord[]),
+      getDailyTasks().catch(() => ({ date: '', today_earned: 0, daily_target: 400, tasks: [] as DailyTaskStatus[] } as DailyTasksResponse)),
+      getWeeklyTasks().catch(() => ({ tasks: [] as WeeklyTask[], week_start: '', week_earned: 0, week_target: 0 })),
+      getStreakTaskStatus().catch(() => ({ streak: 0, amount: 0, distributed: true })),
+      fetchTokenRecords(20).catch(() => [] as TokenRecord[]),
+    ]);
+    setRecords(recordsData);
+    setTokenRecords(tokenRecordsData);
 
     // Daily tasks
     setDailyTasks(dailyData.tasks);
@@ -180,8 +188,10 @@ export default function Gacha() {
 
     // Streak task（自动发放：load 期间可能新增记录，需要刷新余额）
     setStreakTask(streakData);
-    const b = await getTokenBalance()
-    setBalance(b)
+    try {
+      const b = await getTokenBalance()
+      setBalance(b)
+    } catch { /* 保留首屏余额 */ }
 
     // Compute owned counts and pity
     const counts: Record<string, number> = {};
@@ -200,10 +210,15 @@ export default function Gacha() {
       setPitySsr(dry);
     }
 
-    setLoading(false);
+    setSecondaryLoading(false);
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load().catch(() => {
+      setLoading(false);
+      setSecondaryLoading(false);
+    });
+  }, [load]);
 
   // 空格关闭抽取结果弹窗
   useEffect(() => {
@@ -283,13 +298,13 @@ export default function Gacha() {
 
   const handleClaimAllDaily = async () => {
     try {
-      const count = await claimAllDailyTokens();
+      const result = await claimAllDailyTokens();
       const [b, dt] = await Promise.all([getTokenBalance(), getDailyTasks()]);
       setBalance(b);
       setDailyTasks(dt.tasks);
       setTodayEarned(dt.today_earned);
       setDailyTarget(dt.daily_target);
-      alert(`一键领取 ${count} 项任务！`);
+      alert(`一键领取 ${result.claimed} 项任务！`);
     } catch (e: any) {
       alert(e?.message || '领取失败');
     }
@@ -465,6 +480,9 @@ export default function Gacha() {
         </div>
         {showTasksHub && (
           <div className="mt-4 space-y-2">
+            {secondaryLoading && (
+              <p style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>正在加载任务与流水数据…</p>
+            )}
 
             {/* Sub-folder 1: 日任务 */}
             <div className="oto-inset rounded-none!">

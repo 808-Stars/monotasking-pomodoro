@@ -49,10 +49,11 @@ CREATE INDEX idx_tasks_project ON tasks(project_id);
 CREATE TABLE pomodoro_sessions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  task_id UUID NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  task_id UUID REFERENCES tasks(id) ON DELETE CASCADE,
   start_time TIMESTAMPTZ NOT NULL,
   end_time TIMESTAMPTZ,
   duration_minutes INT DEFAULT 25,
+  pomodoro_count INT NOT NULL DEFAULT 1 CHECK (pomodoro_count BETWEEN 0 AND 4),
   type TEXT DEFAULT 'WORK' CHECK (type IN ('WORK', 'SHORT_BREAK', 'LONG_BREAK')),
   status TEXT DEFAULT 'COMPLETED' CHECK (status IN ('COMPLETED', 'INTERRUPTED', 'CANCELLED')),
   interruption_reason TEXT DEFAULT '',

@@ -37,14 +37,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let activeUserId: string | null = null
+
     // 获取初始 session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      activeUserId = session?.user.id ?? null
       setUser(session?.user ?? null)
       setLoading(false)
     })
 
     // 监听认证状态变化
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextUserId = session?.user.id ?? null
+      if (nextUserId !== activeUserId) {
+        clearAuthCache()
+        activeUserId = nextUserId
+      }
       setUser(session?.user ?? null)
     })
 
@@ -52,8 +60,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signIn = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    return { error: error ? translateAuthError(error.message) : null }
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) return { error: translateAuthError(error.message) }
+
+    // Email confirmation may defer profile creation until the first real session.
+    if (data.user) {
+      const { data: profile } = await supabase.from('profiles').select('id').eq('id', data.user.id).maybeSingle()
+      if (!profile) {
+        const username = data.user.user_metadata?.username
+        if (username) {
+          const { error: profileError } = await supabase.from('profiles').insert({ id: data.user.id, username })
+          if (profileError) return { error: '登录成功，但用户资料创建失败，请稍后重试' }
+        }
+      }
+    }
+    return { error: null }
   }, [])
 
   const signUp = useCallback(async (email: string, password: string, username: string) => {
@@ -70,18 +91,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const domain = email.split('@')[1]?.toLowerCase()
     if (fakeDomains.includes(domain)) return { error: '请使用真实邮箱注册' }
     if (password.length < 6) return { error: '密码至少需要6个字符' }
-    const { data, error } = await supabase.auth.signUp({ email, password })
-    console.log('[signUp] data:', data, 'error:', error, 'errorType:', typeof error, 'errorKeys:', error ? Object.keys(error) : 'null')
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { username } },
+    })
     if (error) {
       const msg = error.message || (error as any).error_description || (error as any).msg || String(error)
-      console.error('[signUp] resolved message:', msg)
       return { error: translateAuthError(msg) }
     }
     // 创建用户资料
-    if (data.user) {
-      await supabase.from('profiles').insert({ id: data.user.id, username })
+    if (data.user && data.session) {
+      const { error: profileError } = await supabase.from('profiles').insert({ id: data.user.id, username })
+      if (profileError) return { error: '注册成功，但用户资料创建失败，请稍后重试' }
       // 同时把 username 存到 user_metadata，让 JWT 包含 username，导航栏能同步读取
-      await supabase.auth.updateUser({ data: { username } })
+      const { error: metadataError } = await supabase.auth.updateUser({ data: { username } })
+      if (metadataError) return { error: '注册成功，但用户资料同步失败，请稍后重试' }
     }
     if (!data.session) return { error: '注册成功！请检查邮箱并点击确认链接后登录' }
     return { error: null }

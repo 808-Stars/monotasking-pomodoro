@@ -1,11 +1,11 @@
-/** 逻辑日日期：凌晨4点视为新一天（UTC+4 等效） */
+import { getLogicalDayKey, getLogicalMonthKey } from '../services/queryBounds'
+
+/** 逻辑日日期：Asia/Shanghai 凌晨 4 点视为新一天。 */
 export function localDate(d = new Date()): string {
-  const t = new Date(d.getTime() - 4 * 3600_000)
-  return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`
+  return getLogicalDayKey(d)
 }
 
-/** 逻辑月：同上，凌晨4点前算上月 */
+/** 逻辑月：Asia/Shanghai 每月 1 日凌晨 4 点切换。 */
 export function localMonth(d = new Date()): string {
-  const t = new Date(d.getTime() - 4 * 3600_000)
-  return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}`
+  return getLogicalMonthKey(d)
 }

@@ -48,7 +48,8 @@ BEGIN
   -- ── 2. 计算余额 ──
   SELECT COALESCE(SUM(amount), 0) INTO v_balance
   FROM token_records
-  WHERE user_id = p_user_id AND claimed = true;
+  WHERE user_id = p_user_id AND claimed = true
+    AND created_at >= (v_ym || '-01T04:00:00+08:00')::timestamptz;
 
   v_cost := CASE WHEN v_free THEN 0 WHEN p_count = 1 THEN 50 ELSE 500 END;
 
@@ -254,7 +255,8 @@ BEGIN
   -- ── 9. 获取新余额并返回 ──
   SELECT COALESCE(SUM(amount), 0) INTO v_balance
   FROM token_records
-  WHERE user_id = p_user_id AND claimed = true;
+  WHERE user_id = p_user_id AND claimed = true
+    AND created_at >= (v_ym || '-01T04:00:00+08:00')::timestamptz;
 
   RETURN jsonb_build_object(
     'results', v_results,

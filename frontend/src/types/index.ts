@@ -40,6 +40,7 @@ export interface PomodoroSession {
   start_time: string;
   end_time: string | null;
   duration_minutes: number;
+  pomodoro_count?: number;
   type: 'WORK' | 'SHORT_BREAK' | 'LONG_BREAK';
   type_display?: string;
   status: 'COMPLETED' | 'INTERRUPTED' | 'CANCELLED';
@@ -86,17 +87,7 @@ export interface QuickMemo {
 }
 
 export interface DashboardStats {
-  today_plan: {
-    id: number | null;
-    status: string;
-    status_display: string;
-    core_task: {
-      id: string;
-      name: string;
-      status: string;
-      status_display: string;
-    } | null;
-  };
+  today_plan: DailyPlan | null;
   tasks: {
     total: number;
     todo: number;

@@ -6,6 +6,7 @@ import StatusBadge from '../components/StatusBadge';
 import Icon from '../components/Icons';
 import type { IconName } from '../components/Icons';
 import { useOnboarding } from '../contexts/OnboardingContext';
+import { DAILY_PLAN_TEXT_FIELDS, getChangedDailyPlanTextFields, type DailyPlanTextField } from '../services/dailyPlanDraft';
 
 const STATUS_DOT: Record<string, string> = { UNPLANNED: '#222', PLANNED: '#687898', COMPLETED: '#689050', FAILED: '#a03038', REVIEWED: '#786890' };
 const STATUS_BG: Record<string, string> = { UNPLANNED: 'transparent', PLANNED: '#e8e4f0', COMPLETED: '#e0ece0', FAILED: '#f0e0e0', REVIEWED: '#ece4f0' };
@@ -23,21 +24,23 @@ export default function DailyPlans() {
   const [saving, setSaving] = useState(false);
   const [taskDropdownOpen, setTaskDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  // 文本框本地草稿 + 防抖计时器，避免每次按键都发 PATCH
+  // 文本框本地草稿：只有点击“保存文字”时才提交，避免中文输入法组合态被提前保存
   const [drafts, setDrafts] = useState<Record<string, string>>({});
-  const draftTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const today = new Date();
   const [calYear, setCalYear] = useState(today.getFullYear());
   const [calMonth, setCalMonth] = useState(today.getMonth());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
+  const monthKey = `${calYear}-${String(calMonth + 1).padStart(2, '0')}`;
   const load = () => {
-    fetchDailyPlans().then(setPlans);
+    fetchDailyPlans(monthKey).then(setPlans);
     fetchTodayPlan().then(setTodayPlan).catch(() => {});
-    fetchTasks().then(d => { const active = (Array.isArray(d) ? d : []).filter((t: any) => t.status === 'TODO' || t.status === 'IN_PROGRESS'); setAllTasks(active); }).catch(() => {});
+    fetchTasks().then(data => {
+      setAllTasks((Array.isArray(data) ? data : []).filter((t: any) => t.status === 'TODO' || t.status === 'IN_PROGRESS'));
+    }).catch(() => {});
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [monthKey]);
 
   // 点击外部关闭下拉
   useEffect(() => {
@@ -69,43 +72,26 @@ export default function DailyPlans() {
     const updated = await fetchTodayPlan(); setTodayPlan(updated); load(); setSaving(false);
     if (taskId) addTokenRecord(20, '确定核心任务', true, true).catch(() => {});
   };
-  const handleUpdatePlan = async (field: string, value: string) => {
-    if (!todayPlan) return; setSaving(true);
-    await updateDailyPlan(todayPlan.id, { [field]: value });
-    const updated = await fetchTodayPlan(); setTodayPlan(updated); setSaving(false);
-    setDrafts(prev => { const next = { ...prev }; delete next[field]; return next; });
-    if (field === 'morning_reflection' && value.trim()) {
-      addTokenRecord(40, '晨间规划', true, true).catch(() => {});
-    }
-    if (field === 'evening_review' && value.trim()) {
-      addTokenRecord(40, '晚间回顾', true, true).catch(() => {});
-    }
-  };
-
-  // 输入时只更新本地草稿，停止输入 800ms 后才真正保存
-  const handleDraftChange = (field: string, value: string) => {
+  const handleDraftChange = (field: DailyPlanTextField, value: string) => {
     setDrafts(prev => ({ ...prev, [field]: value }));
-    if (draftTimers.current[field]) clearTimeout(draftTimers.current[field]);
-    draftTimers.current[field] = setTimeout(() => {
-      handleUpdatePlan(field, value);
-    }, 800);
   };
 
-  // 失焦立即保存，避免用户切走时丢失未保存的输入
-  const handleDraftBlur = (field: string) => {
-    const pending = draftTimers.current[field];
-    if (!pending) return;
-    clearTimeout(pending);
-    delete draftTimers.current[field];
-    const value = drafts[field];
-    if (value !== undefined) handleUpdatePlan(field, value);
+  const changedTextFields = getChangedDailyPlanTextFields(todayPlan, drafts);
+  const hasUnsavedText = Object.keys(changedTextFields).length > 0;
+  const handleSaveText = async () => {
+    if (!todayPlan || !hasUnsavedText) return;
+    setSaving(true);
+    try {
+      await updateDailyPlan(todayPlan.id, changedTextFields);
+      const updated = await fetchTodayPlan();
+      setTodayPlan(updated);
+      setDrafts({});
+      if (changedTextFields.morning_reflection?.trim()) addTokenRecord(40, '晨间规划', true, true).catch(() => {});
+      if (changedTextFields.evening_review?.trim()) addTokenRecord(40, '晚间回顾', true, true).catch(() => {});
+    } finally {
+      setSaving(false);
+    }
   };
-
-  // 卸载时清理所有未触发的计时器
-  useEffect(() => {
-    const timers = draftTimers.current;
-    return () => { Object.values(timers).forEach(clearTimeout); };
-  }, []);
   const handleStatusChange = async (status: DailyPlan['status']) => {
     if (!todayPlan) return;
     await updateDailyPlan(todayPlan.id, { status }); const updated = await fetchTodayPlan(); setTodayPlan(updated);
@@ -195,14 +181,14 @@ export default function DailyPlans() {
           <div key={f.field} className="mb-4">
             <label className="text-sm block mb-1" style={{ ...pxSm, fontSize: '11px', color: 'var(--oto-text-dim)' }}><Icon name={f.icon as IconName} size={14} /> {f.label}</label>
             <textarea value={drafts[f.field] ?? (todayPlan?.[f.field as keyof DailyPlan] as string) ?? ''}
-              onChange={e => handleDraftChange(f.field, e.target.value)}
-              onBlur={() => handleDraftBlur(f.field)} rows={f.rows}
+              onChange={e => handleDraftChange(f.field as DailyPlanTextField, e.target.value)} rows={f.rows}
               className="oto-textarea w-full placeholder:text-[14px] md:placeholder:text-[15px]" placeholder={f.ph} />
           </div>
         ))}
 
         {/* Status actions */}
-        <div className="flex gap-2 items-center flex-wrap">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex gap-2 items-center flex-wrap">
           {todayPlan?.status === 'UNPLANNED' && (
             <button onClick={() => handleStatusChange('PLANNED')} className="oto-btn text-xs! px-2! py-1! md:text-base! md:px-4! md:py-2!"><Icon name="target" size={14} /> 开始计划</button>
           )}
@@ -221,7 +207,18 @@ export default function DailyPlans() {
           {todayPlan?.status === 'REVIEWED' && (
             <button onClick={() => handleStatusChange('COMPLETED')} className="oto-btn oto-btn-gray text-xs! px-2! py-1! md:text-base! md:px-4! md:py-2!"><Icon name="undo" size={14} /> 回退</button>
           )}
-          {saving && <span className="text-xs self-center" style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-muted)' }}>保存中...</span>}
+          </div>
+          <div className="flex items-center gap-3 ml-auto">
+            <span className="text-xs whitespace-nowrap" style={{ ...pxBody, fontSize: '13px', color: hasUnsavedText ? 'var(--oto-accent-alt)' : 'var(--oto-text-muted)' }}>
+              文本编辑后请手动保存
+            </span>
+            <button onClick={handleSaveText} disabled={!hasUnsavedText || saving}
+              className="oto-btn text-xs! px-3! py-1.5! md:text-sm! md:px-4! md:py-2!"
+              style={{ opacity: hasUnsavedText && !saving ? 1 : 0.45, cursor: hasUnsavedText && !saving ? 'pointer' : 'not-allowed' }}>
+              <Icon name="check" size={14} /> 保存
+            </button>
+            {saving && <span className="text-xs" style={{ ...pxBody, fontSize: '13px', color: 'var(--oto-text-muted)' }}>保存中...</span>}
+          </div>
         </div>
       </div>
 

@@ -5,6 +5,7 @@ import type { Review } from '../types';
 import StatusBadge from '../components/StatusBadge';
 import Icon from '../components/Icons';
 import { useOnboarding } from '../contexts/OnboardingContext';
+import { matchesSearch } from '../services/search';
 
 const REVIEW_TYPE_MAP: Record<string, string> = { DAILY: '日记', WEEKLY: '周记', MONTHLY: '月记' };
 // default date 改在组件初始化时按 fakeDate 计算
@@ -22,12 +23,20 @@ export default function Reviews() {
   const [editing, setEditing] = useState<Review | null>(null);
   const [form, setForm] = useState<Partial<Review>>({ ...EMPTY });
   const [filterType, setFilterType] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [allReviews, setAllReviews] = useState<Review[]>([]);
   const [viewingReview, setViewingReview] = useState<Review | null>(null);
 
-  const load = () => { fetchReviews(filterType || undefined).then(d => { setReviews(d); setLoading(false); }); };
-  const loadAll = () => { fetchReviews().then(setAllReviews); };
-  useEffect(() => { load(); loadAll(); }, [filterType]);
+  const load = () => {
+    setLoading(true);
+    fetchReviews().then(all => {
+      setAllReviews(all);
+      setReviews(filterType ? all.filter(r => r.type === filterType) : all);
+    }).finally(() => setLoading(false));
+  };
+  useEffect(() => { load(); }, [filterType]);
+
+  const visibleReviews = useMemo(() => reviews.filter(r => matchesSearch(searchQuery, r.date, r.content, REVIEW_TYPE_MAP[r.type])), [reviews, searchQuery]);
 
   // fake-aware 今日日期（写新回顾时默认日期）
   const fakeTodayStr = localDate();
@@ -52,9 +61,9 @@ export default function Reviews() {
       // 新手教程：只有从新手教程跳过来时才算写笔记步骤完成
       if (activeQuest?.id === 'write-review') completeQuest('write-review');
     }
-    setShowForm(false); load(); loadAll();
+    setShowForm(false); load();
   };
-  const handleDelete = async (id: string) => { if (!confirm('确定删除？')) return; await deleteReview(id); load(); loadAll(); };
+  const handleDelete = async (id: string) => { if (!confirm('确定删除？')) return; await deleteReview(id); load(); };
 
   return (
     <div className="space-y-6 oto-stagger">
@@ -76,12 +85,19 @@ export default function Reviews() {
       </div>
 
       {/* Filter bar — matches original flex between */}
-      <div className="oto-window p-4 flex items-center justify-between">
-        <select value={filterType} onChange={e => setFilterType(e.target.value)} className="oto-select oto-select-fit" style={{ textIndent: '8px', paddingLeft: '12px' }}>
-          <option value="">全部类型</option>
-          {Object.entries(REVIEW_TYPE_MAP).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-        </select>
-        <button onClick={openCreate} className="oto-btn">+ 新建回顾</button>
+      <div className="oto-window p-4 flex flex-col md:flex-row md:items-center gap-3">
+        <div className="flex items-center gap-2 flex-1 oto-input" style={{ padding: '6px 10px' }}>
+          <Icon name="search" size={14} />
+          <input type="search" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="搜索笔记内容或日期..."
+            className="w-full border-none outline-none bg-transparent text-sm" style={{ color: 'var(--oto-text)' }} />
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <select value={filterType} onChange={e => setFilterType(e.target.value)} className="oto-select oto-select-fit" style={{ textIndent: '8px', paddingLeft: '12px' }}>
+            <option value="">全部类型</option>
+            {Object.entries(REVIEW_TYPE_MAP).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          </select>
+          <button onClick={openCreate} className="oto-btn">+ 新建回顾</button>
+        </div>
       </div>
 
       {/* Reviews list — matches original space-y-4 */}
@@ -89,10 +105,10 @@ export default function Reviews() {
         <div className="text-center py-12" style={{ ...pxBody, color: 'var(--oto-text-muted)' }}>加载中...</div>
       ) : (
         <div className="space-y-4">
-          {reviews.length === 0 ? (
-            <div className="text-center py-12 oto-window" style={{ ...pxBody, color: 'var(--oto-text-muted)' }}>暂无回顾记录</div>
+          {visibleReviews.length === 0 ? (
+            <div className="text-center py-12 oto-window" style={{ ...pxBody, color: 'var(--oto-text-muted)' }}>{searchQuery.trim() ? '没有匹配的笔记' : '暂无回顾记录'}</div>
           ) : (
-            reviews.map(r => (
+            visibleReviews.map(r => (
               <div key={r.id} className="oto-window p-5 oto-card-lift oto-tacked" style={{
                 borderLeftWidth: '4px',
                 borderLeftColor: r.type === 'DAILY' ? '#304868' : r.type === 'WEEKLY' ? '#8a6820' : '#504868',

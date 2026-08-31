@@ -23,6 +23,7 @@ import StatusBadge from '../components/StatusBadge';
 import WhatsNewModal from '../components/WhatsNewModal';
 import { CHANGELOG, type ChangelogEntry } from '../data/changelog';
 import { supabase } from '../services/supabase';
+import { matchesSearch } from '../services/search';
 
 const FEEDBACK_TYPE_MAP: Record<FeedbackEntry['type'], string> = {
   bug: 'Bug',
@@ -89,12 +90,15 @@ export default function Settings() {
   const [feedbackError, setFeedbackError] = useState('');
   const [showAllFeedback, setShowAllFeedback] = useState(false);
   const [feedbackFilter, setFeedbackFilter] = useState<'all' | FeedbackEntry['type']>('all');
+  const [feedbackSearch, setFeedbackSearch] = useState('');
 
   // 按类型筛选的反馈列表
   const filteredFeedbackList = useMemo(() => {
-    if (feedbackFilter === 'all') return feedbackList;
-    return feedbackList.filter(fb => fb.type === feedbackFilter);
-  }, [feedbackList, feedbackFilter]);
+    return feedbackList.filter(fb =>
+      (feedbackFilter === 'all' || fb.type === feedbackFilter) &&
+      matchesSearch(feedbackSearch, fb.content, fb.username, FEEDBACK_TYPE_MAP[fb.type]),
+    );
+  }, [feedbackList, feedbackFilter, feedbackSearch]);
   // 每个类型的数量（用于 chips 显示）
   const feedbackTypeCounts = useMemo(() => {
     const counts: Record<string, number> = { all: feedbackList.length, bug: 0, suggestion: 0, question: 0, general: 0 };
@@ -139,12 +143,6 @@ export default function Settings() {
     fetchFeedback()
       .then(d => {
         setFeedbackList(d);
-        // 初始化评论计数（通过单独查询或从数据推断）
-        d.forEach(fb => {
-          fetchComments(fb.id).then(comments => {
-            setCommentCounts(prev => ({ ...prev, [fb.id]: comments.length }));
-          }).catch(() => {});
-        });
       })
       .catch(() => {})
       .finally(() => setLoadingFeedback(false));
@@ -533,8 +531,8 @@ export default function Settings() {
         <WhatsNewModal entry={modalEntry} onClose={() => setModalEntry(null)} />
       )}
 
-      {/* ===== Account settings modal ===== */}
-      {accountModal && (
+      {/* Legacy duplicate account modal kept inert; the canonical modal is rendered below. */}
+      {false && accountModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center oto-overlay" onClick={closeAccountModal}>
           <div className="oto-modal max-w-md w-[92vw] mx-4 overflow-hidden" onClick={e => e.stopPropagation()}>
             <div className="px-6 pt-5 pb-3 flex-shrink-0" style={{ borderBottom: '1px solid var(--oto-border-light)', background: 'var(--oto-bg-card)' }}>
@@ -692,6 +690,11 @@ export default function Settings() {
                   </button>
                 );
               })}
+              <div className="flex items-center gap-2 ml-auto min-w-[180px] flex-1 md:flex-none md:w-56 oto-input" style={{ padding: '4px 8px' }}>
+                <Icon name="search" size={13} />
+                <input type="search" value={feedbackSearch} onChange={e => setFeedbackSearch(e.target.value)} placeholder="搜索反馈..."
+                  className="w-full border-none outline-none bg-transparent text-sm" style={{ color: 'var(--oto-text)' }} />
+              </div>
             </div>
             <div className="px-6 py-4 space-y-3 overflow-y-auto flex-1" style={{ background: 'var(--oto-bg-card)' }}>
               {loadingFeedback ? (

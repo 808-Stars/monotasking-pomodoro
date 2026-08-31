@@ -1,6 +1,9 @@
 import { supabase } from './supabase'
 import { RARITY_MAP } from '../types'
 import { localDate, localMonth } from '../utils/date'
+import { RequestCache } from './cache'
+import { assertValidGachaCount } from './gachaRules'
+import { getLogicalDayKey, getLogicalDayStartIso, getLogicalMonthStartIso, getMonthBounds, getWeekStartKey } from './queryBounds'
 
 const JOBS_MAP: Record<string, string> = {
   CLERIC: '牧师', SCHOLAR: '学者', MERCHANT: '商人', WARRIOR: '战士',
@@ -16,15 +19,12 @@ const JOB_ORDER: Record<string, number> = {
 // 简易内存缓存 — 避免每次切换页面都重新请求
 // TTL 默认 30 秒，切换页面时优先返回缓存数据
 // ============================================================
-const _cache = new Map<string, { data: any; ts: number }>()
 const CACHE_TTL = 30_000 // 30秒
+const requestCache = new RequestCache()
 
 async function cached<T>(key: string, fetcher: () => Promise<T>, ttl = CACHE_TTL): Promise<T> {
-  const entry = _cache.get(key)
-  if (entry && Date.now() - entry.ts < ttl) return entry.data as T
-  const data = await fetcher()
-  _cache.set(key, { data, ts: Date.now() })
-  return data
+  const scope = getUserIdFromStorage() ?? 'anonymous'
+  return requestCache.get(key, fetcher, ttl, scope)
 }
 
 // 用户缓存
@@ -72,22 +72,20 @@ async function currentUser() {
 export function clearAuthCache() {
   _cachedUser = null
   _cachedUserTs = 0
-  _cache.clear()
+  requestCache.clear()
 }
 
 /** 写操作后清除相关缓存（支持前缀匹配） */
 function invalidate(...keys: string[]) {
-  if (keys.length === 0) { _cache.clear(); return }
-  for (const k of keys) {
-    if (k.endsWith(':') || k.endsWith('-')) {
-      // prefix match: delete all keys starting with the prefix
-      for (const ck of _cache.keys()) {
-        if (ck.startsWith(k)) _cache.delete(ck)
-      }
-    } else {
-      _cache.delete(k)
-    }
+  const expanded = new Set(keys)
+  if (expanded.has('dashboard-stats')) {
+    expanded.add('dashboard-core')
+    expanded.add('dashboard-secondary')
   }
+  if (expanded.has('token-balance') || expanded.has('gacha-summary')) expanded.add('token-records')
+  if ([...expanded].some(key => ['tasks', 'pomo', 'daily-plan', 'today-plan', 'reviews', 'token'].some(prefix => key.startsWith(prefix)))) {
+  }
+  requestCache.invalidate(...expanded)
 }
 
 function flattenRecord(r: any) {
@@ -118,6 +116,7 @@ export async function fetchProjects() {
       .select('*, tasks(count)')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
+      .limit(100)
     return (data ?? []).map((p: any) => {
       // 只保留 projects 表的真实列 + 计算出的 task_count，
       // 丢弃 PostgREST 关系字段 tasks，避免被误传到 update/create
@@ -183,6 +182,7 @@ export async function fetchTasks(filters?: { status?: string; priority?: string;
     if (filters?.priority) query = query.eq('priority', filters.priority)
     if (filters?.project_id) query = query.eq('project_id', filters.project_id)
     if (filters?.search) query = query.ilike('name', `%${filters.search}%`)
+    query = query.limit(100)
     const { data } = await query
     return data ?? []
   })
@@ -254,6 +254,7 @@ export async function fetchPomodoroSessions(filters?: { task_id?: string; type?:
     if (filters?.task_id) query = query.eq('task_id', filters.task_id)
     if (filters?.type) query = query.eq('type', filters.type)
     if (filters?.status) query = query.eq('status', filters.status)
+    query = query.limit(100)
     const { data } = await query
     return data ?? []
   })
@@ -261,7 +262,7 @@ export async function fetchPomodoroSessions(filters?: { task_id?: string; type?:
 
 export async function createPomodoroSession(session: {
   task_id?: string | null; start_time: string; end_time?: string;
-  duration_minutes?: number; type?: string; status?: string; notes?: string
+  duration_minutes?: number; pomodoro_count?: number; type?: string; status?: string; notes?: string
 }) {
   const user = await currentUser()
   if (!user) throw new Error('Not authenticated')
@@ -274,15 +275,16 @@ export async function createPomodoroSession(session: {
 
   // 自动累加任务的 completed_pomodoros
   if (session.type === 'WORK' && session.status === 'COMPLETED') {
-    const { count } = await supabase
+    const { data: completedSessions } = await supabase
       .from('pomodoro_sessions')
-      .select('*', { count: 'exact', head: true })
+      .select('pomodoro_count, duration_minutes')
       .eq('task_id', session.task_id)
       .eq('type', 'WORK')
       .eq('status', 'COMPLETED')
+    const count = (completedSessions ?? []).reduce((sum, item) => sum + (item.pomodoro_count ?? Math.min(4, Math.floor((item.duration_minutes ?? 0) / 25))), 0)
     await supabase
       .from('tasks')
-      .update({ completed_pomodoros: count ?? 0 })
+      .update({ completed_pomodoros: count })
       .eq('id', session.task_id)
   }
 
@@ -300,31 +302,9 @@ export async function getPomodoroStats() {
   return cached('pomo-stats', async () => {
     const user = await currentUser()
     if (!user) return { today: 0, this_week: 0, this_month: 0, total: 0 }
-
-    const todayStr = localDate()
-    const weekD = new Date(); weekD.setDate(weekD.getDate() - weekD.getDay() + 1); const weekStr = weekD.toISOString().slice(0, 10)
-    const monthStr = localMonth() + '-01'
-
-    const [today, week, month, total] = await Promise.all([
-      supabase.from('pomodoro_sessions').select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id).eq('type', 'WORK').eq('status', 'COMPLETED')
-        .gte('start_time', todayStr),
-      supabase.from('pomodoro_sessions').select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id).eq('type', 'WORK').eq('status', 'COMPLETED')
-        .gte('start_time', weekStr),
-      supabase.from('pomodoro_sessions').select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id).eq('type', 'WORK').eq('status', 'COMPLETED')
-        .gte('start_time', monthStr),
-      supabase.from('pomodoro_sessions').select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id).eq('type', 'WORK').eq('status', 'COMPLETED'),
-    ])
-
-    return {
-      today: today.count ?? 0,
-      this_week: week.count ?? 0,
-      this_month: month.count ?? 0,
-      total: total.count ?? 0,
-    }
+    const { data, error } = await supabase.rpc('get_pomodoro_stats')
+    if (error) throw error
+    return data ?? { today: 0, this_week: 0, this_month: 0, total: 0 }
   })
 }
 
@@ -354,15 +334,19 @@ export async function fetchTodayPlan() {
   })
 }
 
-export async function fetchDailyPlans() {
-  return cached('daily-plans', async () => {
+export async function fetchDailyPlans(month = localMonth()) {
+  return cached(`daily-plans:${month}`, async () => {
     const user = await currentUser()
     if (!user) return []
+    const { start, end } = getMonthBounds(month)
     const { data } = await supabase
       .from('daily_plans')
       .select('*, tasks(name, status)')
       .eq('user_id', user.id)
+      .gte('date', start)
+      .lt('date', end)
       .order('date', { ascending: false })
+      .limit(31)
     return data ?? []
   })
 }
@@ -388,16 +372,17 @@ export async function deleteDailyPlan(id: string) {
 // ============================================================
 // Reviews
 // ============================================================
-export async function fetchReviews(type?: string) {
-  return cached(`reviews:${type || 'all'}`, async () => {
+export async function fetchReviews(type?: string, limit = 100) {
+  return cached(`reviews:${type || 'all'}:${limit}`, async () => {
     const user = await currentUser()
     if (!user) return []
     let query = supabase
       .from('reviews')
       .select('*')
       .eq('user_id', user.id)
-      .order('date', { ascending: false })
+    .order('date', { ascending: false })
     if (type) query = query.eq('type', type)
+    query = query.limit(limit)
     const { data } = await query
     return data ?? []
   })
@@ -446,6 +431,7 @@ export async function fetchQuickMemos() {
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
+      .limit(100)
     return data ?? []
   })
 }
@@ -526,13 +512,14 @@ export async function getTokenBalance() {
   return cached('token-balance', async () => {
     const user = await currentUser()
     if (!user) return { balance: 0, total_earned: 0, total_spent: 0 }
-    const ym = localMonth()
-    const { data } = await supabase
+    const monthStart = getLogicalMonthStartIso()
+    const { data, error } = await supabase
       .from('token_records')
       .select('amount')
       .eq('user_id', user.id)
       .eq('claimed', true)
-      .gte('created_at', `${ym}-01`)
+      .gte('created_at', monthStart)
+    if (error) throw error
     const records = data ?? []
     const earned = records.filter(r => r.amount > 0).reduce((s, r) => s + r.amount, 0)
     const spent = records.filter(r => r.amount < 0).reduce((s, r) => s + Math.abs(r.amount), 0)
@@ -544,26 +531,13 @@ export async function addTokenRecord(amount: number, source: string, claimed = t
   const user = await currentUser()
   if (!user) throw new Error('Not authenticated')
 
-  // 日任务限一次：同 source 今日已有记录则跳过
-  if (daily) {
-    const todayStr = localDate()
-    const { data: existing } = await supabase
-      .from('token_records')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('source', source)
-      .gte('created_at', todayStr)
-      .limit(1)
-    if (existing && existing.length > 0) return existing[0]
-  }
-
-  const { data, error } = await supabase
-    .from('token_records')
-    .insert({ amount, source, claimed, user_id: user.id })
-    .select()
-    .single()
+  const { data, error } = await supabase.rpc('grant_token_reward', {
+    p_source: source,
+    p_amount: amount,
+    p_daily: daily,
+  })
   if (error) throw error
-  invalidate('token-balance', 'daily-tasks', 'today-counts', 'dashboard-stats', 'showcase-current')
+  invalidate('token-balance', 'gacha-summary', 'daily-tasks', 'today-counts', 'dashboard-stats', 'showcase-current')
   return data
 }
 
@@ -571,12 +545,13 @@ export async function fetchTokenRecords(limit = 20) {
   return cached(`token-records:${limit}`, async () => {
     const user = await currentUser()
     if (!user) return []
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('token_records')
       .select('id, amount, source, created_at')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(limit)
+    if (error) throw error
     return data ?? []
   })
 }
@@ -594,12 +569,14 @@ export async function getDailyTasks() {
     }
 
     const todayStr = localDate()
-    const { data } = await supabase
+    const dayStart = getLogicalDayStartIso()
+    const { data, error } = await supabase
       .from('token_records')
       .select('source, amount, claimed')
       .eq('user_id', user.id)
-      .gte('created_at', todayStr)
+      .gte('created_at', dayStart)
       .gt('amount', 0)
+    if (error) throw error
 
     const records = data ?? []
     const sourceMap: Record<string, { total: number; pending: number }> = {}
@@ -632,22 +609,25 @@ export async function getTodayCounts() {
     const user = await currentUser()
     if (!user) return {}
     const todayStr = localDate()
-    const { data } = await supabase
+    const dayStart = getLogicalDayStartIso()
+    const { data, error } = await supabase
       .from('token_records')
       .select('source')
       .eq('user_id', user.id)
-      .gte('created_at', todayStr)
+      .gte('created_at', dayStart)
       .gt('amount', 0)
+    if (error) throw error
     const counts: Record<string, any> = {}
     data?.forEach(r => { counts[r.source] = (counts[r.source] ?? 0) + 1 })
     // Check free pull
-    const { data: freePull } = await supabase
+    const { data: freePull, error: freePullError } = await supabase
       .from('token_records')
       .select('id')
       .eq('user_id', user.id)
       .eq('source', '每日首免')
-      .gte('created_at', todayStr)
+      .gte('created_at', dayStart)
       .limit(1)
+    if (freePullError) throw freePullError
     counts['_free_pull_used'] = (freePull && freePull.length > 0) ? true : false
     return counts
   })
@@ -656,37 +636,21 @@ export async function getTodayCounts() {
 export async function claimDailyTokens(source: string) {
   const user = await currentUser()
   if (!user) return 0
-  const todayStr = localDate()
-  const { data, error } = await supabase
-    .from('token_records')
-    .update({ claimed: true, claimed_at: new Date().toISOString() })
-    .eq('user_id', user.id)
-    .eq('source', source)
-    .eq('claimed', false)
-    .gte('created_at', todayStr)
-    .select()
+  const { data, error } = await supabase.rpc('claim_daily_rewards', { p_source: source })
   if (error) throw error
-  invalidate('token-balance', 'daily-tasks')
+  invalidate('token-balance', 'gacha-summary', 'daily-tasks')
   const balance = await getTokenBalance()
-  return { claimed: data?.length ?? 0, balance: balance.balance }
+  return { claimed: data ?? 0, balance: balance.balance }
 }
 
 export async function claimAllDailyTokens() {
   const user = await currentUser()
   if (!user) return { claimed: 0, balance: 0 }
-  const todayStr = localDate()
-  const { data, error } = await supabase
-    .from('token_records')
-    .update({ claimed: true, claimed_at: new Date().toISOString() })
-    .eq('user_id', user.id)
-    .eq('claimed', false)
-    .gt('amount', 0)
-    .gte('created_at', todayStr)
-    .select()
+  const { data, error } = await supabase.rpc('claim_daily_rewards', { p_source: null })
   if (error) throw error
-  invalidate('token-balance', 'daily-tasks')
+  invalidate('token-balance', 'gacha-summary', 'daily-tasks')
   const balance = await getTokenBalance()
-  return { claimed: data?.length ?? 0, balance: balance.balance }
+  return { claimed: data ?? 0, balance: balance.balance }
 }
 
 // ============================================================
@@ -707,7 +671,7 @@ export async function fetchGachaItems() {
       .from('gacha_records')
       .select('item_id')
       .eq('user_id', user.id)
-      .gte('created_at', `${ym}-01`)
+      .gte('created_at', getLogicalMonthStartIso())
 
     const ownedMap: Record<string, number> = {}
     records?.forEach(r => {
@@ -721,8 +685,8 @@ export async function fetchGachaItems() {
   })
 }
 
-export async function fetchGachaRecords() {
-  return cached('gacha-records', async () => {
+export async function fetchGachaRecords(limit = 100) {
+  return cached(`gacha-records:${limit}`, async () => {
     const user = await currentUser()
     if (!user) return []
     const { data } = await supabase
@@ -730,6 +694,7 @@ export async function fetchGachaRecords() {
       .select('*, gacha_items(name, description, rarity, job, emoji)')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
+      .limit(limit)
     return (data ?? []).map(flattenRecord)
   })
 }
@@ -737,13 +702,9 @@ export async function fetchGachaRecords() {
 export async function gachaPull(count: 1 | 10) {
   const user = await currentUser()
   if (!user) throw new Error('Not authenticated')
+  assertValidGachaCount(count)
 
-  const { data, error } = await supabase.rpc('gacha_pull', {
-    p_user_id: user.id,
-    p_count: count,
-    p_today: localDate(),
-    p_ym: localMonth(),
-  })
+  const { data, error } = await supabase.rpc('gacha_pull', { p_count: count })
   if (error) throw new Error(error.message)
 
   // RPC 返回的已经是扁平结构，不需要 flattenRecord
@@ -753,7 +714,7 @@ export async function gachaPull(count: 1 | 10) {
     item_job_display: r.item_job ? JOBS_MAP[r.item_job] : undefined,
   }))
 
-  invalidate('token-balance', 'gacha-items', 'gacha-records', 'ssr-target', 'showcase-current')
+  invalidate('token-balance', 'gacha-summary', 'gacha-items', 'gacha-records', 'ssr-target', 'showcase-current')
   return {
     results,
     balance: (data as any).balance,
@@ -779,7 +740,7 @@ export async function getSSRTargetStatus() {
       .from('gacha_records')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', user.id)
-      .gte('created_at', `${ym}-01`)
+      .gte('created_at', getLogicalMonthStartIso())
     const totalPulls = count ?? 0
     const eligible = totalPulls >= 300
 
@@ -790,11 +751,10 @@ export async function getSSRTargetStatus() {
         .from('gacha_ssr_targets')
         .select('*')
         .eq('user_id', user.id)
+        .eq('year_month', ym)
         .single()
       if (data) {
-        if (data.year_month !== ym) {
-          await supabase.from('gacha_ssr_targets').delete().eq('id', data.id)
-        } else if (data.consumed) {
+        if (data.consumed) {
           monthlyUsed = true
         } else {
           // 分步获取物品信息
@@ -820,6 +780,15 @@ export async function getSSRTargetStatus() {
 }
 
 export async function setSSRTarget(targetItemId: string) {
+  const user = await currentUser()
+  if (!user) throw new Error('Not authenticated')
+  const { error } = await supabase.rpc('set_ssr_target', { p_target_item_id: targetItemId })
+  if (error) throw error
+  invalidate('ssr-target', 'gacha-summary')
+  return getSSRTargetStatus()
+}
+
+async function setSSRTargetLegacy(targetItemId: string) {
   const user = await currentUser()
   if (!user) throw new Error('Not authenticated')
 
@@ -862,15 +831,16 @@ export async function setSSRTarget(targetItemId: string) {
     })
   }
 
-  invalidate('ssr-target')
+  invalidate('ssr-target', 'gacha-summary')
   return getSSRTargetStatus()
 }
 
 export async function clearSSRTarget() {
   const user = await currentUser()
   if (!user) return
-  await supabase.from('gacha_ssr_targets').delete().eq('user_id', user.id)
-  invalidate('ssr-target')
+  const { error } = await supabase.rpc('clear_ssr_target')
+  if (error) throw error
+  invalidate('ssr-target', 'gacha-summary')
 }
 
 // ============================================================
@@ -881,10 +851,12 @@ export async function getWeeklyTasks() {
     const user = await currentUser()
     if (!user) return { tasks: [], week_start: '', week_earned: 0, week_target: 0 }
 
-    const now = new Date(); const wsD = new Date(now); wsD.setDate(wsD.getDate() - wsD.getDay() + 1); const ws = wsD.toISOString().slice(0, 10)
-    const weDate = new Date(ws + 'T00:00:00')
-    weDate.setDate(weDate.getDate() + 7)
+    const ws = getWeekStartKey()
+    const weDate = new Date(`${ws}T12:00:00Z`)
+    weDate.setUTCDate(weDate.getUTCDate() + 7)
     const we = weDate.toISOString().slice(0, 10)
+    const weekStartIso = getLogicalDayStartIso(new Date(`${ws}T12:00:00+08:00`))
+    const weekEndIso = getLogicalDayStartIso(new Date(`${we}T12:00:00+08:00`))
 
     const WEEKLY_TASKS = [
       { key: 'core_5_days', name: '完成核心任务 5 天', desc: '本周至少 5 天完成核心任务', amount: 400, icon: 'target', target: 5 },
@@ -893,11 +865,12 @@ export async function getWeeklyTasks() {
       { key: 'streak_7', name: '连续打卡 7 天', desc: '每天至少 1 次获得代币', amount: 400, icon: 'star', target: 7 },
     ]
 
-    const { data: claims } = await supabase
+    const { data: claims, error: claimsError } = await supabase
       .from('weekly_task_claims')
       .select('task_key')
       .eq('user_id', user.id)
       .eq('week_start', ws)
+    if (claimsError) throw claimsError
     const claimedKeys = new Set(claims?.map(c => c.task_key) ?? [])
 
     const tasks = await Promise.all(WEEKLY_TASKS.map(async t => {
@@ -916,7 +889,7 @@ export async function getWeeklyTasks() {
           .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id)
           .eq('type', 'WORK').eq('status', 'COMPLETED')
-          .gte('start_time', ws).lt('start_time', we)
+          .gte('start_time', weekStartIso).lt('start_time', weekEndIso)
         progress = count ?? 0
       } else if (t.key === 'reviews_3') {
         const [daily, weekly] = await Promise.all([
@@ -927,26 +900,7 @@ export async function getWeeklyTasks() {
         ])
         progress = Math.min(daily.count ?? 0, 3) + Math.min(weekly.count ?? 0, 1)
       } else if (t.key === 'streak_7') {
-        let streak = 0
-        const todayLogical = localDate()
-        const todayStart = new Date(new Date(todayLogical + 'T00:00:00').getTime() + 4 * 3600_000)
-        const weekStart = new Date(todayStart); weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1)
-        for (let i = 0; i < 7; i++) {
-          const dayStart = new Date(todayStart.getTime() - i * 86400_000)
-          if (dayStart < weekStart) break
-          const dayEnd = new Date(dayStart.getTime() + 86400_000)
-          const { data: recs } = await supabase
-            .from('token_records')
-            .select('source')
-            .eq('user_id', user.id)
-            .gt('amount', 0)
-            .gte('created_at', dayStart.toISOString())
-            .lt('created_at', dayEnd.toISOString())
-          const cnt = (recs ?? []).filter(r => STREAK_SOURCES.includes(r.source)).length
-          if (cnt > 0) streak++
-          else break
-        }
-        progress = Math.min(streak, 7)
+        progress = Math.min(await getUserWeekStreak(), 7)
       }
 
       let claimed = claimedKeys.has(t.key)
@@ -954,30 +908,18 @@ export async function getWeeklyTasks() {
       // 自动发放：进度达标且未领取
       if (!claimed && progress >= t.target) {
         try {
-          const { data: existingClaim } = await supabase
-            .from('weekly_task_claims')
-            .select('id')
-            .eq('user_id', user.id)
-            .eq('task_key', t.key)
-            .eq('week_start', ws)
-            .limit(1)
-          if (!existingClaim || existingClaim.length === 0) {
-            await supabase.from('weekly_task_claims').insert({
-              user_id: user.id, task_key: t.key, week_start: ws, amount: t.amount,
-            })
-            await addTokenRecord(t.amount, `周任务·${t.name}`)
-            claimed = true
-          } else {
-            claimed = true
-          }
+          const { error } = await supabase.rpc('claim_weekly_task', { p_task_key: t.key })
+          if (error) throw error
+          claimed = true
+          claimedKeys.add(t.key)
         } catch { /* 发放失败，保留 claimed=false，can_claim 为 true 供手动领取 */ }
       }
 
       return { ...t, progress, claimed, can_claim: !claimed && progress >= t.target }
     }))
 
-    const weekEarned = claims?.reduce((s, c) => {
-      const task = WEEKLY_TASKS.find(t => t.key === c.task_key)
+    const weekEarned = [...claimedKeys].reduce((s, taskKey) => {
+      const task = WEEKLY_TASKS.find(t => t.key === taskKey)
       return s + (task?.amount ?? 0)
     }, 0) ?? 0
 
@@ -988,118 +930,34 @@ export async function getWeeklyTasks() {
 export async function claimWeeklyTask(taskKey: string) {
   const user = await currentUser()
   if (!user) throw new Error('Not authenticated')
-
-  const now = new Date(); const wsD = new Date(now); wsD.setDate(wsD.getDate() - wsD.getDay() + 1); const ws = wsD.toISOString().slice(0, 10)
-  const weDate = new Date(ws + 'T00:00:00')
-  weDate.setDate(weDate.getDate() + 7)
-  const we = weDate.toISOString().slice(0, 10)
-
-  const { data: existing } = await supabase
-    .from('weekly_task_claims')
-    .select('id')
-    .eq('user_id', user.id)
-    .eq('task_key', taskKey)
-    .eq('week_start', ws)
-    .limit(1)
-  if (existing && existing.length > 0) throw new Error('已领取')
-
-  const WEEKLY_TASKS: Record<string, number> = {
-    core_5_days: 400, pomodoros_25: 400, reviews_3: 200, streak_7: 400,
-  }
-  const WEEKLY_TARGETS: Record<string, number> = {
-    core_5_days: 5, pomodoros_25: 40, reviews_3: 4, streak_7: 7,
-  }
-  const WEEKLY_SOURCE_NAMES: Record<string, string> = {
-    core_5_days: '完成核心任务 5 天', pomodoros_25: '番茄钟 40 个',
-    reviews_3: '写日记3篇+周记1篇', streak_7: '连续打卡 7 天',
-  }
-
-  const amount = WEEKLY_TASKS[taskKey] ?? 0
-  const target = WEEKLY_TARGETS[taskKey] ?? 0
-
-  // Recalculate progress and validate
-  let progress = 0
-  if (taskKey === 'core_5_days') {
-    const { count } = await supabase
-      .from('daily_plans').select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id).gte('date', ws).lt('date', we)
-      .in('status', ['COMPLETED', 'REVIEWED'])
-    progress = Math.min(count ?? 0, 5)
-  } else if (taskKey === 'pomodoros_25') {
-    const { count } = await supabase
-      .from('pomodoro_sessions').select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id).eq('type', 'WORK').eq('status', 'COMPLETED')
-      .gte('start_time', ws).lt('start_time', we)
-    progress = count ?? 0
-  } else if (taskKey === 'reviews_3') {
-    const [daily, weekly] = await Promise.all([
-      supabase.from('reviews').select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id).eq('type', 'DAILY').gte('date', ws).lt('date', we),
-      supabase.from('reviews').select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id).eq('type', 'WEEKLY').gte('date', ws).lt('date', we),
-    ])
-    progress = Math.min(daily.count ?? 0, 3) + Math.min(weekly.count ?? 0, 1)
-  } else if (taskKey === 'streak_7') {
-    let streak = 0
-    const todayLogical = localDate()
-    const todayStart = new Date(new Date(todayLogical + 'T00:00:00').getTime() + 4 * 3600_000)
-    const weekStart = new Date(todayStart); weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1)
-    for (let i = 0; i < 7; i++) {
-      const dayStart = new Date(todayStart.getTime() - i * 86400_000)
-      if (dayStart < weekStart) break
-      const dayEnd = new Date(dayStart.getTime() + 86400_000)
-      const { data: recs } = await supabase
-        .from('token_records').select('source')
-        .eq('user_id', user.id).gt('amount', 0)
-        .gte('created_at', dayStart.toISOString()).lt('created_at', dayEnd.toISOString())
-      const cnt = (recs ?? []).filter(r => STREAK_SOURCES.includes(r.source)).length
-      if (cnt > 0) streak++
-      else break
-    }
-    progress = Math.min(streak, 7)
-  }
-
-  if (progress < target) throw new Error(`进度不足：当前 ${progress}/${target}`)
-
-  const sourceName = WEEKLY_SOURCE_NAMES[taskKey] ?? `周任务·${taskKey}`
-
-  await supabase.from('weekly_task_claims').insert({
-    user_id: user.id, task_key: taskKey, week_start: ws, amount,
-  })
-  await addTokenRecord(amount, `周任务·${sourceName}`)
-  invalidate('token-balance', 'weekly-tasks')
-  return amount
+  const { data, error } = await supabase.rpc('claim_weekly_task', { p_task_key: taskKey })
+  if (error) throw error
+  invalidate('token-balance', 'gacha-summary', 'weekly-tasks')
+  return data as number
 }
 
 // ============================================================
 // Streak Task（连续打卡）— 与工作看板的连续打卡天数同步
 // 自动发放：与日任务一致，无需手动领取
 // ============================================================
-const STREAK_SOURCES = [
-  '首次番茄钟', '休息', '创建任务', '完成任务', '确定核心任务',
-  '晨间规划', '晚间回顾', '每日计划完成', '写笔记', '创建清单',
-  '完成清单', '抽扭蛋', '番茄钟',
-]
+async function getUserStreak(): Promise<number> {
+  const { data, error } = await supabase.rpc('get_user_streak')
+  if (error) throw error
+  return Number(data ?? 0)
+}
 
-async function computeStreak(userId: string): Promise<number> {
-  let streak = 0
-  // 以 localDate() 的4AM偏移为基准，构建每个逻辑日的 UTC 时间范围
-  const todayLogical = localDate()
-  const todayStart = new Date(new Date(todayLogical + 'T00:00:00').getTime() + 4 * 3600_000)
+export async function getGachaSummary() {
+  return cached('gacha-summary', async () => {
+    const { data, error } = await supabase.rpc('get_gacha_summary')
+    if (error) throw error
+    return data
+  })
+}
 
-  for (let i = 0; i < 365; i++) {
-    const dayStart = new Date(todayStart.getTime() - i * 86400_000)
-    const dayEnd = new Date(dayStart.getTime() + 86400_000)
-    const { data } = await supabase.from('token_records')
-      .select('source')
-      .eq('user_id', userId).gt('amount', 0)
-      .gte('created_at', dayStart.toISOString())
-      .lt('created_at', dayEnd.toISOString())
-    const count = (data ?? []).filter(r => STREAK_SOURCES.includes(r.source)).length
-    if (count > 0) streak++
-    else break
-  }
-  return streak
+async function getUserWeekStreak(): Promise<number> {
+  const { data, error } = await supabase.rpc('get_user_week_streak')
+  if (error) throw error
+  return Number(data ?? 0)
 }
 
 export async function getStreakTaskStatus() {
@@ -1107,14 +965,14 @@ export async function getStreakTaskStatus() {
     const user = await currentUser()
     if (!user) return { streak: 0, amount: 0, distributed: true }
 
-    const streak = await computeStreak(user.id)
+    const streak = await getUserStreak()
     const amount = streak * 10
 
     if (streak === 0) return { streak: 0, amount: 0, distributed: true }
 
     // daily=true 保证同一 source 同一天只插入一次，从根源避免并发重复
     await addTokenRecord(amount, '连续打卡', true, true)
-    invalidate('token-balance', 'streak-task', 'dashboard-stats', 'today-counts', 'showcase-current')
+    invalidate('token-balance', 'gacha-summary', 'streak-task', 'dashboard-stats', 'today-counts', 'showcase-current')
     return { streak, amount, distributed: true }
   })
 }
@@ -1126,60 +984,9 @@ export async function getShowcaseCurrent() {
   return cached('showcase-current', async () => {
     const user = await currentUser()
     if (!user) return null
-
-    const ym = localMonth()
-
-    const [balance, pomoCount, gachaData] = await Promise.all([
-      getTokenBalance(),
-      supabase.from('pomodoro_sessions').select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id).eq('type', 'WORK').eq('status', 'COMPLETED')
-        .gte('start_time', `${ym}-01`),
-      supabase.from('gacha_records')
-        .select('item_id, gacha_items(rarity)')
-        .eq('user_id', user.id)
-        .gte('created_at', `${ym}-01`),
-    ])
-
-    const bountyTotal = balance.total_earned
-    const pomodoroTotal = pomoCount.count ?? 0
-
-    // 计算稀有度完成度
-    const rarityOrder = ['N', 'R', 'SR', 'SSR']
-    const collectedItemIds = new Set(gachaData.data?.map((r: any) => r.item_id) ?? [])
-    const allGachaItems = await supabase.from('gacha_items').select('id, rarity')
-    let rarityCompletion = 0
-    let rarityValue = 0  // 最高已完整集齐的稀有度索引
-    for (let i = 0; i < rarityOrder.length; i++) {
-      const r = rarityOrder[i]
-      const itemsOfRarity = allGachaItems.data?.filter(item => item.rarity === r) ?? []
-      const totalInRarity = itemsOfRarity.length
-      const collected_in_rarity = itemsOfRarity.filter(item => collectedItemIds.has(item.id)).length
-      if (collected_in_rarity >= totalInRarity && totalInRarity > 0) {
-        rarityCompletion++
-        rarityValue = i
-      } else {
-        break
-      }
-    }
-
-    function calcLevel(total: number, thresholds: number[]) {
-      let level = 0
-      for (let i = 0; i < thresholds.length; i++) {
-        if (total >= thresholds[i]) level = i + 1
-      }
-      return level
-    }
-
-    return {
-      year_month: ym,
-      bounty_level: calcLevel(bountyTotal, [3000, 9800, 19800, 32800]),
-      pomodoro_level: calcLevel(pomodoroTotal, [30, 60, 120, 240]),
-      trophy_level: Math.min(rarityCompletion, 4),
-      bounty_value: bountyTotal,
-      pomodoro_value: pomodoroTotal,
-      trophy_value: rarityValue,
-      thresholds: { bounty: [0, 3000, 9800, 19800, 32800], pomodoro: [0, 30, 60, 120, 240] },
-    }
+    const { data, error } = await supabase.rpc('get_showcase_current')
+    if (error) throw error
+    return data
   })
 }
 
@@ -1187,13 +994,17 @@ export async function getShowcaseSnapshots(year?: string) {
   return cached(`showcase-snapshots:${year || 'all'}`, async () => {
     const user = await currentUser()
     if (!user) return { snapshots: [], years: [] }
-    let query = supabase.from('showcase_snapshots').select('*').eq('user_id', user.id)
-    if (year) query = query.like('year_month', `${year}-%`)
-    const { data } = await query.order('year_month', { ascending: false })
+    const { data, error } = await supabase
+      .from('showcase_snapshots')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('year_month', { ascending: false })
+    if (error) throw error
     const years = [...new Set(data?.map(s => s.year_month.slice(0, 4)) ?? [])]
     const currentYear = String(new Date().getFullYear())
     if (!years.includes(currentYear)) years.push(currentYear)
-    return { snapshots: data ?? [], years }
+    const snapshots = year ? (data ?? []).filter(s => s.year_month.startsWith(`${year}-`)) : (data ?? [])
+    return { snapshots, years, last_snapshot_at: data?.[0]?.snapshot_at ?? null }
   })
 }
 
@@ -1202,7 +1013,7 @@ export async function snapshotShowcaseNow() {
   if (!current) return { ok: false }
   const user = await currentUser()
   if (!user) return { ok: false }
-  const { data: snap } = await supabase.from('showcase_snapshots').upsert({
+  const { data: snap, error } = await supabase.from('showcase_snapshots').upsert({
     user_id: user.id,
     year_month: current.year_month,
     bounty_level: current.bounty_level,
@@ -1211,7 +1022,9 @@ export async function snapshotShowcaseNow() {
     bounty_value: current.bounty_value,
     pomodoro_value: current.pomodoro_value,
     trophy_value: current.trophy_value,
+    snapshot_at: new Date().toISOString(),
   }, { onConflict: 'user_id,year_month' }).select('id').single()
+  if (error) throw error
   invalidate('showcase-snapshots')
   return { ok: true, snapshot_id: snap?.id }
 }
@@ -1221,61 +1034,25 @@ export async function snapshotShowcaseNow() {
 // ============================================================
 export async function getDashboardStats() {
   return cached('dashboard-stats', async () => {
-    const user = await currentUser()
-    if (!user) return null
+    const { data, error } = await supabase.rpc('get_dashboard_summary')
+    if (error) throw error
+    return data
+  })
+}
 
-    const todayStr = localDate()
+export async function getDashboardCore() {
+  return cached('dashboard-core', async () => {
+    const { data, error } = await supabase.rpc('get_dashboard_core')
+    if (error) throw error
+    return data
+  })
+}
 
-    const [todayPlan, tasks, pomodoros, projects, todaySessions, streak] = await Promise.all([
-      fetchTodayPlan(),
-      supabase.from('tasks').select('status, updated_at').eq('user_id', user.id),
-      getPomodoroStats(),
-      supabase.from('projects').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'ACTIVE'),
-      supabase.from('pomodoro_sessions')
-        .select('id, tasks(name), type, status, duration_minutes, start_time, end_time')
-        .eq('user_id', user.id)
-        .gte('start_time', todayStr)
-        .order('start_time', { ascending: false })
-        .limit(10),
-      // 连续打卡天数
-      (async () => {
-        let streak = 0
-        const todayLogical = localDate()
-        const todayStart = new Date(new Date(todayLogical + 'T00:00:00').getTime() + 4 * 3600_000)
-        for (let i = 0; i < 365; i++) {
-          const dayStart = new Date(todayStart.getTime() - i * 86400_000)
-          const dayEnd = new Date(dayStart.getTime() + 86400_000)
-          const { data: recs } = await supabase.from('token_records').select('source')
-            .eq('user_id', user.id).gt('amount', 0)
-            .gte('created_at', dayStart.toISOString()).lt('created_at', dayEnd.toISOString())
-          const cnt = (recs ?? []).filter(r => STREAK_SOURCES.includes(r.source)).length
-          if (cnt > 0) streak++
-          else break
-        }
-        return streak
-      })(),
-    ])
-
-    const taskList = tasks.data ?? []
-    const weekD = new Date(); weekD.setDate(weekD.getDate() - weekD.getDay() + 1); const weekStr = weekD.toISOString().slice(0, 10)
-    const monthStr = localMonth() + '-01'
-    const doneTasks = taskList.filter(t => t.status === 'DONE')
-    return {
-      today_plan: todayPlan,
-      tasks: {
-        total: taskList.length,
-        todo: taskList.filter(t => t.status === 'TODO').length,
-        in_progress: taskList.filter(t => t.status === 'IN_PROGRESS').length,
-        completed: doneTasks.length,
-        today_completed: doneTasks.filter((t: any) => t.updated_at && t.updated_at >= todayStr).length,
-        week_completed: doneTasks.filter((t: any) => t.updated_at && t.updated_at >= weekStr).length,
-        month_completed: doneTasks.filter((t: any) => t.updated_at && t.updated_at >= monthStr).length,
-      },
-      pomodoros,
-      projects: { active: projects.count ?? 0 },
-      today_sessions: todaySessions.data ?? [],
-      streak,
-    }
+export async function getDashboardSecondary() {
+  return cached('dashboard-secondary', async () => {
+    const { data, error } = await supabase.rpc('get_dashboard_secondary')
+    if (error) throw error
+    return data
   })
 }
 
@@ -1288,11 +1065,9 @@ export async function getDailyEarned(month: string) {
     if (!user) return { month, days: {}, rarities: {}, pomodoros: {}, month_total: 0, month_pomodoros: 0 }
 
     const [year, m] = month.split('-').map(Number)
-    const first = `${month}-01`
-    const lastDay = new Date(year, m, 0).getDate()
-    const last = `${month}-${String(lastDay).padStart(2, '0')}`
-    // nextDayStart = first day of next month for exclusive upper bound
-    const nextMonth = m === 12 ? `${year + 1}-01-01` : `${year}-${String(m + 1).padStart(2, '0')}-01`
+    const first = getLogicalMonthStartIso(new Date(`${month}-01T12:00:00+08:00`))
+    const nextMonthKey = m === 12 ? `${year + 1}-01` : `${year}-${String(m + 1).padStart(2, '0')}`
+    const nextMonth = getLogicalMonthStartIso(new Date(`${nextMonthKey}-01T12:00:00+08:00`))
 
     const [tokens, gacha, pomo] = await Promise.all([
       supabase.from('token_records').select('amount, created_at')
@@ -1308,13 +1083,13 @@ export async function getDailyEarned(month: string) {
 
     const days: Record<string, number> = {}
     tokens.data?.forEach(r => {
-      const d = r.created_at.slice(0, 10)
+      const d = getLogicalDayKey(r.created_at)
       days[d] = (days[d] ?? 0) + r.amount
     })
 
     const rarities: Record<string, string> = {}
     gacha.data?.forEach((r: any) => {
-      const d = r.created_at.slice(0, 10)
+      const d = getLogicalDayKey(r.created_at)
       const rarity = r.gacha_items?.rarity
       if (rarity && (!rarities[d] || ['N', 'R', 'SR', 'SSR'].indexOf(rarity) > ['N', 'R', 'SR', 'SSR'].indexOf(rarities[d]))) {
         rarities[d] = rarity
@@ -1323,7 +1098,7 @@ export async function getDailyEarned(month: string) {
 
     const pomodoros: Record<string, number> = {}
     pomo.data?.forEach(r => {
-      const d = r.start_time.slice(0, 10)
+      const d = getLogicalDayKey(r.start_time)
       pomodoros[d] = (pomodoros[d] ?? 0) + 1
     })
 

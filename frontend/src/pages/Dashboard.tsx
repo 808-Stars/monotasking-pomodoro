@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { getDashboardStats, fetchTodayPlan, updateDailyPlan, addTokenRecord } from '../services/api';
+import { getDashboardCore, getDashboardSecondary, updateDailyPlan, addTokenRecord } from '../services/api';
 import type { DashboardStats, DailyPlan } from '../types';
 import { TASK_STATUS_MAP, DAILY_PLAN_STATUS_MAP } from '../types';
 import StatusBadge from '../components/StatusBadge';
@@ -17,6 +17,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [todayPlan, setTodayPlan] = useState<DailyPlan | null>(null);
   const [loading, setLoading] = useState(true);
+  const [secondaryLoading, setSecondaryLoading] = useState(true);
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
@@ -25,17 +26,31 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    Promise.all([
-      getDashboardStats(),
-      fetchTodayPlan().catch(() => null),
-    ]).then(([s, p]) => { setStats(s as any); setTodayPlan(p); setLoading(false); });
+    getDashboardCore().then((core) => {
+      if (!core) {
+        setLoading(false);
+        setSecondaryLoading(false);
+        return;
+      }
+      const s = { ...core, projects: { active: 0 }, today_sessions: [] } as DashboardStats;
+      setStats(s);
+      setTodayPlan(core.today_plan ?? null);
+      setLoading(false);
+      getDashboardSecondary().then((secondary) => {
+        setStats((current) => current ? { ...current, ...secondary } : current);
+        setSecondaryLoading(false);
+      }).catch(() => setSecondaryLoading(false));
+    }).catch(() => {
+      setLoading(false);
+      setSecondaryLoading(false);
+    });
   }, []);
 
   const completePlan = async () => {
     if (!todayPlan) return;
     const updated = await updateDailyPlan(todayPlan.id, { status: 'COMPLETED' });
     setTodayPlan(updated);
-    if (stats) setStats({ ...stats, today_plan: { ...stats.today_plan, status: 'COMPLETED', status_display: '已完成' } });
+    if (stats?.today_plan) setStats({ ...stats, today_plan: { ...stats.today_plan, status: 'COMPLETED', status_display: '已完成' } });
     // Token reward for daily plan completion
     addTokenRecord(60, '每日计划完成', true, true).catch(() => {});
   };
@@ -147,7 +162,7 @@ export default function Dashboard() {
               {[
                 { v: stats.tasks.todo, l: '待办任务' },
                 { v: stats.tasks.in_progress, l: '进行中' },
-                { v: stats.projects.active, l: '待办项目' },
+                { v: secondaryLoading ? '…' : stats.projects.active, l: '待办项目' },
               ].map(s => (
                 <div key={s.l} className="text-center p-2 oto-inset">
                   <p style={{ fontFamily: 'var(--oto-font-body)', fontSize: '20px', fontWeight: 'bold', color: 'var(--oto-text-dim)' }}>{s.v}</p>
@@ -224,7 +239,9 @@ export default function Dashboard() {
         <div className="oto-window p-5 oto-card-stamped oto-stitch-corner">
           <h3 className="oto-title-flourish" style={{ ...pxH2, fontSize: '11px', color: 'var(--oto-text)' }}><Icon name="tomato" size={14} /> 今日番茄记录</h3>
           <div className="mt-4">
-            {stats.today_sessions.length > 0 ? (
+            {secondaryLoading ? (
+              <p style={{ ...pxBody, color: 'var(--oto-text-muted)' }} className="text-center py-8">正在加载今日记录…</p>
+            ) : stats.today_sessions.length > 0 ? (
               <div className="space-y-2">
                 {stats.today_sessions.map(s => (
                   <div key={s.id} className="flex items-center py-2 hover:brightness-105 transition-all" style={{

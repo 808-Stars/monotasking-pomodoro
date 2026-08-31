@@ -51,6 +51,17 @@ button, [role="button"], a { cursor: pointer; }
   --oto-page-header-red: var(--oto-bg-card);
 }
 
+/* Keep the custom duration field aligned with the themed timer face. */
+.pomodoro-custom-minutes::-webkit-inner-spin-button,
+.pomodoro-custom-minutes::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.pomodoro-custom-minutes {
+  -moz-appearance: textfield;
+}
+
 body::after {
   content: '';
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;

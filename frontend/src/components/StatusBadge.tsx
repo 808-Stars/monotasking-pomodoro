@@ -22,13 +22,13 @@ const STATUS_COLORS: Record<string, { bg: string; color: string; border: string 
   MONTHLY:       { bg: '#e4dce8', color: '#504868', border: '#786890' },
 };
 
-interface StatusBadgeProps { label: string; status: string; }
+interface StatusBadgeProps { label: string; status: string; className?: string; }
 
-export default function StatusBadge({ label, status }: StatusBadgeProps) {
+export default function StatusBadge({ label, status, className = '' }: StatusBadgeProps) {
   const c = STATUS_COLORS[status] || { bg: '#f4e8d4', color: 'var(--oto-text-dim)', border: '#c8a040' };
   return (
     <span
-      className="inline-block px-2 py-0.5 font-semibold"
+      className={`inline-block px-2 py-0.5 font-semibold ${className}`}
       style={{
         fontFamily: 'var(--oto-font-body)',
         fontSize: '11px', letterSpacing: '0.04em',

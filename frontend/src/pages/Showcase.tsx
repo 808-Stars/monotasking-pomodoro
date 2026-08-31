@@ -7,6 +7,7 @@ import {
   snapshotShowcaseNow,
 } from '../services/api';
 import { useOnboarding } from '../contexts/OnboardingContext';
+import { formatShanghaiDateTime } from '../services/queryBounds';
 
 /* Trophy descriptions */
 const RARITY_NAMES = ['N（普通）', 'R（稀有）', 'SR（史诗）', 'SSR（传说）'];
@@ -43,7 +44,7 @@ interface ShowcaseSnapshot {
   bounty_value: number;
   pomodoro_value: number;
   trophy_value: number;
-  created_at: string;
+  snapshot_at: string;
 }
 
 interface ShowcaseCurrent {
@@ -166,6 +167,7 @@ export default function Showcase() {
   const [year, setYear] = useState<string>(() => today.getFullYear().toString());
   const [snapshots, setSnapshots] = useState<ShowcaseSnapshot[]>([]);
   const [years, setYears] = useState<string[]>([]);
+  const [lastSnapshotAt, setLastSnapshotAt] = useState<string | null>(null);
   const [current, setCurrent] = useState<ShowcaseCurrent | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -183,6 +185,7 @@ export default function Showcase() {
       ]);
       setSnapshots(snap.snapshots);
       setYears(snap.years);
+      setLastSnapshotAt(snap.last_snapshot_at);
       setCurrent(cur);
     } catch { /* silent */ }
     setLoading(false);
@@ -282,6 +285,7 @@ export default function Showcase() {
             <div className="flex items-center gap-3">
               <span style={{ ...pxSm, color: 'var(--oto-text-muted)' }}>
                 请务必及时同步到月度记录，否则有可能进度丢失
+                （上次同步：{lastSnapshotAt ? formatShanghaiDateTime(lastSnapshotAt) : '尚未同步'}）
               </span>
               <button onClick={handleSnapshot} disabled={snapshotting}
                       className="oto-btn oto-btn-sm"

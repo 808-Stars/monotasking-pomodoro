@@ -1,14 +1,65 @@
 import { useEffect, useState } from 'react';
 import { fetchPomodoroSessions, getPomodoroStats, deletePomodoroSession } from '../services/api';
 import type { PomodoroSession, PomodoroStats } from '../types';
-import { POMODORO_TYPE_MAP, POMODORO_STATUS_MAP } from '../types';
+import { POMODORO_TYPE_MAP } from '../types';
 import PomodoroTimer from '../components/PomodoroTimer';
 import StatusBadge from '../components/StatusBadge';
 import StatsCard from '../components/StatsCard';
 import Icon from '../components/Icons';
+import { getPomodoroHistoryDisplay } from '../services/pomodoroHistoryDisplay';
 
 const pxH2: React.CSSProperties = { fontFamily: 'var(--oto-font-title)', fontSize: '20px', lineHeight: '2' };
 const pxBody = { fontFamily: 'var(--oto-font-body)', fontSize: '18px' };
+
+function SessionHistoryItem({
+  session,
+  onDelete,
+  expandedNotes,
+  onToggleNote,
+}: {
+  session: PomodoroSession;
+  onDelete: (id: string) => void;
+  expandedNotes: Set<string>;
+  onToggleNote: (id: string) => void;
+}) {
+  const display = getPomodoroHistoryDisplay(session);
+  const isExpanded = expandedNotes.has(session.id);
+  const borderColor = session.type === 'WORK' ? '#8a3030' : session.type === 'SHORT_BREAK' ? '#406838' : '#304868';
+
+  return (
+    <div className={`group px-4 ${display.isWork ? 'py-3' : 'py-2'} transition-all hover:brightness-105`} style={{
+      borderLeft: `3px solid ${borderColor}`,
+      borderBottom: '1px solid var(--oto-border-light)',
+    }}>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 shrink-0">
+          <StatusBadge label={session.type === 'WORK' ? '工作' : '休息'} status={session.type} className="w-[52px] text-center" />
+          <button onClick={() => onDelete(session.id)} className="inline-flex h-[22px]! w-[22px]! items-center justify-center bg-transparent! border-0! shadow-none! p-0! text-xs opacity-0 pointer-events-none transition-opacity group-hover:opacity-100 group-hover:pointer-events-auto focus-visible:opacity-100 focus-visible:pointer-events-auto hover:filter-none" aria-label="删除记录">
+            <Icon name="trash" size={12} />
+          </button>
+        </div>
+        <div className="flex items-center gap-4 min-w-0 text-xs" style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-muted)' }}>
+          <span className="whitespace-nowrap">{new Date(session.start_time).toLocaleString('zh-CN')}</span>
+          {session.end_time && <span className="whitespace-nowrap">→ {new Date(session.end_time).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>}
+        </div>
+      </div>
+      {display.isWork && (
+        <div className="font-medium text-sm line-clamp-2 min-w-0 mt-1" style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text)' }}>
+          {display.title}
+        </div>
+      )}
+      {display.notes && (
+        <p className="text-xs mt-1 break-words cursor-pointer" onClick={() => onToggleNote(session.id)}
+           style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)', display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden', WebkitLineClamp: isExpanded ? 'unset' : 2 }}>
+          <Icon name="notebook" size={14} /> {display.notes}
+          {!isExpanded && display.notes.length > 60 && <span style={{ color: 'var(--oto-gold-dark)', marginLeft: 4, fontSize: '12px' }}>展开</span>}
+          {isExpanded && display.notes.length > 60 && <span style={{ color: 'var(--oto-gold-dark)', marginLeft: 4, fontSize: '12px' }}>收起</span>}
+        </p>
+      )}
+      {display.isWork && session.interruption_reason && <p className="text-xs mt-1" style={{ ...pxBody, fontSize: '14px', color: '#f09040' }}><Icon name="alert" size={14} /> 中断原因: {session.interruption_reason}</p>}
+    </div>
+  );
+}
 
 export default function PomodoroHistory() {
   const [sessions, setSessions] = useState<PomodoroSession[]>([]);
@@ -70,7 +121,12 @@ export default function PomodoroHistory() {
         <div className="lg:col-span-2">
           <div className="oto-window overflow-hidden">
             <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--oto-border-light)' }}>
-              <h3 style={{ ...pxH2, fontSize: '11px', color: 'var(--oto-text)' }}>历史记录</h3>
+              <h3 className="flex min-w-0 items-center gap-2" style={{ ...pxH2, fontSize: '11px', color: 'var(--oto-text)' }}>
+                历史记录
+                <span className="truncate font-normal" style={{ fontFamily: 'var(--oto-font-body)', fontSize: '11px', color: 'var(--oto-text-muted)' }}>
+                  （非标准番茄钟每满 25 分钟计 1 个，单次最多计 4 个；不足 25 分钟不计）
+                </span>
+              </h3>
               <div className="flex items-center gap-3">
                 {sessions.length > 20 && (
                   <button onClick={() => setShowArchive(true)} className="oto-btn-sm oto-btn-gray">
@@ -97,39 +153,7 @@ export default function PomodoroHistory() {
                     <p style={{ fontSize: '15px', color: 'var(--oto-text-muted)', marginTop: '4px' }}>开始你的第一个专注吧！</p>
                   </div>
                 ) : (
-                  sessions.slice(0, 10).map(s => (
-                    <div key={s.id} className="px-4 py-3 md:flex md:items-start md:justify-between relative transition-all hover:brightness-105" style={{
-                      borderLeft: `3px solid ${s.type === 'WORK' ? '#8a3030' : s.type === 'SHORT_BREAK' ? '#406838' : '#304868'}`,
-                      borderBottom: '1px solid var(--oto-border-light)',
-                    }}>
-                      <div className="flex-1 min-w-0 pr-10 md:pr-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-medium text-sm line-clamp-2 flex-1 min-w-0 md:pr-14" style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text)' }}>{s.tasks?.name || (s.type !== 'WORK' ? POMODORO_TYPE_MAP[s.type] : '未关联任务')}</span>
-                          <div className="hidden md:flex items-center gap-2 flex-shrink-0 absolute top-3 right-3">
-                            <StatusBadge label={POMODORO_TYPE_MAP[s.type] || s.type} status={s.type} />
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4 mt-1 text-xs" style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-muted)' }}>
-                          <span>{new Date(s.start_time).toLocaleString('zh-CN')}</span>
-                          {s.end_time && <span>→ {new Date(s.end_time).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>}
-                          {/* 桌面端：删除键与时间共占一行，靠右 */}
-                          <button onClick={() => handleDelete(s.id)} className="hidden md:inline-flex ml-auto items-center oto-btn-sm oto-btn-red text-xs px-1! py-0!"><Icon name="trash" size={12} /></button>
-                        </div>
-                        {s.notes && (
-                          <p className="text-xs mt-1 break-words cursor-pointer" onClick={() => toggleNote(s.id)}
-                             style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)', display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden', WebkitLineClamp: expandedNotes.has(s.id) ? 'unset' : 2 }}>
-                            <Icon name="notebook" size={14} /> {s.notes}
-                            {!expandedNotes.has(s.id) && s.notes.length > 60 && <span style={{ color: 'var(--oto-gold-dark)', marginLeft: 4, fontSize: '12px' }}>展开</span>}
-                            {expandedNotes.has(s.id) && s.notes.length > 60 && <span style={{ color: 'var(--oto-gold-dark)', marginLeft: 4, fontSize: '12px' }}>收起</span>}
-                          </p>
-                        )}
-                        {s.interruption_reason && <p className="text-xs mt-1" style={{ ...pxBody, fontSize: '14px', color: '#f09040' }}><Icon name="alert" size={14} /> 中断原因: {s.interruption_reason}</p>}
-                      </div>
-                      <div className="md:hidden absolute top-3 right-3 text-xs"><StatusBadge label={POMODORO_TYPE_MAP[s.type] || s.type} status={s.type} /></div>
-                      {/* 移动端：删除键仍绝对定位在右下角 */}
-                      <button onClick={() => handleDelete(s.id)} className="md:hidden oto-btn-sm oto-btn-red ml-3 absolute bottom-3 right-3 text-xs px-1! py-0!"><Icon name="trash" size={12} /></button>
-                    </div>
-                  ))
+                  sessions.slice(0, 10).map(s => <SessionHistoryItem key={s.id} session={s} onDelete={handleDelete} expandedNotes={expandedNotes} onToggleNote={toggleNote} />)
                 )}
               </div>
             )}
@@ -148,38 +172,7 @@ export default function PomodoroHistory() {
               <button onClick={() => setShowArchive(false)} className="oto-btn-sm oto-btn-gray"><Icon name="close" size={14} /></button>
             </div>
             <div>
-              {sessions.slice(10).map(s => (
-                <div key={s.id} className="px-4 py-3 md:flex md:items-start md:justify-between relative transition-all" style={{
-                  borderLeft: `3px solid ${s.type === 'WORK' ? '#8a3030' : s.type === 'SHORT_BREAK' ? '#406838' : '#304868'}`,
-                  borderBottom: '1px solid var(--oto-border-light)',
-                }}>
-                  <div className="flex-1 min-w-0 pr-10 md:pr-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium text-sm line-clamp-1 flex-1 min-w-0 md:pr-14" style={{ ...pxBody, fontSize: '17px', color: 'var(--oto-text)' }}>{s.tasks?.name || (s.type !== 'WORK' ? POMODORO_TYPE_MAP[s.type] : '未关联任务')}</span>
-                      <div className="hidden md:flex items-center gap-2 flex-shrink-0 absolute top-3 right-3">
-                        <StatusBadge label={POMODORO_TYPE_MAP[s.type] || s.type} status={s.type} />
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4 mt-1 text-xs" style={{ ...pxBody, fontSize: '14px', color: 'var(--oto-text-muted)' }}>
-                      <span>{new Date(s.start_time).toLocaleString('zh-CN')}</span>
-                      {s.end_time && <span>→ {new Date(s.end_time).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>}
-                      {/* 桌面端：删除键与时间共占一行，靠右 */}
-                      <button onClick={() => handleDelete(s.id)} className="hidden md:inline-flex ml-auto items-center oto-btn-sm oto-btn-red text-xs px-1! py-0!"><Icon name="trash" size={12} /></button>
-                    </div>
-                    {s.notes && (
-                      <p className="text-xs mt-1 break-words cursor-pointer" onClick={() => toggleNote(s.id)}
-                         style={{ ...pxBody, fontSize: '15px', color: 'var(--oto-text-dim)', display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden', WebkitLineClamp: expandedNotes.has(s.id) ? 'unset' : 2 }}>
-                        <Icon name="notebook" size={14} /> {s.notes}
-                        {!expandedNotes.has(s.id) && s.notes.length > 60 && <span style={{ color: 'var(--oto-gold-dark)', marginLeft: 4, fontSize: '12px' }}>展开</span>}
-                        {expandedNotes.has(s.id) && s.notes.length > 60 && <span style={{ color: 'var(--oto-gold-dark)', marginLeft: 4, fontSize: '12px' }}>收起</span>}
-                      </p>
-                    )}
-                  </div>
-                  <div className="md:hidden absolute top-3 right-3 text-xs"><StatusBadge label={POMODORO_TYPE_MAP[s.type] || s.type} status={s.type} /></div>
-                  {/* 移动端：删除键仍绝对定位在右下角 */}
-                  <button onClick={() => handleDelete(s.id)} className="md:hidden oto-btn-sm oto-btn-red ml-3 absolute bottom-3 right-3 text-xs px-1! py-0!"><Icon name="trash" size={12} /></button>
-                </div>
-              ))}
+              {sessions.slice(10).map(s => <SessionHistoryItem key={s.id} session={s} onDelete={handleDelete} expandedNotes={expandedNotes} onToggleNote={toggleNote} />)}
             </div>
           </div>
         </div>

@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { fetchProjects, createProject, updateProject, deleteProject, fetchTasks } from '../services/api';
 import type { Project, Task } from '../types';
 import { PROJECT_STATUS_MAP, TASK_STATUS_MAP, PRIORITY_MAP } from '../types';
 import StatusBadge from '../components/StatusBadge';
 import Icon from '../components/Icons';
 import { useOnboarding } from '../contexts/OnboardingContext';
+import { matchesSearch } from '../services/search';
 
 const EMPTY: Partial<Project> = { name: '', description: '', color: '#687898', status: 'ACTIVE' };
 const COLORS = ['#c83030', '#304868', '#d08030', '#308030', '#b09020', '#684878', '#c0c0c0', '#282020'];
@@ -42,6 +43,7 @@ export default function Projects() {
   const [archivedProjects, setArchivedProjects] = useState<Project[]>([]);
   const [sortBy, setSortBy] = useState<string>('created_at');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const load = () => fetchProjects().then(d => {
     const all = Array.isArray(d) ? d : [];
@@ -59,6 +61,8 @@ export default function Projects() {
     setProjects(active); setLoading(false);
   });
   useEffect(() => { load(); }, [sortBy, sortDir]);
+
+  const visibleProjects = useMemo(() => projects.filter(p => matchesSearch(searchQuery, p.name, p.description, PROJECT_STATUS_MAP[p.status])), [projects, searchQuery]);
 
   const openCreate = () => { setEditing(null); setForm({ ...EMPTY }); setShowForm(true); };
   const openEdit = (p: Project) => { setEditing(p); setForm({ ...p }); setShowForm(true); };
@@ -90,12 +94,8 @@ export default function Projects() {
     const d = await fetchProjects();
     const all = Array.isArray(d) ? d : [];
     const archived = all.filter((p: any) => p.status === 'ARCHIVED');
-    // Fetch real task counts for archived projects
-    const counts: Record<string, number> = {};
-    await Promise.all(archived.map(async (p: any) => {
-      try { const tasks = await fetchTasks({ project_id: p.id }); counts[p.id] = Array.isArray(tasks) ? tasks.length : 0; } catch { counts[p.id] = 0; }
-    }));
-    setArchivedProjects(archived.map((p: any) => ({ ...p, task_count: counts[p.id] ?? p.task_count ?? 0 })));
+    // fetchProjects 已通过 tasks(count) 返回任务数，归档弹窗无需再次逐项目查询。
+    setArchivedProjects(archived);
     setShowArchive(true);
   };
   const todoCount = projectTasks.filter(t => t.status === 'TODO').length;
@@ -123,6 +123,11 @@ export default function Projects() {
               <button onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')} className="oto-btn oto-btn-gray w-1/2 md:w-auto md:flex-none" title={sortDir === 'asc' ? '升序' : '降序'}>
                 排序{sortDir === 'asc' ? '↑' : '↓'}
               </button>
+              <div className="flex items-center gap-2 flex-1 md:w-52 md:flex-none oto-input" style={{ padding: '6px 10px' }}>
+                <Icon name="search" size={14} />
+                <input type="search" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="搜索项目..."
+                  className="w-full border-none outline-none bg-transparent text-sm" style={{ color: 'var(--oto-text)' }} />
+              </div>
             </div>
           </div>
         </div>
@@ -135,7 +140,7 @@ export default function Projects() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {projects.map(p => (
+          {visibleProjects.map(p => (
             <div key={p.id} onClick={() => openProjectDetail(p)}
               className="oto-window cursor-pointer group oto-card-lift animate-fade-in-up oto-card-shimmer oto-tacked"
               style={{ borderLeftWidth: '4px', borderLeftColor: p.color }}>
@@ -169,7 +174,7 @@ export default function Projects() {
               </div>
             </div>
           ))}
-          {projects.length === 0 && <div className="col-span-full text-center py-12" style={{ ...pxBody, color: 'var(--oto-text-muted)' }}>暂无项目</div>}
+          {visibleProjects.length === 0 && <div className="col-span-full text-center py-12" style={{ ...pxBody, color: 'var(--oto-text-muted)' }}>{searchQuery.trim() ? '没有匹配的项目' : '暂无项目'}</div>}
         </div>
       )}
 
@@ -349,7 +354,7 @@ export default function Projects() {
               <p className="text-center py-8" style={{ ...pxBody, color: 'var(--oto-text-muted)' }}>暂无归档项目</p>
             ) : (
               <div className="space-y-2">
-                {archivedProjects.map(p => (
+                {archivedProjects.filter(p => matchesSearch(searchQuery, p.name, p.description, PROJECT_STATUS_MAP[p.status])).map(p => (
                   <div key={p.id} className="px-4 py-3 flex items-center justify-between gap-3 cursor-pointer hover:brightness-105 transition-all" style={{ borderLeft: `4px solid ${p.color}`, borderBottom: '1px solid var(--oto-border-light)' }} onClick={() => { setShowArchive(false); openProjectDetail(p); }}>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate" style={{ ...pxBody, fontSize: '16px', color: 'var(--oto-text)' }}>{p.name}</p>
@@ -364,6 +369,9 @@ export default function Projects() {
                     </div>
                   </div>
                 ))}
+                {archivedProjects.filter(p => matchesSearch(searchQuery, p.name, p.description, PROJECT_STATUS_MAP[p.status])).length === 0 && (
+                  <p className="text-center py-8" style={{ ...pxBody, color: 'var(--oto-text-muted)' }}>没有匹配的归档项目</p>
+                )}
               </div>
             )}
           </div>

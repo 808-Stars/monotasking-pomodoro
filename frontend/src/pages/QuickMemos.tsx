@@ -69,7 +69,6 @@ export default function QuickMemos() {
             className="flex-1 border-none outline-none text-sm bg-transparent placeholder-gray-600 oto-input-glow transition-shadow duration-200"
             style={{ ...pxBody, color: 'var(--oto-text)' }} autoFocus />
         </div>
-
         {/* Active memos */}
         {loading ? (
           <div className="text-center py-12" style={{ ...pxBody, color: 'var(--oto-text-muted)' }}>加载中...</div>
