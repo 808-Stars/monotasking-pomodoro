@@ -143,6 +143,10 @@ export default function LoginPage() {
             {submitting ? '处理中...' : mode === 'login' ? '登录' : '注册'}
           </button>
         </form>
+        <div style={{ marginTop: '22px', paddingTop: '16px', borderTop: '1px solid var(--oto-border-light)', textAlign: 'center' }}>
+          <a href="/jrpg/" className="oto-btn" style={{ display: 'block', padding: '10px 0', textDecoration: 'none' }}>进入灯火冒险 · JRPG</a>
+          <p style={{ margin: '10px 0 0', fontSize: '12px', color: 'var(--oto-text-dim)', lineHeight: 1.7 }}>浏览器测试版，无需登录。冒险进度保存在当前浏览器。</p>
+        </div>
       </div>
     </div>
   )

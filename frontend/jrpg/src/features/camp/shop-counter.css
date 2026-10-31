@@ -1,0 +1,110 @@
+/* The parent owns the five camp theme tokens; fallbacks keep standalone use legible. */
+.shop-counter {
+  --shop-line: color-mix(in srgb, var(--camp-accent, #d9a85f) 40%, transparent);
+  position: relative;
+  display: grid;
+  grid-template-rows: 32px minmax(0, 1fr) auto;
+  gap: 10px;
+  height: 460px;
+  max-height: 470px;
+  min-width: 0;
+  box-sizing: border-box;
+  color: var(--camp-text, #fff0cf);
+  background: var(--camp-bg, #302218);
+  font: 16px/1.45 SimSun, "Noto Serif SC", serif;
+  break-inside: avoid;
+}
+.shop-counter *, .shop-counter *::before, .shop-counter *::after { box-sizing: border-box; }
+.shop-counter b, .shop-counter h3 { color: var(--camp-text, #fff0cf); }
+.shop-counter small, .shop-counter .shop-counter-kind { color: var(--camp-muted, #dfc69f); font-size: 13px; line-height: 1.4; }
+.shop-counter p { margin: 0; color: inherit; }
+.shop-counter button {
+  margin: 0; min-height: 34px; padding: 6px 12px; border: 1px solid var(--shop-line);
+  border-radius: 2px; background: var(--camp-surface, #493123); color: var(--camp-text, #fff0cf);
+  font: inherit; line-height: 1.35; cursor: pointer; letter-spacing: normal;
+}
+.shop-counter button:hover:not(:disabled) { background: color-mix(in srgb, var(--camp-accent, #d9a85f) 20%, var(--camp-surface, #493123)); color: var(--camp-text, #fff0cf); border-color: var(--camp-accent, #d9a85f); }
+.shop-counter button:disabled { opacity: .5; cursor: not-allowed; }
+.shop-counter button:focus-visible, .shop-counter input:focus-visible,
+.shop-counter summary:focus-visible, .shop-counter .item-pages:focus-visible {
+  outline: 2px solid var(--camp-accent, #d9a85f); outline-offset: 2px;
+}
+.shop-counter .shop-counter-balance { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--shop-line); }
+.shop-counter .shop-counter-balance .shop-counter-feedback { color: var(--camp-muted, #dfc69f); font-size: 13px; }
+.shop-counter .shop-counter-display { display: grid; grid-template-columns: minmax(260px, .9fr) minmax(0, 1.3fr); gap: 16px; min-height: 0; }
+.shop-counter .shop-counter-shelf { min-width: 0; min-height: 0; }
+.shop-counter .shop-counter-products { display: grid; grid-template-columns: 1fr; gap: 6px; }
+.shop-counter .shop-counter-product {
+  position: relative; display: grid; grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center; gap: 9px; width: 100%; min-height: 55px; padding: 7px 10px;
+  text-align: left; border-color: transparent; border-bottom-color: var(--shop-line);
+}
+.shop-counter .shop-counter-product[aria-pressed="true"] {
+  border-color: var(--camp-accent, #d9a85f);
+  background: color-mix(in srgb, var(--camp-accent, #d9a85f) 17%, var(--camp-surface, #493123));
+  box-shadow: inset 3px 0 var(--camp-accent, #d9a85f);
+}
+.shop-counter .shop-counter-product-name { font-size: 17px; overflow-wrap: anywhere; }
+.shop-counter .shop-counter-product-price { font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.shop-counter .shop-counter-badge { position: absolute; right: 10px; bottom: 1px; font-size: 11px; color: var(--camp-accent, #d9a85f); }
+.shop-counter .camp-item-mark { display: inline-grid; place-items: center; width: 36px; height: 36px; flex: none; color: var(--camp-accent, #d9a85f); border: 1px solid var(--shop-line); background: var(--camp-bg, #302218); }
+.shop-counter .camp-item-mark svg { width: 28px; height: 28px; }
+.shop-counter .item-pages > .page-turns { gap: 10px; min-height: 34px; margin: 6px 0 0; padding: 4px 0 0; color: var(--camp-muted, #dfc69f); border-color: var(--shop-line); }
+.shop-counter .item-pages > .page-turns button { min-height: 28px; padding: 3px 8px; font-size: 13px; }
+.shop-counter .shop-counter-detail {
+  display: grid; grid-template-columns: 108px minmax(0, 1fr); grid-template-rows: minmax(110px, 1fr) auto auto auto;
+  align-content: start; gap: 10px 16px; min-width: 0; min-height: 0; padding: 16px;
+  border: 1px solid var(--shop-line); border-top: 3px solid var(--camp-accent, #d9a85f);
+  background: var(--camp-surface, #493123);
+}
+.shop-counter .shop-counter-showpiece { display: grid; place-items: center; align-self: stretch; border-bottom: 2px solid var(--shop-line); background: radial-gradient(ellipse at center, color-mix(in srgb, var(--camp-accent, #d9a85f) 15%, transparent), transparent 75%); }
+.shop-counter .shop-counter-showpiece .camp-item-mark { width: 96px; height: 96px; background: transparent; border: 0; }
+.shop-counter .shop-counter-showpiece svg { width: 80px; height: 80px; }
+.shop-counter .shop-counter-intro { align-self: center; min-width: 0; }
+.shop-counter .shop-counter-detail .shop-counter-intro h3 { margin: 3px 0 8px; font-size: 27px; line-height: 1.25; letter-spacing: 1px; }
+.shop-counter .shop-counter-description { font-size: 15px; line-height: 1.6; overflow-wrap: anywhere; }
+.shop-counter .shop-counter-facts { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 14px; color: var(--camp-muted, #dfc69f); }
+.shop-counter .shop-counter-limit { flex-basis: 100%; }
+.shop-counter .shop-counter-order { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; }
+.shop-counter .shop-counter-stepper { display: flex; align-items: center; gap: 4px; }
+.shop-counter .shop-counter-stepper button { width: 34px; padding: 4px; }
+.shop-counter .shop-counter-stepper input {
+  width: 70px; max-width: 100%; min-height: 34px; margin: 0; padding: 4px; text-align: center;
+  border: 1px solid var(--shop-line); border-radius: 2px; background: var(--camp-bg, #302218);
+  color: var(--camp-text, #fff0cf); font: inherit; font-variant-numeric: tabular-nums;
+}
+.shop-counter .shop-counter-add { flex: 1; }
+.shop-counter .shop-counter-order-note { grid-column: 1 / -1; font-size: 13px; color: var(--camp-muted, #dfc69f); }
+.shop-counter .shop-counter-basket { border-top: 2px solid var(--shop-line); padding-top: 6px; min-width: 0; }
+.shop-counter .shop-counter-basket-heading, .shop-counter .shop-counter-settle { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
+.shop-counter .shop-counter-basket-heading { min-height: 30px; }
+.shop-counter .shop-counter-summary { position: static; padding: 0; margin: 0; border: 0; background: transparent; font-size: 14px; }
+.shop-counter .shop-counter-summary summary { color: var(--camp-text, #fff0cf); cursor: pointer; }
+.shop-counter .shop-counter-basket-list {
+  position: absolute; z-index: 5; bottom: 88px; left: 0; right: 0; min-height: 180px;
+  padding: 12px; border: 1px solid var(--camp-accent, #d9a85f); background: var(--camp-bg, #302218);
+  box-shadow: 0 -8px 24px #0005; overscroll-behavior: contain;
+}
+.shop-counter .shop-counter-basket-item { display: flex; align-items: center; gap: 12px; padding: 5px 0; border-bottom: 1px solid var(--shop-line); }
+.shop-counter .shop-counter-basket-item > span:first-child { flex: 1; }
+.shop-counter .shop-counter-basket-item button, .shop-counter .shop-counter-clear { min-height: 28px; padding: 3px 8px; font-size: 13px; }
+.shop-counter .shop-counter-clear { border-color: transparent; background: transparent; color: var(--camp-muted, #dfc69f); }
+.shop-counter .shop-counter-settle { margin-top: 4px; }
+.shop-counter .shop-counter-settle b { font-size: 25px; font-variant-numeric: tabular-nums; }
+.shop-counter .shop-counter-settle .shop-counter-budget { flex: 1; color: var(--camp-muted, #dfc69f); font-size: 13px; }
+.shop-counter .shop-counter-checkout { min-width: 140px; }
+.shop-counter .shop-counter-add, .shop-counter .shop-counter-checkout { color: var(--camp-text, #fff0cf); border-color: var(--camp-accent, #d9a85f); background: color-mix(in srgb, var(--camp-accent, #d9a85f) 27%, var(--camp-bg, #302218)); }
+.shop-counter .shop-counter-empty { padding: 20px; }
+@media (max-width: 760px) {
+  .shop-counter { height: auto; max-height: none; grid-template-rows: auto auto auto; }
+  .shop-counter .shop-counter-display { grid-template-columns: 1fr; }
+  .shop-counter .shop-counter-balance { flex-wrap: wrap; padding-bottom: 6px; }
+  .shop-counter .shop-counter-detail { min-height: 285px; }
+  .shop-counter .shop-counter-settle { flex-wrap: wrap; }
+  .shop-counter .shop-counter-budget { flex-basis: 40%; }
+  .shop-counter .shop-counter-basket-item { flex-wrap: wrap; }
+  .shop-counter .shop-counter-basket-list { bottom: 110px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shop-counter button { transition: none; }
+}

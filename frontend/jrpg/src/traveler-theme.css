@@ -1,0 +1,203 @@
+/* Travel journal: paper for preparation, translucent ink for combat. */
+@font-face {
+  font-family: "Ark Pixel UI";
+  src: url('/jrpg/assets/fonts/ark-pixel-12px-proportional-zh_hans.ttf.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+:root {
+  --paper: #e4d5b2;
+  --ink: #342c23;
+  --gold: #c3ad7c;
+  --muted: #b5aa96;
+  --line: #bdaa7955;
+  --paper-texture: url("/jrpg/assets/ui/paper-grain.svg");
+  background: #181916;
+  color: #ede4cf;
+}
+body { background: radial-gradient(ellipse at top, #37382f, #181916 75%); }
+button { border-radius: 0; }
+.app-shell { max-width: 1800px; padding: 0 28px; }
+.topbar { height: 68px; border-bottom: 1px solid #b5a17b45; }
+.brand { font-size: 20px; letter-spacing: 2px; }
+.brand-mark { border: 0; font-family: Georgia, serif; font-size: 36px; transform: none; }
+.resources { font-family: "Ark Pixel UI", monospace; font-size: 18px; font-synthesis: none; }
+.resources b { display: inline; margin-left: 8px; font-family: inherit; font-size: 30px; font-weight: 400; }
+.main-nav { height: 58px; }
+.main-nav > span { font-size: 16px; }
+.main-nav.camp-runtime-notes { gap:28px; }
+.main-nav.camp-runtime-notes > span { margin-left:0; white-space:nowrap; }
+.main-nav button { font-family: SimSun, serif; }
+.main-nav button.selected::before { content: "◆"; margin-right: 12px; font-size: 15px; }
+.camp-layout { position: relative; display: block; min-height: 680px; }
+.app-shell:has(.camp-layout) { max-width:none; padding-inline:16px; }
+.app-shell .camp-layout { min-height:0; height:100dvh; }
+.app-shell .camp-layout .scene { min-height:0; height:100%; }
+@media (max-width:760px) {
+  .app-shell:has(.camp-layout) { padding-inline:8px; }
+}
+.scene { position: relative; min-height: 680px; height: calc(100svh - 150px); border: 0; }
+.scene-art { position: absolute; inset: 0; min-height: 0; }
+.scene-title { margin-left: 230px; padding: 38px; }
+.scene-title h1 { font-size: 52px; margin: 12px 0; }
+.scene-title p { color: #e3d9c5; text-shadow: 0 2px 4px #000; }
+.scene-title .eyebrow, .scene-art-label, .moon { display: none; }
+.camp-nav { position: absolute; left: 22px; top: 26px; z-index: 3; width: 210px; padding: 24px 20px; border: 1px solid #826e49; }
+.camp-nav, .dialogue, .merchant-conversation, .merchant-navigation, .modal,
+.merchant-counter.modal {
+  color: var(--ink);
+  background-color: var(--paper);
+  background-image: var(--paper-texture), linear-gradient(100deg, #aa895d35, transparent 15%, #fff5d535 55%, #a17b4740);
+  box-shadow: inset 0 0 24px #8c642b28, 0 12px 36px #0005;
+  border-radius: 0;
+  border: 1px solid #ad9364;
+  outline: 1px solid #d7c6a075;
+  outline-offset: 4px;
+}
+.camp-nav > .eyebrow { color: #756143; padding-bottom: 14px; border-bottom: 1px solid #8c714d55; margin-bottom: 8px; }
+.camp-nav button { padding: 15px 4px; color: #5a4b35; gap: 10px; border-bottom: 1px solid #8c714d22; }
+.camp-nav button > span { color: #8b7452; }
+.camp-nav button > b { font-size: 25px; letter-spacing: 3px; }
+.camp-nav button.active { color: #762e24; border-right: 0; background: #8b63351a; }
+.camp-nav button:hover:not(:disabled) { background: #8b633526; }
+.dialogue { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); width: min(1440px, calc(100% - 48px)); min-height: 0; padding: 22px 30px; z-index: 2; background-color: rgb(228 213 178 / 72%); background-image: none; }
+.dialogue .speaker { color: #7b352b; font-size: 20px; line-height: 1.4; letter-spacing: 2px; }
+.dialogue .spoken { font-size: 24px; line-height: 1.65; letter-spacing: .5px; margin: 12px 0 18px; color: #342c23; overflow-wrap: anywhere; }
+.dialogue-options { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px 20px; }
+.dialogue-options button { color: #443621; background: transparent; border: 0; border-top: 1px solid #91774d55; text-align: left; font-size: 21px; line-height: 1.5; }
+.dialogue-options button > span { flex:0 1 10em; min-width:0; max-width:10em; overflow-wrap:anywhere; }
+.dialogue-options button > small { flex:none; margin-left:8px; white-space:nowrap; }
+.dialogue-options button:hover:not(:disabled) { background: #8b633520; }
+.portrait-placeholder { right: 5%; bottom: 13%; width: 29%; height: 74%; }
+.merchant-location-name { font-size: 38px; }
+.merchant-location-name::after { content: " ― 月下灯火"; font-size: 18px; letter-spacing: 2px; color: #d6c5a4; }
+.merchant-conversation { left: 6%; bottom: 12%; padding: 26px 30px; width: min(460px, 43%); }
+.merchant-conversation-head, .merchant-conversation-head button { color: #783b2c; }
+.merchant-conversation > p { font-size: 27px; }
+.merchant-choices button, .merchant-navigation > button { color: #443621; }
+.merchant-choices button::before { content: "◆"; font-size: 14px; color: #783b2c; top: 17px; }
+.merchant-choices small, .merchant-navigation > button small, .merchant-dev { color: #756447; }
+.merchant-choices button:hover:not(:disabled), .merchant-choices button:focus-visible { background: #8b633523; }
+.merchant-greeting { background: #171913d9; border: 1px solid #c6b48666; font-family: SimSun, serif; }
+.merchant-interact { background: #171913cc; border: 1px solid #c6b48666; }
+.modal-backdrop { --modal-backdrop-color:#10120d75;--modal-backdrop-blur:2px; }
+.modal { --muted: #74634b; --line: #92785150; --gold: #78552e; }
+.modal h2, .modal h3, .modal b, .modal .eyebrow,
+.merchant-counter > header h2, .merchant-counter .shop-row b { color: #40331f; }
+.modal > header { border-bottom: 3px double #92785170; padding-bottom: 18px; }
+.modal button { color: #493820; background: #b99a6120; border-color: #957c5055; }
+.modal button:hover:not(:disabled) { background: #a3814430; }
+.modal button.primary { background: #423e31; color: #f2e5c9; border-color: #423e31; }
+.modal input, .modal select, .merchant-counter input { background: #f5eacf85; color: #342c23; border: 1px solid #957c5080; }
+.merchant-counter .modal-content > p, .merchant-counter .shop-row small,
+.merchant-counter th, .counter-caption { color: #756143; }
+.merchant-counter > header button { color: #783b2c; }
+.merchant-counter .shop-row > span:not(.item-sprite), .merchant-counter .modal-actions > span { color: #6c5839; }
+.merchant-counter .modal-actions { background: #dfceaa; border-color: #92785170; }
+.merchant-counter .modal-actions .primary { background: #423e31; color: #f2e5c9; }
+.modal .reward { background: #f4e8c940; border-color: #92785155; box-shadow: none; }
+.world-map { border: 1px solid #9b855b; }
+.app-shell:has(.world-map) { max-width:none; padding-inline:16px; }
+.app-shell .world-map { height:100dvh; min-height:0; box-sizing:border-box; }
+@media (max-width:760px) {
+  .app-shell:has(.world-map) { padding-inline:8px; }
+}
+.world-map .map-route {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-areas: 'coin throne exp' 'jp camp gem';
+  gap: 28px; margin: 36px auto 0; max-width: 900px;
+}
+.world-map .map-route::before { display: none; }
+.world-map .map-route button { gap: 12px; min-width: 0; padding: 12px 4px; }
+.world-map .map-route button:nth-child(1) { grid-area: camp; }
+.world-map .map-route button:nth-child(2) { grid-area: coin; }
+.world-map .map-route button:nth-child(3) { grid-area: exp; }
+.world-map .map-route button:nth-child(4) { grid-area: jp; }
+.world-map .map-route button:nth-child(5) { grid-area: gem; }
+.world-map .map-route button:nth-child(6) { grid-area: throne; }
+.world-map .map-route small { font-size: 18px; line-height: 1.6; }
+.world-map .map-route button:enabled:hover .map-node { background: #5f5134; outline: 2px solid #d9c79b; }
+@media (max-width: 600px) {
+  .world-map .map-route { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: 'camp throne' 'coin exp' 'jp gem'; gap: 16px 8px; }
+}
+.map-node { border-radius: 0; }
+.dungeon-copy { border-left: 3px double #b5a17b65; }
+.battle .timelines, .battle .command-panel, .battle .hero-readout { background: #161a18a6; border-color: #c9bd9860; box-shadow: none; }
+.battle .command-panel { border-top: 3px double #c9bd9880; }
+.battle .command-tabs button { background: transparent; border: 0; border-bottom: 1px solid #c9bd9840; font-family: SimSun, serif; }
+.battle .command-tabs button.selected { color: #fff2cf; background: linear-gradient(90deg,#c9bd9833,transparent); }
+.battle .command-tabs button.selected::before { content: "◆ "; font-size: 16px; }
+.battle .turn { border-radius: 0; }
+.battle .current-turn { outline: 1px solid #f3dfaa; outline-offset: 3px; }
+footer { opacity: .6; }
+/* Old waytown: approved party identities, shared stone/timber architecture. */
+.scene-0 .scene-art { background-image: url('/jrpg/assets/scenes/camp-catgirl-20261026/warrior.webp'); }
+.scene-1 .scene-art { background-image: url('/jrpg/assets/scenes/camp-catgirl-20261026/dancer.webp'); }
+.scene-2 .scene-art { background-image: url('/jrpg/assets/scenes/camp-catgirl-20261026/merchant.webp'); }
+.scene-3 .scene-art { background-image: url('/jrpg/assets/scenes/camp-catgirl-20261026/scholar.webp'); }
+.scene-4 .scene-art { background-image: url('/jrpg/assets/scenes/camp-catgirl-20261026/cleric.webp'); }
+.scene-5 .scene-art { background-image: url('/jrpg/assets/scenes/camp-catgirl-20261026/thief.webp'); }
+.scene-6 .scene-art { background-image: url('/jrpg/assets/scenes/camp-catgirl-20261026/hunter.webp'); }
+.scene-7 .scene-art { background-image: url('/jrpg/assets/scenes/camp-catgirl-20261026/apothecary.webp'); }
+.scene .scene-art { background-size: cover; background-position: 56% center; image-rendering: pixelated; }
+.scene-0 { --scene-mobile-focus: 71%; }
+.scene-1 { --scene-mobile-focus: 68%; }
+.scene-2 { --scene-mobile-focus: 68%; }
+.scene-3 { --scene-mobile-focus: 67%; }
+.scene-4 { --scene-mobile-focus: 67%; }
+.scene-5 { --scene-mobile-focus: 68%; }
+.scene-6 { --scene-mobile-focus: 56%; }
+.scene-7 { --scene-mobile-focus: 52%; }
+.scene .scene-art::after { background:none; }
+.merchant-world { background-image: url('/jrpg/assets/scenes/camp-catgirl-20261026/merchant.webp'); background-position: 56% center; }
+.merchant-world .merchant-person {
+  left: 56%; top: 39%; right: auto; bottom: auto;
+  width: clamp(110px, 16vw, 230px); height: 23%;
+  transform: translate(-50%, -50%); filter: none;
+}
+.merchant-world .merchant-interact { bottom: -24px; }
+.merchant-world .merchant-greeting { top: 14%; right: 43%; }
+@media (max-width: 900px) {
+  .app-shell { padding: 0 14px; }
+  .resources { gap: 12px; }
+  .resources b { display: block; margin-left: 0; }
+  .camp-nav { width: 165px; left: 12px; padding: 18px 12px; }
+  .camp-nav button > small { display: none; }
+  .scene-title { margin-left: 170px; padding: 28px; }
+  .dialogue { padding: 18px; }
+}
+/* Collapsible camp navigation stays anchored to the scene's upper-right corner. */
+.camp-nav-toggle { position: absolute; top: 20px; right: 20px; z-index: 5; width: 46px; height: 46px; display: grid; place-items: center; color: #e5d3a5; background: transparent; border: 0; box-shadow: none; cursor: pointer; }
+.camp-nav-toggle:hover:not(:disabled) { background: transparent; color: #fff0bf; }
+.camp-nav-toggle:focus-visible { outline: 2px solid #fff0bf; outline-offset: 3px; }
+.camp-layout .camp-nav { top: 78px; right: 20px; left: auto; width: 210px; max-height: calc(100% - 100px); overflow-y: auto; display: block; padding: 16px; z-index: 5; }
+.camp-layout .scene-title { margin-left: 0; padding: 38px; padding-right: 90px; }
+@media (max-width: 600px) {
+  .camp-nav-toggle { top: 14px; right: 14px; }
+  .camp-layout .camp-nav { top: 72px; right: 14px; width: min(230px, calc(100% - 28px)); }
+  .camp-layout .scene-title { padding: 24px; padding-right: 80px; }
+}
+@media (max-width: 600px) {
+  .brand small, .main-nav > span, .brand-mark { display: none; }
+  .brand { font-size: 16px; letter-spacing: 0; }
+  .topbar { gap: 8px; }
+  .resources { font-size: 18px; gap: 9px; }
+  .resources b { font-size: 30px; }
+  .topbar .reset { padding: 4px; font-size: 15px; }
+  .scene { height: 780px; }
+  .camp-nav { top: 12px; left: 10px; right: 10px; width: auto; display: grid; grid-template-columns: repeat(4,1fr); padding: 8px; }
+  .camp-nav > .eyebrow, .camp-nav button > span { display: none; }
+  .camp-nav button { justify-content: center; padding: 10px 0; }
+  .camp-nav button > b { font-size: 21px; letter-spacing: 2px; }
+  .scene-title { margin: 0; padding: 135px 24px 0; max-width: 100%; }
+  .scene-title h1 { font-size: 40px; }
+  .scene .scene-art { background-position: var(--scene-mobile-focus, 56%) center; }
+  .portrait-placeholder { width: 52%; height: 47%; right: 6%; bottom: 24%; }
+  .dialogue { bottom: 20px; width: calc(100% - 28px); padding: 18px; }
+  .spoken { font-size: 22px; }
+  .merchant-conversation { left: 4%; width: 92%; bottom: 6%; padding: 18px; }
+  .merchant-conversation > p { font-size: 24px; }
+  .merchant-location-name::after { display: none; }
+  .dungeon-copy { border-left: 0; }
+}

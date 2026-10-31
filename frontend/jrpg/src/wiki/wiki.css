@@ -1,0 +1,198 @@
+@charset "UTF-8";
+
+:root{color-scheme:light;--wiki-forest:#29362f;--wiki-page:#e7dfc9;--wiki-paper:#f0e9d9;--wiki-ink:#28302b;--wiki-gold:#8a7140;--wiki-red:#8e5046;--wiki-line:#b5aa8d;--wiki-muted:#606759;--wiki-link:#3e5b4e;}
+*{box-sizing:border-box;}
+html{scroll-padding-top:110px;}
+body{margin:0;background:var(--wiki-forest);color:var(--wiki-ink);font:16px/1.8 "Microsoft YaHei","PingFang SC",sans-serif;}
+button,input{font:inherit;}
+a{color:var(--wiki-link);text-decoration-thickness:1px;text-underline-offset:4px;}
+a:hover{color:var(--wiki-red);}
+:focus-visible{outline:2px solid #8e5046;outline-offset:4px;}
+button{cursor:pointer;}
+[hidden]{display:none!important;}
+.wiki-shell{max-width:1580px;min-height:100vh;margin:auto;background:var(--wiki-page);border-inline:1px solid #817859;}
+.wiki-skip-link{position:fixed;top:-80px;left:20px;z-index:100;padding:10px 20px;background:var(--wiki-paper);}
+.wiki-skip-link:focus{top:10px;}
+.wiki-masthead{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:40px;min-height:94px;padding:15px 34px;background:var(--wiki-forest);color:var(--wiki-page);border-bottom:3px double #9f8d5e;}
+.wiki-brand{display:flex;align-items:center;gap:13px;flex:0 0 213px;text-decoration:none;color:var(--wiki-page);}
+.wiki-brand:hover{color:#fff4d4;}
+.wiki-brand-seal{display:grid;place-items:center;width:44px;height:48px;font:27px/1 SimSun,"Songti SC",serif;border:1px solid #b8a577;box-shadow:inset 0 0 0 4px #29362f,inset 0 0 0 5px #8a7952;}
+.wiki-brand b{display:block;font:24px/1.2 SimSun,"Songti SC",serif;letter-spacing:3px;}
+.wiki-brand small{display:block;margin-top:5px;font-size:11px;color:#c5c6b0;}
+.wiki-search-form{flex:1;max-width:650px;}
+.wiki-search-form label{display:block;font-size:11px;line-height:1.3;color:#d4c8a6;margin-bottom:5px;}
+.wiki-search-form>div{display:flex;}
+.wiki-search-form input{min-width:0;width:100%;height:36px;padding:6px 12px;border:1px solid #73806a;border-right:0;border-radius:0;background:#e7dfc9;color:var(--wiki-ink);font-size:13px;}
+.wiki-search-form input::placeholder{color:#636b60;}
+.wiki-search-form button{border:1px solid #baa773;padding:3px 18px;background:#b9a473;color:#222e25;white-space:nowrap;font-size:13px;}
+.wiki-header-game{margin-left:auto;white-space:nowrap;color:#ded4b6;font-size:12px;text-decoration:none;}
+.wiki-header-game:hover{color:white;}
+.wiki-layout{display:grid;grid-template-columns:232px minmax(0,1fr) 180px;gap:32px;align-items:start;padding:0 32px 0 0;}
+.wiki-desktop-nav{position:sticky;top:94px;align-self:start;max-height:calc(100vh - 94px);overflow:auto;background:#dcd5bf;border-right:1px solid var(--wiki-line);scrollbar-width:thin;}
+.wiki-sidebar{padding:24px 15px 30px;}
+.wiki-sidebar a{text-decoration:none;}
+.wiki-home-link{display:block;padding:0 10px 16px;font-weight:600;border-bottom:1px solid var(--wiki-line);margin-bottom:12px;}
+.wiki-nav-category{margin-block:2px;}
+.wiki-nav-category summary{display:flex;align-items:center;gap:9px;padding:8px 7px;cursor:pointer;font:16px/1.5 SimSun,"Songti SC",serif;list-style:none;}
+.wiki-nav-category summary::-webkit-details-marker{display:none;}
+.wiki-nav-category summary::after{content:"＋";font-size:12px;color:#6c715e;margin-left:auto;}
+.wiki-nav-category[open] summary::after{content:"−";}
+.wiki-nav-category summary>span{display:grid;place-items:center;width:24px;height:24px;border:1px solid #a79b7d;color:#685b39;font-size:13px;}
+.wiki-nav-category summary small{font:10px/1.2 "Microsoft YaHei",sans-serif;color:#6c715e;margin-left:auto;}
+.wiki-nav-category summary small+*{margin-left:0;}
+.wiki-category-link{display:block;font-size:11px;padding:3px 8px 5px 41px;}
+.wiki-nav-topic{padding:3px 0 5px 18px;}
+.wiki-nav-topic p{margin:6px 0 2px 10px;color:#707461;font-size:10px;}
+.wiki-nav-topic a{display:block;margin:1px 0;padding:4px 8px;border-left:2px solid transparent;color:#3a483c;font-size:12px;line-height:1.7;overflow-wrap:anywhere;}
+.wiki-nav-topic a:hover{background:#c9c5ac;}
+.wiki-nav-topic a[aria-current="page"]{border-color:#7c6740;background:#cac5ac;color:#21382b;font-weight:600;}
+.wiki-nav-indexes{display:grid;gap:5px;margin:18px 8px 0;padding-top:16px;border-top:1px solid var(--wiki-line);font-size:12px;}
+.wiki-sidebar-note{font:12px/1.9 SimSun,"Songti SC",serif;color:#68705f;margin:28px 8px 18px;}
+.wiki-return{display:block;margin:0 8px;font-size:12px;}
+.wiki-main{min-width:0;padding:32px 0 56px;}
+.wiki-main h1,.wiki-main h2,.wiki-main h3,.wiki-main h4{font-family:SimSun,"Songti SC","Noto Serif SC",serif;}
+.wiki-main h1{margin:12px 0 18px;font-size:34px;line-height:1.4;font-weight:600;}
+.wiki-main h2{margin:32px 0 16px;font-size:23px;line-height:1.5;font-weight:600;}
+.wiki-main h3{font-size:18px;}
+.wiki-main p{margin:12px 0;}
+.wiki-main li{margin-block:6px;}
+.wiki-main ul,.wiki-main ol{padding-left:23px;}
+.wiki-main .wiki-breadcrumb{display:flex;flex-wrap:wrap;gap:8px;color:#6c725f;font-size:11px;margin:0 0 26px;}
+.wiki-breadcrumb a{text-decoration:none;}
+.wiki-definition{font-size:16px;line-height:1.9;color:#52604f;margin-bottom:22px!important;}
+.wiki-contents{position:sticky;top:112px;max-height:calc(100vh - 134px);overflow:auto;margin-top:36px;padding-left:17px;border-left:1px solid var(--wiki-line);}
+.wiki-contents h2{font:14px/1.5 SimSun,"Songti SC",serif;margin:0 0 16px;}
+.wiki-contents ol,.wiki-contents ul{list-style:none;padding:0;margin:0;}
+.wiki-contents li{margin:10px 0;font-size:11px;line-height:1.8;}
+.wiki-contents a{text-decoration:none;}
+.wiki-contents p{margin-top:28px;font-size:10px;line-height:1.9;color:#727563;}
+.wiki-back-top{display:block;margin-top:18px;font-size:11px;}
+.wiki-cover{position:relative;padding:20px 28px 30px;border-block:1px solid #a39268;background:var(--wiki-paper);box-shadow:inset 5px 0 0 #a7976c;}
+.wiki-main .wiki-bookmark{color:#706440;font:13px/1.5 SimSun,"Songti SC",serif;margin:0 0 12px;}
+.wiki-main .wiki-cover h1{font-size:44px;letter-spacing:5px;margin:0 0 12px;}
+.wiki-cover-intro{font:24px/1.65 SimSun,"Songti SC",serif;color:#3d5142;}
+.wiki-main .wiki-cover-description{font-size:13px;max-width:420px;color:#606a59;}
+.wiki-cover-meta{display:flex;gap:18px;flex-wrap:wrap;margin-top:24px;padding-top:12px;border-top:1px solid #cabd9d;font-size:10px;color:#746d57;}
+.wiki-reading-paths{padding-block:3px 8px;}
+.wiki-reading-path{display:flex;gap:18px;align-items:start;padding:18px 0;border-bottom:1px solid #c5bba0;}
+.wiki-reading-path>span{width:36px;flex:0 0 36px;margin-top:2px;padding:8px 3px;writing-mode:vertical-rl;text-align:center;border-left:2px solid #917e50;font:16px/1.5 SimSun,"Songti SC",serif;color:#79663f;letter-spacing:4px;}
+.wiki-reading-path>div{min-width:0;}
+.wiki-main .wiki-reading-path h3{margin:0;}
+.wiki-main .wiki-reading-path p{font-size:12px;color:#6c735f;margin:3px 0 7px;}
+.wiki-inline-links{display:flex;flex-wrap:wrap;gap:5px 13px;}
+.wiki-inline-links a{font-size:12px;line-height:1.9;text-decoration:none;border-bottom:1px solid #b5b7a0;}
+.wiki-category-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:28px;}
+.wiki-category-section{padding:22px 0;border-top:2px solid #968762;}
+.wiki-category-section header{display:flex;gap:10px;margin-bottom:16px;}
+.wiki-category-symbol{display:grid;place-items:center;width:36px;height:40px;flex-shrink:0;color:#8b7849;background:#d9cfb3;font:22px/1 SimSun,"Songti SC",serif;}
+.wiki-main .wiki-category-section h3{margin:0;font-size:20px;}
+.wiki-category-section h3 a{text-decoration:none;}
+.wiki-main .wiki-category-section header p{margin:4px 0 0;color:#69705e;font-size:11px;line-height:1.9;}
+.wiki-directory-topic{margin:13px 0;}
+.wiki-main .wiki-directory-topic h4{font-size:12px;color:#7c6b48;font-weight:normal;margin:0 0 4px;}
+.wiki-job-index>div{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;padding:16px 0;}
+.wiki-job-index a{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px;text-decoration:none;}
+.wiki-job-index img{width:100%;max-width:68px;aspect-ratio:1;object-fit:contain;image-rendering:pixelated;background:#394237;border-bottom:2px solid #8a7140;}
+.wiki-main .wiki-notice{margin-block:22px;padding:14px 18px;border-left:3px solid var(--wiki-red);background:#dcd3bd;font-size:13px;}
+.wiki-notice strong{font-size:14px;color:#724b3b;}
+.wiki-main .wiki-notice p{margin:7px 0 0;}
+.wiki-home-note>a{display:inline-block;margin-top:10px;}
+.wiki-article-heading{display:flex;align-items:center;gap:24px;margin-bottom:20px;}
+.wiki-article-heading>div{min-width:0;}
+.wiki-article-heading h1{margin-top:0;}
+.wiki-article-portrait{width:106px;height:106px;object-fit:contain;image-rendering:pixelated;background:#354033;border-bottom:3px double #a68d55;}
+.wiki-article-status{display:flex;flex-wrap:wrap;gap:7px;align-items:center;font-size:10px;}
+.wiki-article-status>span{border:1px solid #a8ac95;padding:2px 8px;color:#53634f;}
+.wiki-article-status>.wiki-rule-mixed,.wiki-article-status>.wiki-rule-candidate{border-color:#b18d73;color:#874e3f;}
+.wiki-main .wiki-status-note{font-size:10px;line-height:1.8;color:#717460;padding-bottom:20px;border-bottom:1px solid var(--wiki-line);}
+.wiki-prose-section{margin-bottom:30px;}
+.wiki-prose-section p,.wiki-prose-section li{font-size:15px;line-height:1.95;overflow-wrap:anywhere;}
+.wiki-heading-anchor{display:inline-block;margin-left:10px;font:13px/1 sans-serif;color:#8b876f;text-decoration:none;opacity:.3;}
+.wiki-heading-anchor:hover,.wiki-heading-anchor:focus-visible{opacity:1;}
+.wiki-table-scroll{overflow:auto;max-width:100%;margin:18px 0;border-block:1px solid #a99a76;scrollbar-width:thin;}
+.wiki-table-scroll table{width:100%;border-collapse:collapse;font-size:12px;line-height:1.8;text-align:left;font-variant-numeric:tabular-nums;}
+.wiki-table-scroll th,.wiki-table-scroll td{padding:9px 11px;min-width:64px;vertical-align:top;border-bottom:1px solid #c6bda5;}
+.wiki-table-scroll thead{background:#d2c8ac;color:#3b4838;}
+.wiki-table-scroll tbody th{font-weight:500;min-width:94px;}
+.wiki-table-scroll tbody tr:nth-child(even){background:#f0e9d966;}
+.wiki-table-scroll tbody tr:last-child>*{border-bottom:0;}
+.wiki-formula{margin:18px 0;padding:16px 18px;background:#d5d2bc;border-left:3px solid #718167;font:13px/1.9 Consolas,"Microsoft YaHei",monospace;white-space:pre-wrap;overflow-wrap:anywhere;color:#334c39;}
+.wiki-spoiler{margin-top:20px;border:1px solid #b1a187;padding:14px 17px;background:#e0d4c0;}
+.wiki-spoiler summary{font-size:13px;color:#845044;cursor:pointer;}
+.wiki-related{margin-top:38px;padding-top:3px;border-top:2px solid #a99a76;}
+.wiki-related>div{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;}
+.wiki-source{margin-top:32px;padding-top:14px;border-top:1px solid var(--wiki-line);color:#787762;font-size:11px;}
+.wiki-main .wiki-source p{margin-block:4px;}
+.wiki-topic-section dl,.wiki-term-index{margin:0;}
+.wiki-topic-section dl>div,.wiki-term-index>div{padding:15px 0;border-bottom:1px solid #c4bba1;}
+.wiki-topic-section dt,.wiki-term-index dt{font-family:SimSun,"Songti SC",serif;font-size:18px;}
+.wiki-topic-section dt small{margin-left:10px;font:10px/1.6 sans-serif;color:#8e5046;}
+.wiki-topic-section dd,.wiki-term-index dd{font-size:13px;color:#626b59;margin:5px 0 0;line-height:1.9;}
+.wiki-aliases{display:block;margin-bottom:4px;font-size:11px;color:#7a745d;}
+.wiki-search-results>article{padding:20px 0;border-bottom:1px solid #c4bba1;}
+.wiki-main .wiki-search-results h2{margin:5px 0 9px;font-size:23px;}
+.wiki-search-results h2 a{text-decoration:none;}
+.wiki-main .wiki-search-results p{margin:6px 0;font-size:13px;color:#626b59;}
+.wiki-main .wiki-search-results .wiki-result-category{font-size:10px;color:#7c745a;}
+.wiki-result-category>span{float:right;color:#8b6651;}
+.wiki-empty{padding:30px 0 90px;}
+.wiki-site-footer{display:flex;align-items:center;flex-wrap:wrap;gap:12px 28px;margin:0 32px 0 264px;padding:20px 0;border-top:1px solid var(--wiki-line);font-size:10px;color:#75745e;}
+.wiki-site-footer p{margin:0;}
+.wiki-site-footer a{margin-left:auto;}
+.wiki-mobile-nav{display:none;}
+@media(min-width:1580px){.wiki-shell{margin-block:18px;min-height:calc(100vh - 36px);}.wiki-main{padding-top:38px;}}
+@media(max-width:1200px){.wiki-layout{grid-template-columns:220px minmax(0,1fr);padding-right:32px;}.wiki-contents{display:none;}.wiki-main{max-width:800px;}.wiki-brand{flex-basis:190px;}.wiki-site-footer{margin-left:252px;}}
+@media(max-width:800px){.wiki-masthead{position:relative;flex-wrap:wrap;gap:16px;padding:17px 22px;}.wiki-brand{flex:1;}.wiki-search-form{order:3;flex-basis:100%;max-width:none;}.wiki-layout{display:block;padding:0 22px;}.wiki-main{padding:26px 0 40px;}.wiki-desktop-nav{display:none;}.wiki-mobile-nav{display:block;border-bottom:1px solid #b8ae90;background:#dcd5bf;}.wiki-mobile-nav>summary{cursor:pointer;padding:10px 22px;font-size:13px;}.wiki-mobile-nav .wiki-sidebar{max-height:65vh;overflow:auto;padding-top:8px;}.wiki-site-footer{margin:0 22px;padding-bottom:24px;}.wiki-article-portrait{width:80px;height:80px;}.wiki-article-heading{gap:16px;}.wiki-main h1{font-size:29px;}.wiki-prose-section p,.wiki-prose-section li{font-size:15px;}html{scroll-padding-top:20px;}}
+@media(max-width:520px){.wiki-category-grid{grid-template-columns:1fr;}.wiki-cover{padding:20px;}.wiki-cover-meta{gap:10px;}.wiki-job-index>div{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;}.wiki-main .wiki-cover h1{font-size:36px;}.wiki-cover-intro{font-size:21px;}.wiki-article-heading{align-items:flex-start;}.wiki-article-portrait{width:64px;height:64px;}.wiki-reading-path{gap:12px;}.wiki-table-scroll table{min-width:450px;}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto;}}
+
+/* The reader measures at its real width and paginates complete modules. */
+.wiki-pagination{height:100%;min-height:0;display:flex;flex-direction:column;gap:10px;}
+.wiki-page-stage{position:relative;flex:1;min-height:0;}
+.wiki-page-source,.wiki-page-measure{position:absolute;left:0;top:0;width:100%;visibility:hidden;pointer-events:none;display:flow-root;}
+.wiki-page-source{height:0;overflow:clip;}
+.wiki-page-measure{height:auto;}
+.wiki-page-content{display:flow-root;min-width:0;overflow-wrap:anywhere;}
+.wiki-page-view{height:100%;min-width:0;outline-offset:2px;}
+.wiki-page-controls{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;border-top:1px solid var(--wiki-line);padding-top:8px;flex-shrink:0;font-size:11px;line-height:1.6;}
+.wiki-page-controls button,.wiki-table-pages button{border:1px solid #a99b77;background:var(--wiki-paper);color:var(--wiki-link);padding:4px 9px;font-size:11px;white-space:nowrap;}
+.wiki-page-controls button:disabled,.wiki-table-pages button:disabled{opacity:.45;cursor:default;}
+.wiki-page-controls label{display:flex;align-items:center;gap:4px;}
+.wiki-page-controls input{width:48px;min-width:0;padding:2px;border:1px solid var(--wiki-line);background:var(--wiki-paper);font-size:11px;}
+.wiki-table-pages{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;font-size:11px;line-height:1.6;}
+.wiki-table-scroll{overflow:visible;}
+.wiki-table-scroll table{table-layout:fixed;min-width:0;}
+.wiki-table-scroll th,.wiki-table-scroll td{min-width:0;overflow-wrap:anywhere;}
+.wiki-nav-category>h3{margin:12px 0 5px;font:16px/1.5 SimSun,"Songti SC",serif;}
+.wiki-nav-category>h3 a{display:block;padding:5px 7px;}
+.wiki-nav-category>h3 small{font:10px/1.2 sans-serif;color:#6c715e;}
+.wiki-nav-active>h3{background:#cac5ac;}
+.wiki-contents-paged{min-height:0;padding-block:18px;}
+.wiki-contents-paged .wiki-contents{position:static;max-height:none;overflow:visible;margin-top:0;}
+.wiki-page-content .wiki-main{padding:0;}
+@media(min-width:801px){
+  .wiki-shell{height:100dvh;min-height:0;display:flex;flex-direction:column;}
+  .wiki-masthead{position:relative;flex-shrink:0;min-height:86px;padding-block:11px;}
+  .wiki-layout{flex:1;min-height:0;align-items:stretch;gap:24px;}
+  .wiki-desktop-nav{position:static;align-self:stretch;min-height:0;max-height:none;overflow:visible;padding:12px 10px;}
+  .wiki-sidebar{padding:6px 3px;}
+  .wiki-sidebar-note{margin-block:15px;}
+  .wiki-main{min-height:0;padding:16px 0 12px;}
+  .wiki-main h1{font-size:30px;margin:8px 0 12px;}
+  .wiki-main h2{margin:16px 0 10px;}
+  .wiki-main .wiki-breadcrumb{margin-bottom:12px;}
+  .wiki-article-heading{margin-bottom:10px;gap:16px;}
+  .wiki-definition{margin-bottom:12px!important;}
+  .wiki-main .wiki-status-note{padding-bottom:10px;}
+  .wiki-prose-section{margin-bottom:16px;}
+  .wiki-site-footer{flex-shrink:0;padding:10px 0;margin-left:256px;}
+  .wiki-cover{padding:16px 24px;}
+  .wiki-main .wiki-cover h1{font-size:36px;}
+}
+@media(min-width:1580px){.wiki-shell{height:calc(100dvh - 36px);min-height:0;}}
+@media(min-width:801px) and (max-width:1200px){.wiki-contents-paged{display:none;}.wiki-site-footer{margin-left:244px;}}
+@media(max-width:800px){
+  .wiki-page-stage{flex:none;height:calc(100dvh - 250px);min-height:330px;}
+  .wiki-contents-paged{display:none;}
+  .wiki-mobile-nav .wiki-sidebar{max-height:none;overflow:visible;}
+}

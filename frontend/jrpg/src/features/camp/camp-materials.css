@@ -1,0 +1,111 @@
+/* Unified tavern window skin. The 100px source corners remain 60px
+   square. The source PNGs include old backing inside those slices: remove it
+   with a measured display cutout, without repainting the approved originals.
+   Material, content and decorative rails have separate, non-interactive layers. */
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene] {
+ --camp-frame:url('/jrpg/assets/ui/camp-window-skins/tavern-frame.webp');
+ --camp-texture:url('/jrpg/assets/ui/camp-window-skins/textures-refined/tavern.webp');
+ --camp-bg:#281e2a;--camp-text:#fff2df;--camp-muted:#e2cdb8;
+ --camp-surface:#0c111532;--camp-input:#0d11134d;
+ --camp-line:#e3c4a158;--camp-accent:#f2d7aa;
+ --ink:var(--camp-text);--muted:var(--camp-muted);
+ --camp-ornaments:none;--camp-ornament-size:auto;--camp-ornament-position:center top;
+ --camp-rail-top:44px;--camp-rail-right:33px;--camp-rail-bottom:25px;--camp-rail-left:40px;
+ --camp-corner-cut:25px;--camp-ornament-clip:inset(0);
+ /* Soften pattern contrast with its own place colour; preserve fine artwork
+    and keep the wash below all text, sprites and decorative frame layers. */
+ --camp-texture-wash:color-mix(in srgb,var(--camp-bg,#d0bf98) 18%,transparent);
+ isolation:isolate;position:relative;
+ border:0;outline:0;box-shadow:0 24px 65px #0009;
+ background:transparent;
+}
+/* Stop the texture at the physical inner rail, rather than the rectangular
+   transparent canvas around it. One pixel underlap prevents hairline seams. */
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene]>.camp-window-material {
+ position:absolute;pointer-events:none;z-index:-1;
+ inset:calc(var(--camp-rail-top) - 1px) calc(var(--camp-rail-right) - 1px)
+   calc(var(--camp-rail-bottom) - 1px) calc(var(--camp-rail-left) - 1px);
+ clip-path:polygon(var(--camp-corner-cut) 0,calc(100% - var(--camp-corner-cut)) 0,
+   100% var(--camp-corner-cut),100% calc(100% - var(--camp-corner-cut)),
+   calc(100% - var(--camp-corner-cut)) 100%,var(--camp-corner-cut) 100%,
+   0 calc(100% - var(--camp-corner-cut)),0 var(--camp-corner-cut));
+ background-color:var(--camp-bg,#d0bf98);
+ background-image:linear-gradient(var(--camp-texture-wash),var(--camp-texture-wash)),var(--camp-texture);
+ background-position:center;background-size:cover;background-repeat:no-repeat;
+}
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene]::after {
+ content:"";position:absolute;inset:0;z-index:6;pointer-events:none;
+ box-sizing:border-box;border:60px solid transparent;
+ border-image-source:var(--camp-frame);border-image-slice:100;
+ border-image-width:60px;border-image-repeat:stretch;image-rendering:pixelated;
+ /* The evenodd inner contour removes the opaque 100px-slice backing while
+    retaining fixed-size corner fittings and the actual painted straight rails. */
+ clip-path:polygon(evenodd,0 0,100% 0,100% 100%,0 100%,0 0,
+   calc(var(--camp-rail-left) + var(--camp-corner-cut)) var(--camp-rail-top),
+   calc(100% - var(--camp-rail-right) - var(--camp-corner-cut)) var(--camp-rail-top),
+   calc(100% - var(--camp-rail-right)) calc(var(--camp-rail-top) + var(--camp-corner-cut)),
+   calc(100% - var(--camp-rail-right)) calc(100% - var(--camp-rail-bottom) - var(--camp-corner-cut)),
+   calc(100% - var(--camp-rail-right) - var(--camp-corner-cut)) calc(100% - var(--camp-rail-bottom)),
+   calc(var(--camp-rail-left) + var(--camp-corner-cut)) calc(100% - var(--camp-rail-bottom)),
+   var(--camp-rail-left) calc(100% - var(--camp-rail-bottom) - var(--camp-corner-cut)),
+   var(--camp-rail-left) calc(var(--camp-rail-top) + var(--camp-corner-cut)),
+   calc(var(--camp-rail-left) + var(--camp-corner-cut)) var(--camp-rail-top));
+}
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene]::before {
+ content:"";position:absolute;inset:0;z-index:7;pointer-events:none;
+ background-image:var(--camp-ornaments);background-size:var(--camp-ornament-size);
+ background-position:var(--camp-ornament-position);background-repeat:no-repeat;
+ image-rendering:pixelated;clip-path:var(--camp-ornament-clip);
+}
+.modal.camp-game-window[data-camp-scene="商店"] .shop-counter {
+ background:transparent;font-family:'Microsoft YaHei','Noto Sans SC',sans-serif;
+}
+/* Content sits beyond the entire fixed 60px corner footprint, not just the
+   narrow straight rail. Header/footer reserve space before pagination fits. */
+.modal.camp-game-window[data-camp-scene] {
+ /* Restore the 84px lost to the newly reserved rails. Keep font/sprite scale
+    and whole-module pagination intact rather than pushing the hero to page 2. */
+ height:min(924px,calc(100dvh - 104px));
+ padding:60px;box-sizing:border-box;
+}
+.modal.camp-game-window[data-camp-scene][data-camp-window="stamina"] {height:650px}
+.modal.camp-game-window[data-camp-scene]>header {
+ padding:8px 20px 14px;min-height:84px;background:transparent;
+ border-color:var(--camp-line);
+}
+.modal.camp-game-window[data-camp-scene]>.modal-content {
+ background:transparent;padding:14px 20px!important;
+}
+.modal.camp-game-window[data-camp-scene] .camp-window-footnote {
+ padding:10px 20px 8px;background:transparent;
+}
+.modal.camp-game-window[data-camp-scene] :is(input,select,textarea) {
+ background:var(--camp-input);color:var(--camp-text);
+}
+.modal.camp-game-window[data-camp-scene] :is(.camp-skill-directory,.camp-craft-tools,.camp-commerce-balance,.camp-checkout-bar,.backpack-item,.camp-loot-item,.tavern-panel .local-label) {
+ background:var(--camp-surface);color:var(--camp-text);
+}
+.modal.camp-game-window[data-camp-scene] .storage-cell:hover:not(:disabled) {background:var(--camp-surface)}
+.modal.camp-game-window[data-camp-scene] .camp-skill-detail {background:#e5d8b7;color:#403b2c}
+/* Same tavern material on the chart. Retain all 81 positions and adjust only
+   the ink/connection contrast for the now-dark backing. */
+.modal.memory-modal[data-camp-scene="猎场"]:has(.memory-chart) {
+ padding:64px;background:transparent;
+}
+.modal.memory-modal[data-camp-scene="猎场"] .memory-map {
+ --chart-ink:#eee0bd;border-color:var(--camp-line);background-color:var(--camp-bg);
+ background-image:linear-gradient(var(--camp-texture-wash),var(--camp-texture-wash)),var(--camp-texture);
+}
+.modal.memory-modal[data-camp-scene="猎场"] .memory-inspector {
+ background:var(--camp-surface);color:var(--camp-text);
+ border-color:var(--camp-line);border-top-color:var(--camp-accent);
+}
+.modal.memory-modal[data-camp-scene="猎场"] .memory-edges {stroke:#e2cdb86b}
+.modal.memory-modal[data-camp-scene="猎场"] .memory-edges .traced {stroke:#e5ca8a}
+.modal.memory-modal[data-camp-scene="猎场"] .memory-edges .frontier {stroke:#cdbb92}
+.modal.memory-modal[data-camp-scene="猎场"] .memory-edges .inspected {stroke:#d89ca8}
+.modal.memory-modal[data-camp-scene="猎场"] .memory-edges .traced.inspected {stroke:#f0cf9a}
+.modal.memory-modal[data-camp-scene="猎场"]:has(.memory-chart)>header {
+ color:var(--camp-text);border-color:var(--camp-line);
+}
+.modal.memory-modal[data-camp-scene="猎场"]:has(.memory-chart)>header :is(h2,.eyebrow,button) {color:var(--camp-text)}

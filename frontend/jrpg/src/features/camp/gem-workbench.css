@@ -1,0 +1,117 @@
+/* Scoped workbench layout; parent camp palette and game operations stay authoritative. */
+.camp-gem-workbench.gem-workbench {
+  --gem-line: color-mix(in srgb, var(--camp-accent, #bda16a) 40%, transparent);
+  color: var(--camp-text, #e8dfc8);
+  font-size: 15px;
+  line-height: 1.45;
+  min-width: 0;
+  break-inside: avoid;
+}
+.camp-gem-workbench.gem-workbench :is(p, h3, h4) { margin: 0; color: inherit; }
+.camp-gem-workbench.gem-workbench :is(b, label) { color: var(--camp-text, #e8dfc8); }
+.camp-gem-workbench.gem-workbench small { color: var(--camp-muted, #c3b79c); font-size: 12px; line-height: 1.4; }
+.camp-gem-workbench.gem-workbench > h3,
+.camp-gem-workbench.gem-workbench .gem-workbench-heading h3 {
+  color: var(--camp-accent, #bda16a); font-size: 22px; letter-spacing: 1px;
+}
+.camp-gem-workbench.gem-workbench > p { margin: 6px 0 10px; font-size: 14px; }
+.camp-gem-workbench.gem-workbench .gem-workbench-heading {
+  display: flex; align-items: baseline; gap: 16px; margin-bottom: 10px;
+}
+.camp-gem-workbench.gem-workbench .gem-workbench-heading p { font-size: 13px; color: var(--camp-muted, #c3b79c); }
+.camp-gem-workbench.gem-workbench .camp-tabs { display: flex; margin: 0 0 10px; padding-bottom: 8px; }
+.camp-gem-workbench.gem-workbench button {
+  min-height: 32px; padding: 6px 10px; margin: 0; font-size: 14px; line-height: 1.4;
+  color: var(--camp-text, #e8dfc8); background: var(--camp-surface, #26332b);
+  border: 1px solid var(--gem-line); border-radius: 2px;
+}
+.camp-gem-workbench.gem-workbench button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--camp-accent, #bda16a) 16%, var(--camp-surface, #26332b));
+  border-color: var(--camp-accent, #bda16a); color: var(--camp-text, #e8dfc8);
+}
+.camp-gem-workbench.gem-workbench button[aria-pressed="true"] {
+  border-color: var(--camp-accent, #bda16a);
+  background: color-mix(in srgb, var(--camp-accent, #bda16a) 17%, var(--camp-bg, #19241e));
+  box-shadow: inset 3px 0 var(--camp-accent, #bda16a);
+}
+.camp-gem-workbench.gem-workbench button:focus-visible {
+  outline: 2px solid var(--camp-accent, #bda16a); outline-offset: 2px;
+}
+.camp-gem-workbench.gem-workbench button:disabled { opacity: .6; cursor: not-allowed; }
+.camp-gem-workbench.gem-workbench .camp-portrait-picker {
+  display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; margin: 0 0 12px;
+}
+.camp-gem-workbench.gem-workbench .camp-portrait-picker button { display: flex; align-items: center; gap: 5px; padding: 4px 6px; min-width: 0; }
+.camp-gem-workbench.gem-workbench .camp-portrait-picker img { width: 30px; height: 30px; }
+.camp-gem-workbench.gem-workbench .camp-portrait-picker span { font-size: 13px; }
+.camp-gem-workbench.gem-workbench .gem-workbench-equipment {
+  display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 18px; align-items: stretch;
+}
+.camp-gem-workbench.gem-workbench .gem-workbench-hero .camp-hero-sheet {
+  position: static; box-sizing: border-box; height: 100%; padding: 12px 14px;
+  background: var(--camp-bg, #19241e); border-top: 2px solid var(--camp-accent, #bda16a);
+  border-bottom: 1px solid var(--gem-line);
+}
+.camp-gem-workbench.gem-workbench .gem-workbench-hero .camp-hero-portrait { height: 140px; min-height: 140px; }
+.camp-gem-workbench.gem-workbench .gem-workbench-hero .camp-hero-portrait img { width: 156px; height: 140px; }
+.camp-gem-workbench.gem-workbench .gem-workbench-hero h3 { margin: 8px 0 3px; font-size: 25px; }
+.camp-gem-workbench.gem-workbench .gem-workbench-hero .camp-hero-subjob { font-size: 13px; color: var(--camp-muted, #c3b79c); }
+.camp-gem-workbench.gem-workbench .gem-workbench-hero dl { margin: 10px 0 0; }
+.camp-gem-workbench.gem-workbench .gem-workbench-hero dl > div { padding: 5px 0; border-color: var(--gem-line); }
+.camp-gem-workbench.gem-workbench .gem-workbench-hero dt { color: var(--camp-muted, #c3b79c); font-size: 14px; }
+.camp-gem-workbench.gem-workbench .gem-workbench-hero dd { color: var(--camp-text, #e8dfc8); font-size: 17px; }
+.camp-gem-workbench.gem-workbench .gem-workbench-hero .camp-sheet-note { margin-top: 12px; font-size: 12px; color: var(--camp-muted, #c3b79c); letter-spacing: 1px; }
+.camp-gem-workbench.gem-workbench .gem-workbench-body { min-width: 0; }
+.camp-gem-workbench.gem-workbench .gem-workbench-slots {
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin-bottom: 10px;
+}
+.camp-gem-workbench.gem-workbench .gem-workbench-slots button { min-width: 0; text-align: left; padding: 3px 8px; }
+.camp-gem-workbench.gem-workbench .gem-workbench-slots :is(span, small) { display: block; }
+.camp-gem-workbench.gem-workbench .gem-workbench-slots small { overflow-wrap: anywhere; font-size: 11px; line-height: 1.2; }
+.camp-gem-workbench.gem-workbench .gem-workbench-current {
+  display: flex; align-items: center; gap: 12px; padding: 8px 12px;
+  border-block: 1px solid var(--gem-line); background: var(--camp-bg, #19241e);
+}
+.camp-gem-workbench.gem-workbench .gem-workbench-current > div { flex: 1; min-width: 0; }
+.camp-gem-workbench.gem-workbench .gem-workbench-current h4 { font-size: 18px; color: var(--camp-text, #e8dfc8); }
+.camp-gem-workbench.gem-workbench .gem-workbench-current p { font-size: 12px; color: var(--camp-muted, #c3b79c); }
+.camp-gem-workbench.gem-workbench .gem-workbench-current > button { flex: none; }
+.camp-gem-workbench.gem-workbench .gem-workbench-inventory-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 7px 0 5px; }
+.camp-gem-workbench.gem-workbench .gem-workbench-inventory-heading h4 { font-size: 15px; }
+.camp-gem-workbench.gem-workbench .gem-workbench-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.camp-gem-workbench.gem-workbench .gem-workbench-tile {
+  display: flex; align-items: center; gap: 9px; min-width: 0; min-height: 60px; box-sizing: border-box;
+  padding: 8px 10px; text-align: left; border: 1px solid var(--gem-line); background: var(--camp-surface, #26332b);
+}
+.camp-gem-workbench.gem-workbench .gem-workbench-tile :is(span:not(.camp-item-mark), div) { min-width: 0; }
+.camp-gem-workbench.gem-workbench .gem-workbench-tile :is(b, small) { display: block; overflow-wrap: anywhere; }
+.camp-gem-workbench.gem-workbench .gem-workbench-tile b { font-size: 15px; }
+.camp-gem-workbench.gem-workbench .gem-workbench-tile p { margin-top: 3px; font-size: 13px; }
+.camp-gem-workbench.gem-workbench .camp-item-mark { width: 36px; height: 38px; flex: 0 0 36px; color: var(--camp-accent, #bda16a); border-color: var(--gem-line); }
+.camp-gem-workbench.gem-workbench .camp-item-mark svg { width: 28px; height: 28px; }
+.camp-gem-workbench.gem-workbench .gem-workbench-empty { grid-column: 1 / -1; padding: 24px 14px; border: 1px dashed var(--gem-line); color: var(--camp-muted, #c3b79c); }
+.camp-gem-workbench.gem-workbench .page-turns { min-height: 32px; padding-top: 5px; margin-top: 7px; gap: 10px; color: var(--camp-text, #e8dfc8); }
+.camp-gem-workbench.gem-workbench .page-turns button { min-height: 28px; padding: 3px 10px; font-size: 13px; }
+.camp-gem-workbench.gem-workbench .camp-craft-tools { gap: 14px; margin: 10px 0; padding: 8px 12px; background: var(--camp-bg, #19241e); }
+.camp-gem-workbench.gem-workbench .camp-craft-tools label { gap: 8px; }
+.camp-gem-workbench.gem-workbench :is(input, select) { padding: 5px 8px; font-size: 14px; color: var(--camp-text, #e8dfc8); background: var(--camp-bg, #19241e); }
+.camp-gem-workbench.gem-workbench .camp-gem-recipes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }
+.camp-gem-workbench.gem-workbench .camp-gem-recipes .camp-row { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 6px 10px; padding: 10px 4px; font-size: 14px; }
+.camp-gem-workbench.gem-workbench .camp-gem-recipes .camp-row button { grid-column: 2; justify-self: end; }
+@media (max-width: 900px) {
+  .camp-gem-workbench.gem-workbench .gem-workbench-heading { display: block; }
+  .camp-gem-workbench.gem-workbench .gem-workbench-heading p { margin-top: 4px; }
+  .camp-gem-workbench.gem-workbench .camp-portrait-picker { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .camp-gem-workbench.gem-workbench .gem-workbench-equipment { grid-template-columns: 165px minmax(0, 1fr); gap: 12px; }
+  .camp-gem-workbench.gem-workbench .gem-workbench-slots { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .camp-gem-workbench.gem-workbench .gem-workbench-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .camp-gem-workbench.gem-workbench .gem-workbench-equipment { grid-template-columns: minmax(0, 1fr); }
+  .camp-gem-workbench.gem-workbench .gem-workbench-hero .camp-hero-sheet { display: grid; grid-template-columns: 100px minmax(0, 1fr); column-gap: 14px; text-align: left; }
+  .camp-gem-workbench.gem-workbench .gem-workbench-hero .camp-hero-portrait { grid-row: 1 / 5; height: 150px; min-height: 150px; }
+  .camp-gem-workbench.gem-workbench .gem-workbench-hero .camp-hero-portrait img { width: 100px; height: 145px; }
+  .camp-gem-workbench.gem-workbench .gem-workbench-hero .camp-sheet-note { grid-column: 2; margin-top: 4px; }
+  .camp-gem-workbench.gem-workbench .gem-workbench-current { flex-wrap: wrap; }
+  .camp-gem-workbench.gem-workbench .camp-gem-recipes { grid-template-columns: minmax(0, 1fr); }
+}

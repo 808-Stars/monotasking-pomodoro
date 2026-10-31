@@ -1,0 +1,258 @@
+/* Approved art direction: 灯火下的旅人遗物, 2026-10-25.
+   Bitmap corners keep a fixed size. The old contour-only system still owns
+   semantic roles; this layer supplies the material and painted silhouette. */
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene] {
+ --camp-ui-identity:traveler-relic;
+ --camp-frame:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/window-frame.webp');
+ --camp-bg:#391e28;--camp-text:#f9e9cd;--camp-muted:#d7bda1;
+ --camp-surface:#21151a75;--camp-input:#21151ac9;
+ --camp-line:#b88e5a60;--camp-accent:#e2bc78;
+ --camp-module-trim:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/paper-panel.webp');
+ --camp-module-slice:240 fill;--camp-module-size:26px;
+ --camp-button-filter:none;
+ --ink:var(--camp-text);--muted:var(--camp-muted);
+}
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene]>.camp-window-material {
+ inset:27px;clip-path:polygon(15px 0,calc(100% - 15px) 0,100% 15px,
+ 100% calc(100% - 15px),calc(100% - 15px) 100%,15px 100%,0 calc(100% - 15px),0 15px);
+}
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene]::after {
+ border-image-slice:250;border-image-width:60px;clip-path:none;
+}
+.modal.camp-game-window[data-camp-scene]>header {
+ min-height:104px;border-bottom:1px solid #d6af665e;
+}
+.modal.camp-game-window[data-camp-scene] .camp-window-host {
+ width:94px;height:94px;object-fit:contain;align-self:end;
+ margin-top:-16px;margin-bottom:-10px;
+}
+.modal.camp-game-window[data-camp-scene]>header h2 {
+ font-family:'Noto Serif SC',SimSun,serif;letter-spacing:3px;color:#ffedca;
+ text-shadow:0 2px #351621;
+}
+.modal.camp-game-window[data-camp-scene] .camp-window-footnote {
+ color:#d7bda1;border-color:#ad82484d;
+}
+
+/* Paper furniture: local colour tokens also cover labels nested in a panel.
+   Buttons reset their own ink below, so paper never causes white-on-white. */
+.modal.camp-game-window[data-camp-scene] :is(
+ .camp-hero-sheet,.gem-workbench-current,.gem-workbench-tile,
+ .formation-seat,.formation-reserves,.shop-counter-shelf,.shop-counter-detail,
+ .storage-columns>section,.storage-inspect,.camp-skill-directory,.camp-skill-detail,
+ .camp-codex-frontispiece,.codex-entry,.camp-processing-tray>article,
+ .camp-recipe-grid>.camp-row,.camp-gem-recipes>.camp-row,.camp-qualifications>.camp-row,
+ .camp-confirm,.tavern-compare>section,.tavern-row:has(header),.tavern-code,.tavern-build,
+ .camp-archive-page,.camp-panel[data-camp-panel="stamina"]>p:has(button)
+),
+.modal.memory-modal[data-camp-scene] .memory-inspector {
+ --camp-text:#3b2923;--camp-muted:#78604b;--camp-accent:#8b5731;
+ --camp-line:#8f643d45;--camp-input:#f4e5c5;
+ --camp-surface:#70472712;--ink:var(--camp-text);--muted:var(--camp-muted);
+ --camp-module-trim:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/paper-panel.webp');
+ --camp-module-slice:240 fill;--camp-module-size:26px;
+ color:var(--camp-text);background:transparent;border-color:transparent;
+ isolation:isolate;
+}
+.modal.camp-game-window[data-camp-scene] :is(
+ .camp-hero-sheet,.gem-workbench-current,.gem-workbench-tile,
+ .formation-seat,.formation-reserves,.shop-counter-shelf,.shop-counter-detail,
+ .storage-columns>section,.storage-inspect,.camp-skill-directory,.camp-skill-detail,
+ .camp-codex-frontispiece,.codex-entry,.camp-processing-tray>article,
+ .camp-recipe-grid>.camp-row,.camp-gem-recipes>.camp-row,.camp-qualifications>.camp-row,
+ .camp-confirm,.tavern-compare>section,.tavern-row:has(header),.tavern-code,.tavern-build,
+ .camp-archive-page,.camp-panel[data-camp-panel="stamina"]>p:has(button)
+)::after,
+.modal.memory-modal[data-camp-scene] :is(.memory-map,.memory-inspector)::after {
+ z-index:-1;opacity:1;filter:none;image-rendering:pixelated;
+}
+/* Compact read-only insets use quieter paper-ticket corners, not large clasps. */
+.modal.camp-game-window[data-camp-scene] :is(
+ .gem-workbench-current,.gem-workbench-tile:not(button),.storage-inspect,
+ .camp-processing-tray>article,.camp-recipe-grid>.camp-row,.camp-gem-recipes>.camp-row,
+ .camp-qualifications>.camp-row,.tavern-code,
+ .camp-panel[data-camp-panel="stamina"]>p:has(button)
+) {
+ --camp-module-trim:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/paper-choice.webp');
+ --camp-module-slice:196 fill;--camp-module-size:15px;
+}
+/* Do not surround an entire stack of tickets with another sheet of paper. */
+.modal.camp-game-window[data-camp-scene][data-camp-window] :is(
+ .shop-counter-shelf,.camp-skill-directory,.formation-reserves,.storage-columns>section
+) {
+ --camp-text:#f9e9cd;--camp-muted:#d7bda1;--camp-accent:#e2bc78;
+ --camp-line:#b88e5a60;--camp-input:#21151ac9;
+ --camp-module-trim:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/leather-action.webp');
+ --camp-module-slice:240 fill;--camp-module-size:18px;
+}
+.modal.camp-game-window[data-camp-scene] :is(
+ .shop-counter-shelf,.camp-skill-directory
+) {background:transparent}
+.modal.camp-game-window[data-camp-scene][data-camp-window] .shop-counter-shelf::after,
+.modal.camp-game-window[data-camp-scene][data-camp-window] .camp-skill-directory::after {content:none}
+.modal.camp-game-window[data-camp-scene] .storage-columns>section {padding:18px 20px}
+.modal.camp-game-window[data-camp-scene] .formation-reserves {padding:12px 16px}
+.modal.camp-game-window[data-camp-scene] :is(.camp-skill-detail,.camp-confirm) {border-left:0}
+.modal.camp-game-window[data-camp-scene] .camp-skill-detail :is(b,p,small) {color:var(--camp-text)}
+.modal.camp-game-window[data-camp-scene] :is(.camp-archive-page,.tavern-build) {position:relative}
+.modal.camp-game-window[data-camp-scene] .camp-archive-page {padding:18px 28px}
+.modal.camp-game-window[data-camp-scene] :is(.camp-item-mark,.camp-job-portrait) {image-rendering:pixelated}
+.modal.camp-game-window[data-camp-scene] .camp-hero-sheet h3 {color:#492c23}
+.modal.camp-game-window[data-camp-scene] :is(.camp-hero-subjob,.camp-sheet-note) {color:var(--camp-muted)}
+.modal.camp-game-window[data-camp-scene] .camp-processing-tray>article :is(h4,b,strong) {color:#3b2923}
+.modal.camp-game-window[data-camp-scene] .camp-loot-description {color:#3b2923}
+.modal.camp-game-window[data-camp-scene] .camp-processing-tray>article .rarity {color:#78604b}
+.modal.camp-game-window[data-camp-scene] .camp-processing-tray>article .rarity.SR {color:#73536d}
+.modal.camp-game-window[data-camp-scene] .camp-processing-tray>article .rarity.SSR {color:#96651e}
+
+/* Real buttons: material under text, never a raster painting across the label.
+   No decorative layer participates in hit testing or adds layout dimensions. */
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene]
+ button:where(:not(:is(.memory-node,.gem-workbench-tile,.formation-seat>button:first-child))) {
+ --camp-text:#f9e9cd;--camp-muted:#d7bda1;--camp-accent:#e2bc78;
+ --camp-button-trim:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/leather-action.webp');
+ --camp-button-slice:240 fill;--camp-button-trim-size:14px;
+ --camp-button-trim-inset:0px;--camp-button-filter:none;
+ color:var(--camp-text);background:transparent;border-color:transparent;
+ border-radius:0;box-shadow:none;isolation:isolate;
+ transition:color 120ms,translate 90ms;
+}
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene]
+ button:where(:not(:is(.memory-node,.gem-workbench-tile,.formation-seat>button:first-child)))::before {
+ z-index:-1;opacity:1;filter:none;image-rendering:pixelated;
+ transition:filter 120ms;
+}
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene]
+ button:where(:not(:is(.memory-node,.gem-workbench-tile,.formation-seat>button:first-child))):hover:not(:disabled) {
+ background:transparent;color:var(--camp-text);border-color:transparent;
+}
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene]
+ button:where(:not(:is(.memory-node,.gem-workbench-tile,.formation-seat>button:first-child))):hover:not(:disabled)::before {
+ filter:brightness(1.12);
+}
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene]
+ button:where(:not(:is(.memory-node,.gem-workbench-tile,.formation-seat>button:first-child))):active:not(:disabled) {
+ translate:0 2px;
+}
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene]
+ button:where(:not(:is(.memory-node,.gem-workbench-tile,.formation-seat>button:first-child))):active:not(:disabled)::before {
+ filter:brightness(.86);
+}
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene]
+ button:where(:not(:is(.memory-node,.gem-workbench-tile,.formation-seat>button:first-child))):disabled {
+ opacity:.44;cursor:not-allowed;
+}
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene]
+ :is(.page-turns button,.shop-counter-stepper button,.camp-tabs>button,.camp-portrait-picker button,
+ .formation-seat>.seat-remove),
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene]>header>button {
+ --camp-button-trim-size:9px;
+}
+/* Selectable controls are small paper tickets, with a brighter secured state. */
+.modal.camp-game-window[data-camp-scene] :is(
+ .shop-counter-product,.formation-reserve-list>button,.camp-skill-directory button,
+ .gem-workbench-slots button,.storage-cell
+) {
+ --camp-button-trim:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/paper-choice.webp');
+ --camp-button-slice:196 fill;--camp-button-trim-size:17px;
+ --camp-text:#3b2923;--camp-muted:#78604b;--camp-accent:#8b5731;
+ color:var(--camp-text);background:transparent;text-shadow:none;
+}
+.modal.camp-game-window[data-camp-scene] :is(.formation-seat,button.gem-workbench-tile) {
+ --camp-module-trim:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/paper-choice.webp');
+ --camp-module-slice:196 fill;--camp-module-size:18px;
+}
+.modal.camp-game-window[data-camp-scene] :is(
+ .shop-counter-product,.formation-reserve-list>button,.camp-skill-directory button,
+ .gem-workbench-slots button,.storage-cell
+)[aria-pressed="true"],
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene] :is(
+ .camp-tabs>button,.camp-portrait-picker button
+)[aria-pressed="true"] {
+ --camp-button-trim:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/paper-confirm.webp');
+ --camp-button-slice:280 fill;
+ --camp-text:#3b2923;--camp-muted:#78604b;--camp-accent:#8b5731;
+ color:var(--camp-text);background:transparent;box-shadow:none;border-color:transparent;
+}
+.modal.camp-game-window[data-camp-scene] :is(.formation-seat.seat-selected,button.gem-workbench-tile[aria-pressed="true"]) {
+ --camp-module-trim:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/paper-confirm.webp');
+ --camp-module-slice:280 fill;background:transparent;
+}
+.modal.camp-game-window[data-camp-scene] .formation-seat>button:first-child,
+.modal.camp-game-window[data-camp-scene] .formation-seat>button:first-child small {color:#3b2923}
+.modal.camp-game-window[data-camp-scene] .formation-seat .seat-vitals,
+.modal.camp-game-window[data-camp-scene] .formation-seat .seat-number {color:#78604b}
+.modal.camp-game-window[data-camp-scene] .formation-seat>.seat-remove {color:#f9e9cd}
+.modal.camp-game-window[data-camp-scene] :is(
+ .shop-counter-product,.formation-reserve-list>button,.camp-skill-directory button,
+ .gem-workbench-slots button,.storage-cell
+) :is(small,b,strong,.camp-item-mark) {color:inherit}
+.modal.camp-game-window[data-camp-scene] .storage-cell .storage-icon>b {color:#fff0c5}
+.modal.camp-game-window[data-camp-scene] button[aria-disabled="true"] {opacity:.58;cursor:not-allowed}
+/* Confirm actions have their own ivory ticket; fixed small corner clasps. */
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene] :is(
+ button.primary,.camp-confirm>button:first-of-type,.formation-confirm>button,
+ .shop-counter-add,.shop-counter-checkout,.camp-skill-detail button,.memory-node-actions button
+) {
+ --camp-button-trim:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/paper-confirm.webp');
+ --camp-button-slice:280 fill;--camp-button-trim-size:18px;
+ --camp-text:#3b2923;--camp-muted:#78604b;--camp-accent:#8b5731;
+ color:var(--camp-text);background:transparent;box-shadow:none;border-color:transparent;
+}
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene]
+ button:focus-visible {outline:2px solid #dfa647;outline-offset:3px}
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene] :is(input,select,textarea) {
+ color:var(--camp-text);border-color:var(--camp-line);border-radius:0;
+}
+
+/* Shop adapts the approved layout to the existing stock, basket and pagination. */
+.modal.camp-game-window[data-camp-scene="商店"] .shop-counter-display {
+ grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;
+}
+.modal.camp-game-window[data-camp-scene="商店"] .shop-counter-products {gap:8px}
+.modal.camp-game-window[data-camp-scene="商店"] .shop-counter-product {
+ min-height:62px;padding:9px 20px;column-gap:14px;
+}
+.modal.camp-game-window[data-camp-scene="商店"] .shop-counter-product-name {font-family:'Noto Serif SC',SimSun,serif;font-weight:600;font-size:20px}
+.modal.camp-game-window[data-camp-scene="商店"] .shop-counter-product-price {font-size:16px}
+.modal.camp-game-window[data-camp-scene="商店"] .shop-counter-detail {padding:20px 24px;gap:10px 18px;border:0}
+.modal.camp-game-window[data-camp-scene="商店"] .shop-counter-detail h3 {color:#3b2923}
+.modal.camp-game-window[data-camp-scene="商店"] .shop-counter-showpiece {background:none;border:0}
+.modal.camp-game-window[data-camp-scene="商店"] :is(.shop-counter-kind,.shop-counter-facts,.shop-counter-order-note) {color:#78604b}
+.modal.camp-game-window[data-camp-scene="商店"] .shop-counter-badge {color:#725027;right:20px}
+.modal.camp-game-window[data-camp-scene="商店"] .shop-counter-detail .shop-counter-stepper input {
+ color:#3b2923;background:#f8ebce;border-color:#9a7854;
+}
+.modal.camp-game-window[data-camp-scene="商店"] .shop-counter-basket-list {
+ color:#f9e9cd;background:#391e28;border-color:#bb9058;
+}
+/* The tactical sheet keeps its 81 nodes and its own graph semantics. */
+.modal.memory-modal[data-camp-scene="猎场"] .memory-map {
+ --camp-module-trim:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/leather-action.webp');
+ --camp-module-slice:240 fill;--camp-module-size:24px;isolation:isolate;
+}
+.modal.memory-modal[data-camp-scene="猎场"] .memory-inspector {
+ --ink:#3b2923;--muted:#78604b;
+}
+.modal.memory-modal[data-camp-scene="猎场"] .memory-inspector :is(h3,h4,p,small,dt,dd,.memory-protection-warning) {color:var(--camp-text)}
+.modal.memory-modal[data-camp-scene="猎场"] .memory-inspector :is(.memory-balance,.memory-selection-meta,.memory-prerequisites li,.memory-growth dl>div,.memory-legend) {color:#78604b}
+.modal.memory-modal[data-camp-scene="猎场"] .memory-inspector :is(.memory-node-preview b,.memory-growth .increased) {color:#815124}
+/* Paging is a compact utility even when placed inside a selectable directory.
+   Keep this role after choice/action rules: it owns its ink and its material. */
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene] .page-turns button {
+ --camp-button-kind:action-compact;
+ --camp-button-trim:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/leather-action.webp');
+ --camp-button-slice:240 fill;--camp-button-trim-size:9px;
+ --camp-text:#f9e9cd;--camp-muted:#d7bda1;--camp-accent:#e2bc78;
+ color:#f9e9cd;background:transparent;
+}
+.modal.camp-game-window[data-camp-scene] .camp-skill-directory .page-turns button {
+ --camp-text:#f9e9cd;color:#f9e9cd;min-height:30px;padding:3px 8px;
+}
+.modal.memory-modal[data-camp-scene] .memory-inspector .page-turns {gap:6px}
+.modal.memory-modal[data-camp-scene] .memory-inspector .page-turns button {
+ min-width:0;padding:4px 8px;white-space:nowrap;letter-spacing:0;font:14px/1.5 'Microsoft YaHei',sans-serif;
+}
+@media(prefers-reduced-motion:reduce) {
+ .modal:is(.camp-game-window,.memory-modal)[data-camp-scene] button {transition:none;translate:none}
+}

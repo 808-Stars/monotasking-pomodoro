@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "postbuild": "node scripts/build-jrpg.mjs",
     "test": "node --test --experimental-strip-types src/services/*.test.ts",
     "preview": "vite preview"
   },

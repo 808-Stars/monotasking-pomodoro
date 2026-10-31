@@ -14,6 +14,7 @@ const baseSharedItems: NavItem[] = [
   { to: '/', label: '工作看板', icon: 'dashboard', desc: '全局概览', end: true },
   { to: '/tasks', label: '任务管理', icon: 'task', desc: '管理任务', accent: 'gold' },
   { to: '/projects', label: '项目管理', icon: 'folder', desc: '管理项目', accent: 'gold' },
+  { to: '/jrpg/', label: '灯火冒险', icon: 'joystick', desc: 'JRPG · 浏览器测试版', accent: 'gold' },
 ];
 const gachaItems: NavItem[] = [
   { to: '/gacha', label: '扭蛋机', icon: 'joystick', desc: '娱乐一下' },
@@ -57,7 +58,7 @@ function NavItem({ to, icon, label, desc, end, accent }: {
 }) {
   const activeColor = accent === 'blue' ? 'var(--oto-blue)' : accent === 'red' ? 'var(--oto-accent-alt)' : 'var(--oto-gold)';
   return (
-    <NavLink to={to} end={end}
+    <NavLink to={to} end={end} reloadDocument={to.startsWith('/jrpg/')}
       className={({ isActive }) =>
         `oto-nav-item group flex items-center gap-3 px-3 py-2 mb-0.5 ${isActive ? 'active' : ''}`
       }>

@@ -1,0 +1,114 @@
+/* Mineral pigments, crisp key poses. Ground anchors and unit frames never move. */
+.battle[data-theatre] .theatre-effect {
+  position: absolute;
+  left: 50%; top: 53%; transform: translate(-50%, -50%);
+  width: 82%; height: auto; aspect-ratio: 1;
+  max-width: 256px;
+  image-rendering: pixelated;
+  pointer-events: none; z-index: 7;
+}
+.battle[data-theatre] .battle-combatant .theatre-effect { width: 110%; max-width: 180px; }
+.battle[data-theatre] .battle-hero-art[data-pose="action"] {
+  animation: theatre-strike var(--beat-duration) steps(4,end) both;
+}
+.battle[data-theatre] .guardian-seal[data-pose="action"] {
+  animation: theatre-enemy-action var(--beat-duration) steps(4,end) both;
+}
+.battle[data-theatre] img[data-pose="support"] {
+  animation: theatre-support var(--beat-duration) steps(4,end) both;
+}
+.battle[data-theatre] img[data-pose="hurt"] {
+  animation: theatre-hurt var(--beat-duration) steps(4,end) both;
+}
+.battle[data-theatre] img[data-pose="evade"] {
+  animation: theatre-evade var(--beat-duration) steps(4,end) both;
+}
+.battle[data-theatre] img[data-pose="down"] {
+  opacity: .3; filter: grayscale(.8) !important;
+  animation: theatre-fall var(--beat-duration) steps(4,end) both;
+}
+.battle[data-theatre] .guardian.fallen { opacity: 1; }
+.battle[data-theatre] .guardian.broken { filter: none; }
+.battle[data-theatre] .guardian.broken .guardian-seal,
+.battle[data-theatre] .guardian.broken .vault-guard-art {
+  opacity: .72; filter: grayscale(.75) brightness(.8) !important;
+}
+@keyframes theatre-strike { 0%,100% { translate: 0 0; } 20% { translate: 0 2px; } 45%,65% { translate: 0 -4px; } }
+@keyframes theatre-enemy-action { 0%,100% { translate: 0 0; } 25% { translate: 0 -2px; } 55% { translate: 0 4px; } }
+@keyframes theatre-support { 0%,100% { translate: 0 0; } 40%,60% { translate: 0 -2px; } }
+@keyframes theatre-hurt { 0%,100% { translate: 0 0; } 20% { translate: 3px 0; opacity: .72; } 45% { translate: -2px 0; } 70% { translate: 0 0; } }
+@keyframes theatre-evade { 0%,100% { translate: 0 0; opacity: 1; } 25%,55% { translate: 5px 0; opacity: .5; } }
+@keyframes theatre-fall { from { opacity: .8; } to { opacity: .3; } }
+.battle-feedback {
+  position: absolute; left: 50%; top: 26%; translate: -50% -50%;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 4px; width: max-content; max-width: 240px;
+  pointer-events: none; z-index: 10;
+  color: #e1d6b4; text-align: center;
+  text-shadow: 0 2px 2px #172026, 1px 0 #172026, -1px 0 #172026;
+  animation: theatre-readout var(--beat-duration) steps(6,end) both;
+}
+.battle-feedback strong { font-family: Georgia,"Noto Serif SC",SimSun,serif; font-size: clamp(20px,2.5vw,34px); line-height: 1.1; font-variant-numeric: tabular-nums; }
+.battle-feedback.feedback-heal { color: #c0d0ac; }
+.battle-feedback.feedback-evade { color: #b0c6cf; }
+.battle-feedback.feedback-status strong,
+.battle-feedback.feedback-neutral strong { font-size: 21px; }
+.feedback-tags { display: flex; flex-wrap: wrap; gap: 3px 8px; justify-content: center; max-width: 220px; }
+.feedback-tags small { color: #d9bf89; font-size: 18px; white-space: nowrap; }
+.feedback-break .feedback-tags small:last-child { font-size: 28px; letter-spacing: 3px; color: #f0dfb5; }
+@keyframes theatre-readout { 0% { opacity: 0; margin-top: 8px; } 15% { opacity: 1; margin-top: 0; } 80% { opacity: 1; margin-top: -6px; } 100% { opacity: 0; margin-top: -10px; } }
+.battle-action-name {
+  position: absolute; top: 14px; right: 14px;
+  z-index: 9; width: max-content; max-width: 34%;
+  display: flex; align-items: center; flex-direction: column; gap: 3px;
+  padding: 8px 28px 10px; pointer-events: none;
+  background: linear-gradient(90deg,transparent,#172127dd 20%,#172127dd 80%,transparent);
+  color: #e1d6b4; text-align: center; border-bottom: 1px solid #bea06666;
+}
+.battle-action-name small { font-size: 17px; color: #b1b5b0; }
+.battle-action-name b { font: 24px/1.35 "Noto Serif SC",SimSun,serif; letter-spacing: 2px; }
+.battle-action-name em { font-size: 18px; font-style: normal; color: #c7b2bc; }
+.battle[data-theatre] .intent-updated { outline: 1px solid #bea066; outline-offset: 2px; }
+.battle[data-theatre] .action-icon { width: 42px; height: 42px; top: 3%; opacity: .85; }
+.battle-outcome {
+  position: absolute; top: 40%; left: 50%; translate: -50% -50%;
+  z-index: 12; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  min-width: 220px; width: 40%; padding: 22px 12px;
+  color: #e1d6b4; text-align: center;
+  background: linear-gradient(90deg,transparent,#172127e0 18%,#172127e0 82%,transparent);
+  animation: theatre-outcome 650ms steps(5,end) both;
+}
+.battle-outcome strong { font: 46px/1.2 "Noto Serif SC",SimSun,serif; letter-spacing: 12px; text-indent: 12px; }
+.battle-outcome small { color: #bea066; font-size: 18px; }
+.battle-outcome span { color: #c7c6b7; font-size: 19px; }
+.outcome-defeat strong { color: #bda3a0; }
+@keyframes theatre-outcome { from { opacity: 0; } to { opacity: 1; } }
+.battle[data-theatre] .gauge-track > i { transition: width 180ms linear; }
+.motion-reduced .theatre-effect, .motion-reduced .battle-action-name { display: none; }
+.motion-reduced img { translate: none !important; }
+.theatre-inspection .battle-feedback { animation: none; opacity: 1; }
+.theatre-inspection .battle img { animation: none !important; }
+/* Real battles always use the agreed normal-speed presentation. Camp motion
+   preferences and independent drawing inspection remain separate. */
+@container battle-canvas (max-width:760px) {
+  .battle-action-name { top: 65%; bottom: auto; right: 50%; translate: 50% 0; max-width: 85%; padding: 5px 20px; }
+  .battle-action-name b { font-size: 21px; }
+  .battle-feedback { max-width: 180px; }
+  .battle-combatant .battle-feedback strong { font-size: 27px; }
+  .feedback-tags small { font-size: 16px; }
+  .feedback-break .feedback-tags small:last-child { font-size: 22px; }
+  .battle-outcome { top: 48%; width: 85%; }
+  .battle-outcome strong { font-size: 36px; }
+}
+
+/* The review page is a working theatre, not a separate effect implementation. */
+.theatre-tools { margin: 20px 0; padding: 16px 20px; border: 1px solid #bea06655; background: #20272bcc; }
+.theatre-tools h1 { font: 32px/1.4 "Noto Serif SC",SimSun,serif; margin: 0 0 8px; }
+.theatre-tools p { color: #bec1b4; font-size: 19px; margin: 6px 0 12px; }
+.theatre-tools .tool-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 12px; }
+.theatre-tools label { display: flex; align-items: center; gap: 8px; font-size: 19px; }
+.theatre-tools input[type="range"] { accent-color: #bea066; width: 180px; }
+.theatre-tools select { max-width: 220px; }
+.theatre-tools .selected { border-color: #bea066; color: #eadcbf; }
+.theatre-error { color: #e7b3a9; }

@@ -1,0 +1,206 @@
+{
+  "version": "wood-v2",
+  "columns": 6,
+  "rows": 4,
+  "icons": [
+    {
+      "id": "explosion",
+      "name": "爆破",
+      "group": "异常",
+      "symbol": "炸弹与爆发",
+      "counter": "剩余延迟",
+      "file": "explosion.png"
+    },
+    {
+      "id": "stasis",
+      "name": "凝滞",
+      "group": "异常",
+      "symbol": "束缚的沙漏",
+      "counter": "剩余轮数",
+      "file": "stasis.png"
+    },
+    {
+      "id": "silence",
+      "name": "沉默",
+      "group": "异常",
+      "symbol": "封口",
+      "counter": "剩余轮数",
+      "file": "silence.png"
+    },
+    {
+      "id": "float",
+      "name": "悬浮",
+      "group": "异常",
+      "symbol": "离地的双脚",
+      "counter": "剩余轮数",
+      "file": "float.png"
+    },
+    {
+      "id": "erosion",
+      "name": "侵蚀",
+      "group": "异常",
+      "symbol": "溶蚀与滴液",
+      "counter": "剩余轮数",
+      "file": "erosion.png"
+    },
+    {
+      "id": "confusion",
+      "name": "混乱",
+      "group": "异常",
+      "symbol": "头部与旋涡",
+      "counter": "剩余轮数",
+      "file": "confusion.png"
+    },
+    {
+      "id": "physical-attack-up",
+      "name": "物攻提升",
+      "group": "属性上升",
+      "symbol": "剑与上箭头",
+      "counter": "剩余轮数",
+      "file": "physical-attack-up.png"
+    },
+    {
+      "id": "elemental-attack-up",
+      "name": "属攻提升",
+      "group": "属性上升",
+      "symbol": "魔星与上箭头",
+      "counter": "剩余轮数",
+      "file": "elemental-attack-up.png"
+    },
+    {
+      "id": "physical-defense-up",
+      "name": "物防提升",
+      "group": "属性上升",
+      "symbol": "盾与上箭头",
+      "counter": "剩余轮数",
+      "file": "physical-defense-up.png"
+    },
+    {
+      "id": "elemental-defense-up",
+      "name": "属防提升",
+      "group": "属性上升",
+      "symbol": "星盾与上箭头",
+      "counter": "剩余轮数",
+      "file": "elemental-defense-up.png"
+    },
+    {
+      "id": "speed-up",
+      "name": "速度提升",
+      "group": "属性上升",
+      "symbol": "翼靴与上箭头",
+      "counter": "剩余轮数",
+      "file": "speed-up.png"
+    },
+    {
+      "id": "evade",
+      "name": "回避",
+      "group": "特殊增益",
+      "symbol": "侧移的人影",
+      "counter": "剩余次数",
+      "file": "evade.png"
+    },
+    {
+      "id": "physical-attack-down",
+      "name": "物攻下降",
+      "group": "属性下降",
+      "symbol": "剑与下箭头",
+      "counter": "剩余轮数",
+      "file": "physical-attack-down.png"
+    },
+    {
+      "id": "elemental-attack-down",
+      "name": "属攻下降",
+      "group": "属性下降",
+      "symbol": "魔星与下箭头",
+      "counter": "剩余轮数",
+      "file": "elemental-attack-down.png"
+    },
+    {
+      "id": "physical-defense-down",
+      "name": "物防下降",
+      "group": "属性下降",
+      "symbol": "盾与下箭头",
+      "counter": "剩余轮数",
+      "file": "physical-defense-down.png"
+    },
+    {
+      "id": "elemental-defense-down",
+      "name": "属防下降",
+      "group": "属性下降",
+      "symbol": "星盾与下箭头",
+      "counter": "剩余轮数",
+      "file": "elemental-defense-down.png"
+    },
+    {
+      "id": "speed-down",
+      "name": "速度下降",
+      "group": "属性下降",
+      "symbol": "翼靴与下箭头",
+      "counter": "剩余轮数",
+      "file": "speed-down.png"
+    },
+    {
+      "id": "physical-evade",
+      "name": "物理回避",
+      "group": "特殊增益",
+      "symbol": "避开剑锋的人影",
+      "counter": "剩余次数",
+      "file": "physical-evade.png"
+    },
+    {
+      "id": "hp-regeneration",
+      "name": "HP缓释",
+      "group": "特殊增益",
+      "symbol": "心形与循环箭头",
+      "counter": "剩余轮数",
+      "file": "hp-regeneration.png"
+    },
+    {
+      "id": "sp-regeneration",
+      "name": "SP缓释",
+      "group": "特殊增益",
+      "symbol": "水滴与循环箭头",
+      "counter": "剩余轮数",
+      "file": "sp-regeneration.png"
+    },
+    {
+      "id": "guarding",
+      "name": "防御中",
+      "group": "特殊增益",
+      "symbol": "加固的盾",
+      "counter": null,
+      "file": "guarding.png"
+    },
+    {
+      "id": "break",
+      "name": "Break",
+      "group": "破防状态",
+      "symbol": "裂开的盾",
+      "counter": null,
+      "file": "break.png"
+    },
+    {
+      "id": "party-medicine",
+      "name": "药品全体化",
+      "group": "特殊增益",
+      "symbol": "药瓶与三个人影",
+      "counter": "剩余轮数",
+      "file": "party-medicine.png"
+    },
+    {
+      "id": "spell-amplification",
+      "name": "魔法强化",
+      "group": "特殊增益",
+      "symbol": "法书与双星",
+      "counter": "剩余次数（大魔法／超魔法另标）",
+      "file": "spell-amplification.png"
+    }
+  ],
+  "frameColors": {
+    "异常": "灰紫",
+    "属性上升": "暗朱红",
+    "属性下降": "灰青绿",
+    "特殊增益": "哑金",
+    "破防状态": "冷灰"
+  }
+}

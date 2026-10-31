@@ -1,0 +1,105 @@
+/* Approved walnut-frame pixel assets stay unfiltered, still, and transparent.
+   Layout is an overlay: no change to the camera plate or unit ground anchors. */
+.battle .unit-status-icons {
+  --status-icon-size: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-content: end;
+  align-items: center;
+}
+.battle .unit-status-icon {
+  position: relative;
+  display: inline-flex;
+  width: var(--status-icon-size);
+  height: var(--status-icon-size);
+  flex: 0 0 var(--status-icon-size);
+  padding: 0;
+  color: #f0dfb8;
+  cursor: help;
+  pointer-events: auto;
+  line-height: 1;
+}
+.battle .unit-status-icon > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: none;
+}
+.battle .status-icon-count,
+.battle .status-icon-tag {
+  position: absolute;
+  font: bold 18px/1 "Courier New", monospace;
+  color: #fff0c6;
+  text-shadow: 1px 1px #25231d, -1px -1px #25231d, 1px -1px #25231d, -1px 1px #25231d;
+  pointer-events: none;
+}
+.battle .status-icon-count { right: 0; bottom: 0; }
+.battle .status-icon-tag { left: 1px; top: 1px; font-size: 16px; }
+.battle .unit-status-icon[data-status-icon="spell-amplification"] .status-icon-tag { font-size: 10px; }
+.battle .unit-status-icon:focus-visible {
+  outline: 1px solid #dcc28b;
+  outline-offset: 2px;
+}
+.battle .unit-status-icon[hidden] { display: none; }
+.battle .unit-status-icons { --status-more-width: var(--status-icon-size); }
+.battle .status-icons-toggle-slot {
+  display: block;
+  flex: 0 0 var(--status-more-width);
+  width: var(--status-more-width);
+  height: var(--status-icon-size);
+}
+.battle .status-icons-toggle {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #8b795a80;
+  border-radius: 0;
+  background: #161a18a6;
+  color: #dcc28b;
+  font: 15px/1 SimSun, serif;
+  letter-spacing: 0;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.battle .status-icons-toggle:hover { background: #8b795a30; }
+.battle .status-icons-toggle:focus-visible { outline: 1px solid #dcc28b; outline-offset: 2px; }
+.battle .status-icons-readout { margin-top: 5px; }
+.battle-status-popover {
+  position:fixed;z-index:100;margin:0;padding:12px;border:1px solid #bea066;
+  background:#252b27f5;color:#e1d6b4;overflow:visible;box-sizing:border-box;box-shadow:0 6px 20px #0005;
+}
+.battle-status-popover p { margin:0 0 10px;font:18px/1.4 SimSun,serif; }
+.battle.battle-status-popover .unit-status-icons { --status-icon-size:24px;gap:6px; }
+.battle-card-scene .command-body { border:0;margin:0;padding:0;min-width:0; }
+.battle .status-icons-field {
+  position: absolute;
+  z-index: 6;
+  width: 68px;
+  overflow: visible;
+  pointer-events: auto;
+}
+.battle .battle-combatant > .status-icons-field {
+  left: 77%;
+  bottom: 15%;
+}
+.battle .guardian > .status-icons-field {
+  left: 78%;
+  bottom: 16%;
+}
+@container battle-canvas (max-width:760px) {
+  .battle .battle-combatant > .status-icons-field {
+    --status-icon-size: 24px;
+    width: 24px;
+    left: 76%;
+    bottom: 0;
+  }
+  .battle .status-icons-readout { --status-icon-size: 28px; }
+}

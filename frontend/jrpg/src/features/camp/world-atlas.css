@@ -1,0 +1,55 @@
+/* Landmarks sit on a single continuous world, not a grid of menu cards. */
+.app-shell .world-atlas {
+  padding:0;overflow:hidden;background:#17242c;isolation:isolate;
+  border:1px solid #9e8b6666;font-family:SimSun,"Noto Serif SC",serif;
+}
+.world-map.world-atlas::before {
+  background-image:url('/jrpg/assets/scenes/world-map-camp-layout-matched-20261018.webp');
+  background-position:center;background-size:cover;filter:none;
+}
+.world-map.world-atlas::after {
+  background:linear-gradient(180deg,#0b172649,transparent 30%,transparent 76%,#0b1726aa),linear-gradient(90deg,#101b2a59,transparent 28%,transparent 80%,#101b2a26);
+}
+.world-atlas .atlas-heading { position:absolute;z-index:3;left:40px;top:32px;pointer-events:none;text-shadow:0 2px 6px #08111b; }
+.atlas-heading .atlas-kicker { color:#d6c398;font-size:16px;letter-spacing:5px; }
+.world-atlas .atlas-heading h1 { font:40px/1.3 SimSun,serif;letter-spacing:7px;margin:10px 0 14px;color:#f1e5c9; }
+.world-atlas .atlas-heading p { color:#d4d8d1;font-size:17px;margin:0; }
+.world-atlas .map-route {
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:max(100%,calc(100dvh * 16 / 9));height:max(100dvh,calc((100vw - 32px) * 9 / 16));
+  max-width:none;display:block;margin:0;padding:0;pointer-events:none;
+}
+.world-atlas .map-route .atlas-place {
+  position:absolute;left:var(--place-x);top:var(--place-y);transform:translate(-50%,-50%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  width:230px;min-height:126px;padding:9px 10px 12px;border:0;border-radius:0;
+  background:radial-gradient(ellipse at center,#121f2ac9, #121f2a7d 45%,transparent 72%);
+  color:#f1e1bb;pointer-events:auto;cursor:pointer;text-shadow:0 2px 3px #000;
+}
+.world-atlas .atlas-place.place-camp { --place-x:50%;--place-y:80%; }
+.world-atlas .atlas-place.place-coin { --place-x:26%;--place-y:42%; }
+.world-atlas .atlas-place.place-exp { --place-x:77%;--place-y:39%; }
+.world-atlas .atlas-place.place-jp { --place-x:22%;--place-y:66%; }
+.world-atlas .atlas-place.place-gem { --place-x:80%;--place-y:68%; }
+.world-atlas .atlas-place.place-throne { --place-x:51%;--place-y:21%; }
+.atlas-place .atlas-head { position:relative;display:grid;place-items:center;width:70px;height:64px; }
+.atlas-head::after { content:"";position:absolute;bottom:1px;left:50%;width:6px;height:6px;background:#e2c689;transform:translateX(-50%) rotate(45deg);box-shadow:0 0 0 3px #172432aa; }
+.atlas-head img { width:62px;height:62px;object-fit:contain;image-rendering:pixelated;transition:transform 160ms; }
+.world-atlas .atlas-place b { font-size:23px;line-height:1.4;letter-spacing:2px;padding:2px 12px;border-bottom:1px solid #d4bc7966; }
+.atlas-place .atlas-resource { color:#e3cca2;font-size:15px;display:flex;gap:12px;align-items:center; }
+.atlas-resource > span { color:#c7a766;font-size:12px;letter-spacing:2px; }
+.world-atlas .atlas-place small { font-size:14px;color:#ccd1c9;line-height:1.5; }
+.world-atlas .atlas-place:hover,.world-atlas .atlas-place:focus-visible { color:#ffedbf;outline:none;background:radial-gradient(ellipse at center,#172934eb,#172934a3 45%,transparent 73%); }
+.world-atlas .atlas-place:focus-visible b { outline:2px solid #efcf85;outline-offset:5px; }
+.atlas-place:hover .atlas-head img,.atlas-place:focus-visible .atlas-head img { transform:translateY(-5px); }
+.world-atlas .place-cleared b { border-bottom-color:#b9c99c; }
+.world-atlas .place-cleared small { color:#cbd5a9; }
+.atlas-hint { position:absolute;z-index:3;bottom:18px;left:50%;transform:translateX(-50%);color:#e4dac0;font-size:16px;text-align:center;text-shadow:0 2px 4px #000;white-space:nowrap; }
+.atlas-hint span { margin-left:18px;font-size:13px;color:#b9bfb8; }
+@media (max-width:1100px) {
+  .world-atlas .atlas-heading { left:24px;top:20px; }
+  .world-atlas .atlas-heading h1 { font-size:32px; }
+  .world-atlas .map-route .atlas-place { width:180px; }
+  .world-atlas .atlas-place b { font-size:20px; }
+}
+@media (prefers-reduced-motion:reduce) { .atlas-head img { transition:none; } }

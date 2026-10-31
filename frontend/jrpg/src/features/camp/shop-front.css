@@ -1,0 +1,213 @@
+/* Shop-only composition faithful to the approved travel-counter concept.
+   This scope deliberately outranks the shared paper/button roles. Warehouse
+   and confirmation pages retain their own pagination and compact header. */
+.camp-shop-welcome,.camp-shop-purse {display:none}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) {
+ width:1640px;height:944px;max-width:calc(100vw - 80px);max-height:calc(100dvh - 80px);
+ padding:42px;display:flex;flex-direction:column;gap:0;
+ --camp-ui-identity:traveler-relic;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter)::after {
+ border-image-width:76px;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter)>header {
+ display:flex;align-items:center;flex:none;height:156px;min-height:156px;
+ padding:0 24px 12px;gap:26px;border-bottom:2px solid #c0955359;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .camp-window-heading {
+ gap:22px;flex:1;min-width:0;align-items:center;height:100%;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .camp-window-host {
+ width:202px;height:100%;max-height:100%;flex:none;align-self:end;margin:0;
+ object-fit:contain;object-position:center bottom;image-rendering:pixelated;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) header .eyebrow {display:none}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) header h2 {
+ font:64px/1.15 'Noto Serif SC',SimSun,serif;letter-spacing:9px;margin:0 0 8px;
+ color:#ffedcc;text-shadow:0 3px #351621;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .camp-shop-welcome {
+ display:block;margin:0;color:#e3c79e;font:19px/1.6 'Noto Serif SC',SimSun,serif;letter-spacing:1px;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .camp-shop-purse {
+ display:flex;position:relative;align-items:center;justify-content:center;gap:16px;
+ isolation:isolate;min-width:278px;height:60px;padding:0 26px;color:#ecd6af;
+ font:22px/1.3 'Noto Serif SC',SimSun,serif;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .camp-shop-purse::before {
+ content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
+ border:20px solid transparent;border-image:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/leather-action.webp') 240 fill / 20px;
+ filter:saturate(.5) brightness(.74);image-rendering:pixelated;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .camp-shop-purse>span:first-child {
+ display:grid;place-items:center;width:30px;height:30px;border:3px double #dab269;border-radius:50%;
+ color:#efc977;background:#6f491e;font-size:17px;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .camp-shop-purse b {font-size:27px;color:#ffedcc;font-variant-numeric:tabular-nums}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter)>header>button {
+ --camp-button-trim-size:24px;min-width:112px;min-height:64px;padding:12px 22px;font-size:21px;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter)>.modal-content {
+ flex:1;min-height:0;padding:12px 24px 0!important;
+}
+/* The old column-fragmented outer book must not split the counter. Products
+   still use the real four-item pager; all transaction state stays in React. */
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .book-page-flow {
+ columns:auto;column-gap:0;transform:none!important;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .book-pager>.page-turns {display:none}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .camp-panel {
+ height:100%;display:flex;flex-direction:column;gap:14px;min-height:0;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-toolbar {
+ display:flex;align-items:center;justify-content:space-between;gap:24px;flex:none;min-height:62px;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-spending {
+ order:2;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:0;
+ padding:0!important;margin:0!important;border:0;font-size:16px;white-space:nowrap;line-height:1.6;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-spending small {font-size:13px;color:#cfb995}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .camp-tabs {
+ display:flex;gap:10px;padding:0;margin:0;border:0;flex-wrap:nowrap;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .camp-tabs>button {
+ --camp-button-trim-size:15px;min-height:46px;padding:9px 23px;font-size:18px;white-space:nowrap;
+ --camp-text:#f9e9cd;color:#f9e9cd;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .camp-tabs>button[aria-pressed="true"],
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .camp-tabs>button[aria-pressed="true"]:hover:not(:disabled) {
+ --camp-text:#3b2923;color:#3b2923;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .camp-tabs>button:not([aria-pressed="true"]):hover:not(:disabled) {
+ --camp-text:#f9e9cd;color:#f9e9cd;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter {
+ flex:1;height:auto;max-height:none;min-height:0;gap:14px;
+ grid-template-rows:minmax(0,1fr) 76px;font-family:'Noto Serif SC',SimSun,serif;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-balance {display:none}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-display {
+ grid-template-columns:minmax(0,1.16fr) minmax(0,1fr);gap:32px;min-height:0;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-shelf {
+ padding:0;border:0;background:none;min-height:0;color:#efdbb8;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-shelf::after {content:none}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-shelf>.item-pages {
+ height:100%;display:flex;flex-direction:column;gap:10px;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-products {
+ display:grid;grid-template-columns:1fr;grid-template-rows:repeat(4,minmax(0,1fr));gap:13px;flex:1;min-height:0;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-product {
+ --camp-button-trim-size:34px;
+ display:grid;grid-template-columns:80px minmax(0,1fr) auto;align-items:center;
+ width:100%;min-height:0;height:100%;padding:13px 32px;gap:18px;
+ color:#493326;border:0;box-shadow:none;overflow:visible;isolation:isolate;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-product::before {
+ filter:brightness(.86) saturate(.8);opacity:1;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-product:hover:not(:disabled)::before {filter:brightness(.96) saturate(.85)}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-product[aria-pressed="true"] {
+ --camp-button-trim:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/paper-confirm.webp');
+ --camp-button-slice:280 fill;--camp-button-trim-size:34px;color:#302019;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-product[aria-pressed="true"]::before,
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-product[aria-pressed="true"]:hover:not(:disabled)::before {
+ filter:brightness(1.06);
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-product[aria-pressed="true"]::after {
+ content:'◆';display:grid;place-items:center;position:absolute;left:-14px;top:calc(50% - 22px);
+ width:42px;height:44px;z-index:1;pointer-events:none;color:#583615;font-size:23px;
+ background:#c6a05c;border:3px double #f4d28d;box-shadow:2px 3px 0 #5a351d;
+ clip-path:polygon(0 0,78% 0,100% 23%,100% 77%,78% 100%,0 100%);
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-product-copy {
+ display:flex;flex-direction:column;gap:5px;min-width:0;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-product-name {
+ font:600 27px/1.2 'Noto Serif SC',SimSun,serif;letter-spacing:1px;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-product-description {
+ font:17px/1.45 'Microsoft YaHei',sans-serif;color:#72563e;
+ display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-product-price {
+ font-size:25px;color:#493326;white-space:nowrap;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-product-price small {font-size:17px;color:#72563e}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-product>.camp-item-mark {
+ width:76px;height:76px;padding:8px;position:relative;isolation:isolate;color:#b08b4f;
+ background:#392a23;border:2px solid #b89660;box-shadow:inset 0 0 0 3px #241e1a66;
+ clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px);
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-product>.camp-item-mark svg {width:52px;height:52px}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-badge {
+ right:34px;bottom:8px;font:13px/1.2 'Microsoft YaHei',sans-serif;color:#825b2c;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-shelf .page-turns {
+ flex:none;min-height:32px;padding:0;margin:0;border:0;color:#e4cba2;gap:16px;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-shelf .page-turns button {min-height:32px;padding:3px 14px;font-size:15px}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-detail {
+ --camp-module-size:58px;--camp-module-slice:240 fill;
+ display:grid;grid-template-columns:210px minmax(0,1fr);
+ grid-template-rows:minmax(0,1fr) auto auto 70px 22px;
+ align-content:stretch;gap:12px 20px;padding:36px 38px 28px;border:0;
+ background:transparent;color:#3b2923;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-detail::after {
+ content:'';z-index:-1;filter:none;opacity:1;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-showpiece {
+ grid-column:1;grid-row:1 / 3;display:grid;place-items:center;align-self:stretch;border:0;background:none;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-showpiece .camp-item-mark {
+ width:202px;height:202px;border:0;background:transparent;color:#896438;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-showpiece svg {width:150px;height:150px}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-intro {grid-row:1 / 3;grid-column:2;align-self:center}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-kind {
+ font:15px/1.5 'Microsoft YaHei',sans-serif;letter-spacing:2px;color:#8c6b48;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-intro h3 {
+ font:600 34px/1.3 'Noto Serif SC',SimSun,serif;color:#3b2923;margin:6px 0 15px;letter-spacing:2px;
+ padding-bottom:14px;border-bottom:1px solid #a2825559;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-description {font-size:20px;line-height:1.8;color:#5c4330}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-facts {
+ grid-row:3;padding:12px 0;border-top:1px solid #a2825559;gap:6px 24px;font-size:17px;color:#70553b;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-order {grid-row:4;gap:20px;align-items:stretch}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-stepper {gap:6px;align-items:center}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-stepper button {
+ --camp-button-trim-size:16px;width:42px;height:48px;min-height:48px;font-size:23px;padding:4px;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-stepper input {
+ width:54px;height:44px;min-height:44px;padding:4px;font-size:21px;color:#3b2923;background:#f8ebce;border-color:#aa8757;
+ appearance:textfield;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) input::-webkit-inner-spin-button {appearance:none}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-add {
+ --camp-button-trim-size:32px;min-height:70px;padding:10px 20px;font:600 26px/1.3 'Noto Serif SC',SimSun,serif;
+ letter-spacing:2px;color:#3b2923;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-order-note {grid-row:5;font-size:14px;color:#826444}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-basket {
+ display:flex;align-items:center;justify-content:space-between;gap:22px;padding:10px 0 0;
+ border-top:2px solid #b88b4e69;color:#e8cfa7;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-basket-heading {gap:18px;min-width:0}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-summary {font-size:17px}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-clear {min-height:36px;padding:6px 14px;font-size:15px}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-settle {gap:20px;margin:0;font-size:19px}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-settle b {font-size:29px;color:#ffe7bc}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-budget {font-size:14px;color:#c8ab85}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-checkout {
+ --camp-button-trim-size:23px;min-height:52px;min-width:174px;font-size:22px;
+}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .shop-counter-basket-list {bottom:76px}
+.modal.camp-shop-front[data-camp-scene][data-camp-window]:has(.shop-counter) .camp-window-footnote {
+ flex:none;min-height:28px;padding:4px 24px 0;border:0;font-size:13px;
+}

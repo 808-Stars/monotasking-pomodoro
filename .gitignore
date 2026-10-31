@@ -6,6 +6,7 @@ frontend/dist/
 
 # Environment
 frontend/.env
+frontend/.env.*
 
 # OS
 .DS_Store

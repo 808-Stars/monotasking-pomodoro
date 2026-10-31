@@ -1,0 +1,132 @@
+.backpack-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 24px;
+  max-height: 380px;
+  overflow: auto;
+}
+.backpack-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #92785155;
+}
+.backpack-item small {
+  display: block;
+  color: #78654d;
+  font-size: 18px;
+}
+.backpack-item input {
+  width: 62px;
+}
+.tavern-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.tavern-panel {
+  color: var(--ink);
+  line-height: 1.6;
+}
+.tavern-panel button {
+  padding: 7px 10px;
+}
+.tavern-panel button[aria-pressed="true"] {
+  outline: 2px solid #8a633e;
+}
+.tavern-panel .local-label {
+  padding: 10px 14px;
+  background: #78654d14;
+  border-left: 3px solid #8a633e;
+}
+.tavern-panel h3 {
+  margin: 18px 0 8px;
+}
+.tavern-panel label {
+  display: block;
+}
+.tavern-panel select,
+.tavern-panel input {
+  padding: 7px;
+  background: #f1e5cb;
+  border: 1px solid #92785180;
+  color: #463b2a;
+  max-width: 100%;
+}
+.tavern-row {
+  padding: 14px 0;
+  border-bottom: 1px solid #92785155;
+}
+.tavern-row header {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+}
+.tavern-compare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.tavern-compare article {
+  padding: 10px 18px;
+  border: 1px solid #92785155;
+}
+.tavern-compare ul {
+  padding-left: 20px;
+}
+.tavern-compare .different {
+  color: #a34932;
+}
+.tavern-code {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.tavern-code input {
+  flex: 1;
+  min-width: 200px;
+}
+.tavern-jobs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.tavern-supports {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 8px 0;
+}
+.tavern-supports label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tavern-gems {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.gem-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 14px 0;
+}
+.gem-grid select {
+  display: block;
+  max-width: 100%;
+}
+@media (max-width: 700px) {
+  .backpack-grid,
+  .tavern-compare,
+  .tavern-jobs,
+  .tavern-gems {
+    grid-template-columns: 1fr;
+  }
+}

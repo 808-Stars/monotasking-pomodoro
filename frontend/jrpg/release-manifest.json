@@ -1,0 +1,1151 @@
+{
+  "source": "monopomo-jrpg-demo",
+  "base": "/jrpg/",
+  "format": "lossless WebP; original dimensions and alpha",
+  "asset_count": 190,
+  "source_bytes": 157385071,
+  "bytes": 113185561,
+  "assets": [
+    {
+      "file": "public/assets/action-icons/axe.webp",
+      "sha256": "1c9602c6a5c16999b8b20bbd2f90857eea3cea82b74349174eef014eac4abd87",
+      "source_bytes": 1738,
+      "bytes": 1266
+    },
+    {
+      "file": "public/assets/action-icons/boost.webp",
+      "sha256": "94417724f96b4333ada3a01a41162775126f54412885a1a1b1ba927f0ededbd0",
+      "source_bytes": 2191,
+      "bytes": 1690
+    },
+    {
+      "file": "public/assets/action-icons/bow.webp",
+      "sha256": "de0be0b249daa0480c5edfbc90dbcd42a4dc1f5406fe3cf1496dfa70c6f50b3d",
+      "source_bytes": 1564,
+      "bytes": 1146
+    },
+    {
+      "file": "public/assets/action-icons/earth.webp",
+      "sha256": "053ec54feb48112b37a49d974332d7ed4250a3b83bac25ca73ef5bbb317a900f",
+      "source_bytes": 2425,
+      "bytes": 1818
+    },
+    {
+      "file": "public/assets/action-icons/fan.webp",
+      "sha256": "60bebb0311907bc106b4c840554f925430a35d087e3e4d4177a8f92edc46c5ec",
+      "source_bytes": 1824,
+      "bytes": 1338
+    },
+    {
+      "file": "public/assets/action-icons/fire.webp",
+      "sha256": "9c3368ac82292fbf721e90e44ec21e0b446583cae8fde99555065c5f7b491585",
+      "source_bytes": 1882,
+      "bytes": 1340
+    },
+    {
+      "file": "public/assets/action-icons/heal.webp",
+      "sha256": "7b0f2d0001fb4a4e8a881c038e635126344ab8d123db44841caa786de2cd31c1",
+      "source_bytes": 2319,
+      "bytes": 1820
+    },
+    {
+      "file": "public/assets/action-icons/potion.webp",
+      "sha256": "b8c1cecb0dc4ee0c739b997e6da2bd9f0b851e151cfa1aab79ac5e7e3daa5213",
+      "source_bytes": 1935,
+      "bytes": 1516
+    },
+    {
+      "file": "public/assets/action-icons/shield.webp",
+      "sha256": "394151850da26f941e9717c5e02a631e9237a01259a2d016be27bd12b486b061",
+      "source_bytes": 2250,
+      "bytes": 1738
+    },
+    {
+      "file": "public/assets/action-icons/spear.webp",
+      "sha256": "7c0922a84406d33fc13c19fc52d2e3f46ee342882c16fde7fb4f215c33edad76",
+      "source_bytes": 1402,
+      "bytes": 1010
+    },
+    {
+      "file": "public/assets/action-icons/staff.webp",
+      "sha256": "a7a941e4cde8daf346d90c2e2c5155e1aa0ae25e1e84bd49fc7f940461454e84",
+      "source_bytes": 1517,
+      "bytes": 1122
+    },
+    {
+      "file": "public/assets/action-icons/sword.webp",
+      "sha256": "b78cdd375b65e179c9f51028aa5c9602dc156561b8e235fd782e1f49c6579093",
+      "source_bytes": 1758,
+      "bytes": 1312
+    },
+    {
+      "file": "public/assets/action-icons/thunder.webp",
+      "sha256": "078569724742bec80cea8d6048587d35a0bf92cac23b6fc637777f87327117fd",
+      "source_bytes": 1834,
+      "bytes": 1356
+    },
+    {
+      "file": "public/assets/action-icons/water.webp",
+      "sha256": "4bba2c19e1d3e6ec313a432323bf5e5ce6d569baaf5e281df8adb74f93ebf9e3",
+      "source_bytes": 1771,
+      "bytes": 1302
+    },
+    {
+      "file": "public/assets/action-icons/wind.webp",
+      "sha256": "5e3cbfc895205f05c57d51b807e597b9e6c024bf004d7d8d75662b78859392a6",
+      "source_bytes": 2395,
+      "bytes": 1854
+    },
+    {
+      "file": "public/assets/action-icons/wood.webp",
+      "sha256": "eacc96bb40a960a46b2412ed619560b47995555f7a0f20f5a0c9a1bb82deea9c",
+      "source_bytes": 2081,
+      "bytes": 1502
+    },
+    {
+      "file": "public/assets/battle-rear/apothecary.webp",
+      "sha256": "6f23017506fe177dd984b0eda011d90533f8f1624b78d5c15402fffb7f4b4c69",
+      "source_bytes": 980756,
+      "bytes": 679632
+    },
+    {
+      "file": "public/assets/battle-rear/cleric.webp",
+      "sha256": "793e65dd33d610d8c229a0caef9d4999b187955cb76b54cd0c91859909ce3e6d",
+      "source_bytes": 1042379,
+      "bytes": 721154
+    },
+    {
+      "file": "public/assets/battle-rear/dancer.webp",
+      "sha256": "953ca1da38e86712bee52f601a467ae4af3b38318b6b0d62d20f201a806b1bb8",
+      "source_bytes": 1211800,
+      "bytes": 894580
+    },
+    {
+      "file": "public/assets/battle-rear/echo-archivist.webp",
+      "sha256": "509dd59da6863658c07b8b7708dd10515acd8c1f76090cd06fc5a9e9968ddd55",
+      "source_bytes": 1815563,
+      "bytes": 1253572
+    },
+    {
+      "file": "public/assets/battle-rear/final-aberration.webp",
+      "sha256": "5ead92f0963d83335c6abcb0c4f3ce488dcb86200328cb192a7d26c88f0f6861",
+      "source_bytes": 2889176,
+      "bytes": 2103752
+    },
+    {
+      "file": "public/assets/battle-rear/guardian-front.webp",
+      "sha256": "13c7325de42e776c824b399b2e7dbcfdc1002dc064bf35d0e437d89cc48eb64c",
+      "source_bytes": 2423633,
+      "bytes": 1769254
+    },
+    {
+      "file": "public/assets/battle-rear/hunter.webp",
+      "sha256": "3e2dec2502122025aa41eb5c98c17a9670c61ae6b4329ebfc60001476ba6139a",
+      "source_bytes": 1114716,
+      "bytes": 779906
+    },
+    {
+      "file": "public/assets/battle-rear/merchant.webp",
+      "sha256": "28b00a8f1318c98496b2ac6b1e6615160384adc547132d2a53cecf6971c1c9e0",
+      "source_bytes": 1088672,
+      "bytes": 798030
+    },
+    {
+      "file": "public/assets/battle-rear/mint-shield.webp",
+      "sha256": "64bd76cbebbf35af0338c29d165f3d6533cdf843f4b8ba1b353eafca24dd3338",
+      "source_bytes": 965205,
+      "bytes": 725640
+    },
+    {
+      "file": "public/assets/battle-rear/mint-spear.webp",
+      "sha256": "d7d9db978dd4fc100a11f3797901c4e48149a8ea2ef00cb49067f40c62c6eff3",
+      "source_bytes": 796687,
+      "bytes": 603058
+    },
+    {
+      "file": "public/assets/battle-rear/prism-core.webp",
+      "sha256": "3f686ccc7dd17e5b6730de59eaf1b8bd24cefe64275dd1ebcdd91013cf7c65ef",
+      "source_bytes": 1520934,
+      "bytes": 1112416
+    },
+    {
+      "file": "public/assets/battle-rear/scholar.webp",
+      "sha256": "366a3ab660e74cc64d8801416f8fd5304fa4901c07163cdba10653725a7f8289",
+      "source_bytes": 923168,
+      "bytes": 614682
+    },
+    {
+      "file": "public/assets/battle-rear/thief.webp",
+      "sha256": "5a1a691f46b8f192658210abb797f6d910d029a2267ad875a562c25cd1176be7",
+      "source_bytes": 1051718,
+      "bytes": 721124
+    },
+    {
+      "file": "public/assets/battle-rear/trial-grandmaster.webp",
+      "sha256": "2f8d8ae52fc27c7f456841edfabc15f061fb5c6b402e463ef4791a492905ef4f",
+      "source_bytes": 2349658,
+      "bytes": 1671628
+    },
+    {
+      "file": "public/assets/battle-rear/warrior.webp",
+      "sha256": "c33f7c6ffe9eb77ad908c300e0b5584f7ce48051b21c7130f7226dc5a352d469",
+      "source_bytes": 976316,
+      "bytes": 669666
+    },
+    {
+      "file": "public/assets/fonts/ark-pixel-12px-proportional-zh_hans.ttf.woff2",
+      "sha256": "06daf2fa4a0c0c7262db632c0303456ea1aa274eba47a9f18b08094648b29e0e",
+      "source_bytes": 755952,
+      "bytes": 755952
+    },
+    {
+      "file": "public/assets/fonts/ark-pixel-OFL.txt",
+      "sha256": "3ab41567e68e3988ba1ef16dd2644eca95ca5648ea12e7d46e6287fc0bbe5aee",
+      "source_bytes": 4412,
+      "bytes": 4412
+    },
+    {
+      "file": "public/assets/head-logos/apothecary.webp",
+      "sha256": "407a3cfcde9208b80df906dd6fb847cbb292f99ab5b0b5e5da80739bde9b6665",
+      "source_bytes": 1261094,
+      "bytes": 833480
+    },
+    {
+      "file": "public/assets/head-logos/camp-lantern.webp",
+      "sha256": "b8ca85833ed634f6b264d2bc0ae148fa997e5070ec8f6b4496ee5be09275d7c4",
+      "source_bytes": 445366,
+      "bytes": 264722
+    },
+    {
+      "file": "public/assets/head-logos/cleric.webp",
+      "sha256": "6e476c122a7d44f95e81d2a2f7a28fa4eead13c75daa35b00638759e3a4231bc",
+      "source_bytes": 1349742,
+      "bytes": 897444
+    },
+    {
+      "file": "public/assets/head-logos/dancer.webp",
+      "sha256": "65fa45d443e7d91014a675c0dc187f787143e7e4de56a5f51a6b429dffccad56",
+      "source_bytes": 1320355,
+      "bytes": 901770
+    },
+    {
+      "file": "public/assets/head-logos/echo-archivist.webp",
+      "sha256": "cf3cafe0a2f2026bcd926bb7c6d706a52d1368c8fc7dad2268eddedc228b559e",
+      "source_bytes": 916946,
+      "bytes": 568178
+    },
+    {
+      "file": "public/assets/head-logos/final-aberration.webp",
+      "sha256": "9389dafc5a5b6722cc2106ffae8d9381a48d5c197012e801b3486045e550275e",
+      "source_bytes": 1468339,
+      "bytes": 1134578
+    },
+    {
+      "file": "public/assets/head-logos/gilded-warden.webp",
+      "sha256": "bad6db42262e7c42ec2e8adea640dc122e20a1e4707eb0ee03e285c03c1a5831",
+      "source_bytes": 1467583,
+      "bytes": 1098808
+    },
+    {
+      "file": "public/assets/head-logos/hunter.webp",
+      "sha256": "c68ad3a918ec78281f01ec2b2a14ec944c9d6267116b85c2004c58bcfdc7ba29",
+      "source_bytes": 1292812,
+      "bytes": 863072
+    },
+    {
+      "file": "public/assets/head-logos/merchant.webp",
+      "sha256": "e3265593374266f3c5f263d6dc34d8868767b6a920f97d527de8d412350a2ec9",
+      "source_bytes": 1373004,
+      "bytes": 954572
+    },
+    {
+      "file": "public/assets/head-logos/prism-core.webp",
+      "sha256": "c3ba12455a084a4dc2466b19a82e54c15e8b52efc94171cd846e5c715fa6bbae",
+      "source_bytes": 988672,
+      "bytes": 764358
+    },
+    {
+      "file": "public/assets/head-logos/scholar.webp",
+      "sha256": "fa065ed84baf58c49e4107b6ac903a5ccc825c79efccfaef4a0983c676d99ab0",
+      "source_bytes": 1163097,
+      "bytes": 744564
+    },
+    {
+      "file": "public/assets/head-logos/thief.webp",
+      "sha256": "7ce2357c042f68618d66e5e78a7ac03d28cbb1725a0b10e6b70dcdab2f61dee7",
+      "source_bytes": 1375443,
+      "bytes": 896874
+    },
+    {
+      "file": "public/assets/head-logos/trial-grandmaster.webp",
+      "sha256": "ab36ccf4ed1638b3a625f55e190ad70c4e01bc93eca8bd27d56b71eb745a1b5f",
+      "source_bytes": 995878,
+      "bytes": 660286
+    },
+    {
+      "file": "public/assets/head-logos/warrior.webp",
+      "sha256": "5ac0de47446dd12dc89f57f48054ea9acfa753f89ae35a1d4cfa4e9b126682df",
+      "source_bytes": 1208723,
+      "bytes": 778292
+    },
+    {
+      "file": "public/assets/items/medicine-gem-atlas.webp",
+      "sha256": "6964b93c037dd29cf5e35b554c6fb5e60f45f7ed895a7fb97f36893445deee27",
+      "source_bytes": 638986,
+      "bytes": 452272
+    },
+    {
+      "file": "public/assets/items/reward-atlas.webp",
+      "sha256": "b53c38d77544bed6047c2b688a87e5bf193742a11cdddc713a807d75ef677bfe",
+      "source_bytes": 1307582,
+      "bytes": 1014314
+    },
+    {
+      "file": "public/assets/portraits/apothecary.webp",
+      "sha256": "d2a7b438108c5e6d8137d1f8858f9e593d66f35e6ef3e853edf3cf11f9a48b56",
+      "source_bytes": 1327986,
+      "bytes": 899854
+    },
+    {
+      "file": "public/assets/portraits/cleric-refined.webp",
+      "sha256": "df14abbe3260573f7362304a18df757163b05891794dc816b05cb1e3c00ca113",
+      "source_bytes": 69596,
+      "bytes": 39614
+    },
+    {
+      "file": "public/assets/portraits/cleric.webp",
+      "sha256": "78ace49f47027d60d31ede87c24d9c3f8736e73e119158c36b881ae4a7ed8b53",
+      "source_bytes": 1416830,
+      "bytes": 956082
+    },
+    {
+      "file": "public/assets/portraits/dancer.webp",
+      "sha256": "28e7572baa6466234f046c9dc6f011b81806f9ab817cf890d8b02e301bbddb9a",
+      "source_bytes": 1516678,
+      "bytes": 1021420
+    },
+    {
+      "file": "public/assets/portraits/echo-archivist.webp",
+      "sha256": "7b540155c3b45881f79b43cdf7c31aa78a10d8b3fe410bff9a95ad6899087180",
+      "source_bytes": 1113004,
+      "bytes": 684866
+    },
+    {
+      "file": "public/assets/portraits/final-aberration-bust.webp",
+      "sha256": "f9bc705cb984aed45380d9955b1f4ef7996ae37fd805191e2e46dba18fcda310",
+      "source_bytes": 2666902,
+      "bytes": 2013366
+    },
+    {
+      "file": "public/assets/portraits/final-aberration.webp",
+      "sha256": "f9bc705cb984aed45380d9955b1f4ef7996ae37fd805191e2e46dba18fcda310",
+      "source_bytes": 2666902,
+      "bytes": 2013366
+    },
+    {
+      "file": "public/assets/portraits/gilded-warden.webp",
+      "sha256": "09a9716d5a0f39abcdd86b44e2c7c2c25663bfe27d9960c9d2d4f3b23dc6611c",
+      "source_bytes": 2107303,
+      "bytes": 1633342
+    },
+    {
+      "file": "public/assets/portraits/hunter.webp",
+      "sha256": "f52c4d3dce4b5c12505de4854d236d3eb85146d9ac74fa5401228952e605cf1a",
+      "source_bytes": 1365094,
+      "bytes": 930030
+    },
+    {
+      "file": "public/assets/portraits/merchant.webp",
+      "sha256": "bf073dd57c9f429fecbb22f83986d7b70179e52bb7ad5e5064d9e3b80095a32d",
+      "source_bytes": 1456272,
+      "bytes": 1000242
+    },
+    {
+      "file": "public/assets/portraits/mint-shield.webp",
+      "sha256": "297295fe5c2b8d69440e59e7d851728de32801f8311b9b5630e2c1cc549811c1",
+      "source_bytes": 69100,
+      "bytes": 37770
+    },
+    {
+      "file": "public/assets/portraits/mint-spear.webp",
+      "sha256": "ad685462f102be46c9fa51649ae7ef66b0bc71d45dcd7fe9989383da9feb694a",
+      "source_bytes": 76208,
+      "bytes": 42656
+    },
+    {
+      "file": "public/assets/portraits/prism-core.webp",
+      "sha256": "651da957690f801ee71e89cbc78723502133e155e14083c045023db7ec454ad6",
+      "source_bytes": 2158312,
+      "bytes": 1601166
+    },
+    {
+      "file": "public/assets/portraits/scholar.webp",
+      "sha256": "ccea00e42c89bd8e9d9414b906274832da7251bca424bdd4b79d52d2027849b7",
+      "source_bytes": 1250646,
+      "bytes": 804166
+    },
+    {
+      "file": "public/assets/portraits/thief.webp",
+      "sha256": "f14d45727fa80843b3b61485faf4e4f3a903c4bdb828bbafef873b7c07938c2b",
+      "source_bytes": 1405181,
+      "bytes": 919746
+    },
+    {
+      "file": "public/assets/portraits/trial-grandmaster-bust.webp",
+      "sha256": "487d75af07f7f3597aa09a0efe769f46f259d36b2fb48ada6fa679faba09ac18",
+      "source_bytes": 2033587,
+      "bytes": 1556232
+    },
+    {
+      "file": "public/assets/portraits/trial-grandmaster.webp",
+      "sha256": "487d75af07f7f3597aa09a0efe769f46f259d36b2fb48ada6fa679faba09ac18",
+      "source_bytes": 2033587,
+      "bytes": 1556232
+    },
+    {
+      "file": "public/assets/portraits/warrior-refined.webp",
+      "sha256": "b1f3faa2194f2d33ed7452dbe3500dcd13df1c6c80ca9459e428f6f4ef7e6654",
+      "source_bytes": 72056,
+      "bytes": 39634
+    },
+    {
+      "file": "public/assets/portraits/warrior.webp",
+      "sha256": "67f15a96d7e38db7c6cff8658efbf928f9aa2a96345c4af80d07613ecf1baaee",
+      "source_bytes": 1321792,
+      "bytes": 862254
+    },
+    {
+      "file": "public/assets/scenes/anvil-hall.webp",
+      "sha256": "f78d287aca9bfb56aadd34b60b5c1bb5f7b3dd0de246f676af0ccedebcd9ae9d",
+      "source_bytes": 1762874,
+      "bytes": 1407750
+    },
+    {
+      "file": "public/assets/scenes/apothecary.webp",
+      "sha256": "a95d8b52b2afb4872fc13db632236f33c426a79833d6187ab208831cddcbf19a",
+      "source_bytes": 2031775,
+      "bytes": 1581720
+    },
+    {
+      "file": "public/assets/scenes/archive.webp",
+      "sha256": "e9f950c621f7193a36b2339ef24f0baabc29c50a0ee421a248f186452fc41834",
+      "source_bytes": 1681941,
+      "bytes": 1357692
+    },
+    {
+      "file": "public/assets/scenes/camp-map-roads-aligned-20261018.webp",
+      "sha256": "fa1f098ec9a0549297a8ec5ec0f2f858835fd98dba8b7e08d096ce1c4f6e0f27",
+      "source_bytes": 2928903,
+      "bytes": 2311588
+    },
+    {
+      "file": "public/assets/scenes/hunting-ground.webp",
+      "sha256": "21a96aa29504acb7c0539b02fa5b135b2f7d63d7beb49f398eea73428854bc0d",
+      "source_bytes": 2300482,
+      "bytes": 1819914
+    },
+    {
+      "file": "public/assets/scenes/merchant-shop.webp",
+      "sha256": "e6fa48bfe19544696f031f361d7094889113bd929531d9a59647d6c8dd1496b2",
+      "source_bytes": 1829793,
+      "bytes": 1446244
+    },
+    {
+      "file": "public/assets/scenes/mint-overhead45.webp",
+      "sha256": "ecb0e5121208f5fc7638dd95b3e1df91078f0e906198d1c8b7c7f73ddecb907f",
+      "source_bytes": 340296,
+      "bytes": 184124
+    },
+    {
+      "file": "public/assets/scenes/sanctuary.webp",
+      "sha256": "4eeab8fc6e2031aeccaab8d7ac3a8884945238f420bdf13dd3377383218e8d84",
+      "source_bytes": 1570134,
+      "bytes": 1283992
+    },
+    {
+      "file": "public/assets/scenes/tavern.webp",
+      "sha256": "1634bf0d21a987a2facebe721516487eabdcc8070ee0943a50dbe1cd6c5650be",
+      "source_bytes": 1497140,
+      "bytes": 1223212
+    },
+    {
+      "file": "public/assets/scenes/waystation.webp",
+      "sha256": "dda0cc048d92a608076087d102181858d37cd64700c9d29d57998e77627123a7",
+      "source_bytes": 2644809,
+      "bytes": 1994932
+    },
+    {
+      "file": "public/assets/scenes/world-map-camp-layout-matched-20261018.webp",
+      "sha256": "67c12b3e90adeb791d0c21938504d5085f554bed8588bcbf24c14f9e2b7b091c",
+      "source_bytes": 2661711,
+      "bytes": 2014590
+    },
+    {
+      "file": "public/assets/scenes/world-map-clean-20261008.webp",
+      "sha256": "0ff85947317353eff5f92b98992e6e3404a97a6fcb9bf09cbe4b6c67962caeb6",
+      "source_bytes": 2130119,
+      "bytes": 1785762
+    },
+    {
+      "file": "public/assets/ui/paper-grain.svg",
+      "sha256": "bdcd5346871a795543bf9fa55544eb42c519c0cdca968295c790da09fb288961",
+      "source_bytes": 470,
+      "bytes": 470
+    },
+    {
+      "file": "public/assets/motion/effects/axe.webp",
+      "sha256": "f481de1e5c5a1f5546fe7fd8c75706b992b46830416be79f4ef5ae07798a0745",
+      "source_bytes": 128109,
+      "bytes": 90702
+    },
+    {
+      "file": "public/assets/motion/effects/boost.webp",
+      "sha256": "61ebd415998c328cc445d3628d02b01aa1ca46f0e91799c485ae113489a0aa0f",
+      "source_bytes": 62858,
+      "bytes": 46408
+    },
+    {
+      "file": "public/assets/motion/effects/bow.webp",
+      "sha256": "3a4e86ca94c1b87784e664734248ad74b6ead8c2f8c14efe394b0ec0f11a77d5",
+      "source_bytes": 41728,
+      "bytes": 32606
+    },
+    {
+      "file": "public/assets/motion/effects/break.webp",
+      "sha256": "24d382c13ae9cbff737033d1f2dd229ae9207851f1e09414b6466ef5525d96ac",
+      "source_bytes": 120926,
+      "bytes": 87800
+    },
+    {
+      "file": "public/assets/motion/effects/cleanse.webp",
+      "sha256": "46065a2fe0403fea01ea44812732b4ad76d0ee211a79bb453ae69275ec686c83",
+      "source_bytes": 130677,
+      "bytes": 103634
+    },
+    {
+      "file": "public/assets/motion/effects/confusion.webp",
+      "sha256": "744aa28f156b258b21406808ef66ff03e389c69008fd0567fd244dd10f8cc660",
+      "source_bytes": 40315,
+      "bytes": 31416
+    },
+    {
+      "file": "public/assets/motion/effects/earth.webp",
+      "sha256": "5d213afc2454b856e844b47841820c38877296712046eb24fa3e3bad754181c8",
+      "source_bytes": 106830,
+      "bytes": 73648
+    },
+    {
+      "file": "public/assets/motion/effects/energy.webp",
+      "sha256": "9e7d2674570091c681d33864daa03e669624f402ee3c6dd1d3bc189988639b04",
+      "source_bytes": 60239,
+      "bytes": 46044
+    },
+    {
+      "file": "public/assets/motion/effects/erosion.webp",
+      "sha256": "588883f6041474ab3a6087018e385087c19b1b4aba7dfaeebb50e3e8b0b72a73",
+      "source_bytes": 114078,
+      "bytes": 77230
+    },
+    {
+      "file": "public/assets/motion/effects/explosion.webp",
+      "sha256": "be2fa4441e07e48795abb2cae7eb36e46c3790ae79947ae2a38e973d658706cd",
+      "source_bytes": 115603,
+      "bytes": 82056
+    },
+    {
+      "file": "public/assets/motion/effects/fan.webp",
+      "sha256": "6ab5f5345573f4901550261cf2374e65ed64b41d6aec0b9a4f4b201b9492d483",
+      "source_bytes": 106710,
+      "bytes": 78544
+    },
+    {
+      "file": "public/assets/motion/effects/fire.webp",
+      "sha256": "361b952dd7e46a9b3b7e112186e3320d4e795fb5f75d770766c607081f84c8bb",
+      "source_bytes": 252829,
+      "bytes": 170606
+    },
+    {
+      "file": "public/assets/motion/effects/float.webp",
+      "sha256": "fda115c11bd0c2c5df2e999a465834fb2a88eb4e9e92a73e2b7547f1fec8ecc8",
+      "source_bytes": 54114,
+      "bytes": 37342
+    },
+    {
+      "file": "public/assets/motion/effects/heal.webp",
+      "sha256": "a3e09f918a6639bd9692a2787099b3c5b5447d2efd2abf4b750320df645d6f3f",
+      "source_bytes": 89166,
+      "bytes": 73836
+    },
+    {
+      "file": "public/assets/motion/effects/physical.webp",
+      "sha256": "bb56dfe207658ac1d6909abe88aa7e73a1cc37bdbedcbeac3df8240aab534e3e",
+      "source_bytes": 88173,
+      "bytes": 67964
+    },
+    {
+      "file": "public/assets/motion/effects/reward.webp",
+      "sha256": "e3170372a893dae0f2e9982e895e55d9b176450c1af70731b38f092f209c4dee",
+      "source_bytes": 76193,
+      "bytes": 54938
+    },
+    {
+      "file": "public/assets/motion/effects/shield.webp",
+      "sha256": "d635cf72df01454a171b120bf75f485cf61e7076a184f4f7f10b43397c1b5530",
+      "source_bytes": 86374,
+      "bytes": 67310
+    },
+    {
+      "file": "public/assets/motion/effects/silence.webp",
+      "sha256": "06127c8d58c0be26a83c30728e51f5d7f961df685aa11ba95507eeed9be601c7",
+      "source_bytes": 56953,
+      "bytes": 38046
+    },
+    {
+      "file": "public/assets/motion/effects/spear.webp",
+      "sha256": "df6f9771bece6bbe135e43004f7ff0de230d6bcaa716d2dcf30e5e171fa203e7",
+      "source_bytes": 35508,
+      "bytes": 25470
+    },
+    {
+      "file": "public/assets/motion/effects/staff.webp",
+      "sha256": "081483a4bf30194c2e101eea4c9e91680e7e15ecfbac17651bc7e9355ecff979",
+      "source_bytes": 45668,
+      "bytes": 30872
+    },
+    {
+      "file": "public/assets/motion/effects/stasis.webp",
+      "sha256": "92d532d33e4f7f7c924586392a0b4dc40960843ce9eee1e0623e587ff1e2f998",
+      "source_bytes": 78125,
+      "bytes": 52966
+    },
+    {
+      "file": "public/assets/motion/effects/thunder.webp",
+      "sha256": "5ee32fb0a28a5b21af9704903627d9e1aefe74ee1e69a2cafb02522892b7b325",
+      "source_bytes": 64998,
+      "bytes": 49026
+    },
+    {
+      "file": "public/assets/motion/effects/water.webp",
+      "sha256": "f6e6b9638fed35dc8ef1eea6faf6f004c6b185fbf3bf13e243bd059a51bd183d",
+      "source_bytes": 139854,
+      "bytes": 103988
+    },
+    {
+      "file": "public/assets/motion/effects/weak.webp",
+      "sha256": "091c11e7a3052a8de28417ad013b0aeabbbcb2a33fa8e554628e7adad554b8d6",
+      "source_bytes": 58244,
+      "bytes": 45888
+    },
+    {
+      "file": "public/assets/motion/effects/wind.webp",
+      "sha256": "260c1cdc921a8656b5d35296d533e051505a9a525dc32cd5de640a6f1ec32a92",
+      "source_bytes": 87930,
+      "bytes": 63354
+    },
+    {
+      "file": "public/assets/motion/effects/wood.webp",
+      "sha256": "aabf9367f0d0ce0cc2884d3ec890254f5eb75d284d2ca8d92011b9c889dfd0b8",
+      "source_bytes": 141535,
+      "bytes": 102130
+    },
+    {
+      "file": "public/assets/scenes/camp-catgirl-20261026/apothecary.webp",
+      "sha256": "b3d1f3da6964f1a2cc702bece2514bef2d3a585446b76309f57f220d35f8bd66",
+      "source_bytes": 1996316,
+      "bytes": 1561522
+    },
+    {
+      "file": "public/assets/scenes/camp-catgirl-20261026/cleric.webp",
+      "sha256": "1265f220f2742091bea5812f2bab4f1661f70746ddfbf623918bd34c3e79a7db",
+      "source_bytes": 1906408,
+      "bytes": 1469540
+    },
+    {
+      "file": "public/assets/scenes/camp-catgirl-20261026/dancer.webp",
+      "sha256": "3796f9a6266b4b7b20c154a712d9f9312f965c9f36846d1eb8a484752ab878e0",
+      "source_bytes": 1832595,
+      "bytes": 1464738
+    },
+    {
+      "file": "public/assets/scenes/camp-catgirl-20261026/hunter.webp",
+      "sha256": "8496b70e074ebc68cfdf020cbf4646921f593871a51db0fddc003cb3d168551f",
+      "source_bytes": 1922651,
+      "bytes": 1483940
+    },
+    {
+      "file": "public/assets/scenes/camp-catgirl-20261026/merchant.webp",
+      "sha256": "f87e8583628060e291fe7fe225556c179a0600ca2f508b318192ed3c183af9af",
+      "source_bytes": 2000454,
+      "bytes": 1583220
+    },
+    {
+      "file": "public/assets/scenes/camp-catgirl-20261026/scholar.webp",
+      "sha256": "1435f4ad86ee6b2cad5178267f0e4727625516aa5f6f3fb2437888e1f0d3e980",
+      "source_bytes": 1952434,
+      "bytes": 1634926
+    },
+    {
+      "file": "public/assets/scenes/camp-catgirl-20261026/thief.webp",
+      "sha256": "011876e89965a4f9b7f5059d26df086321350ce7432caebc435b309c89ca5a61",
+      "source_bytes": 1982168,
+      "bytes": 1605810
+    },
+    {
+      "file": "public/assets/scenes/camp-catgirl-20261026/warrior.webp",
+      "sha256": "68f4bfa2ca8310ed668abf369eaf3085d8f0e0051720055c862d380b12c45275",
+      "source_bytes": 2047564,
+      "bytes": 1672950
+    },
+    {
+      "file": "public/assets/scenes/dungeon-remake-20261018/echo-library.webp",
+      "sha256": "ea695deef2efef10bf1eedf55d7e2f1af105ec3154f99fefc6cb60374b06740f",
+      "source_bytes": 1901690,
+      "bytes": 1513404
+    },
+    {
+      "file": "public/assets/scenes/dungeon-remake-20261018/final-court-grounded.webp",
+      "sha256": "7c2a295b38d0ac32c2591643d9b85d5aa88b8853060589a231403d60b5a6d9ce",
+      "source_bytes": 1878306,
+      "bytes": 1466384
+    },
+    {
+      "file": "public/assets/scenes/dungeon-remake-20261018/mint-vault.webp",
+      "sha256": "51682dc74f4a2de4eabe8faa65766e07dd0bcf9e648b8f96ab0ef4141d2ccf7f",
+      "source_bytes": 1830109,
+      "bytes": 1415054
+    },
+    {
+      "file": "public/assets/scenes/dungeon-remake-20261018/prism-courtyard.webp",
+      "sha256": "4623a71ad5038891fc27abb2337df56b9159acb28298b770499b6eb7c79abd5f",
+      "source_bytes": 1759028,
+      "bytes": 1290660
+    },
+    {
+      "file": "public/assets/scenes/dungeon-remake-20261018/trial-corridor.webp",
+      "sha256": "2df008e8d42d09dd91d1a97a55f62abb0c558e6af7e0506dbe03c33002b1e3a4",
+      "source_bytes": 1854228,
+      "bytes": 1383418
+    },
+    {
+      "file": "public/assets/scenes/enemy-previews-20261031/echo-archivist.webp",
+      "sha256": "9a16fd8f07a91f30b62997fe786cb5cd1bd2f9d8412726339bf0e4dfb862d279",
+      "source_bytes": 2027484,
+      "bytes": 1631534
+    },
+    {
+      "file": "public/assets/scenes/enemy-previews-20261031/final-aberration.webp",
+      "sha256": "098ae6f36da06f86ccfc123d0eb1ced6b264fd3352dee3630877ce3065156844",
+      "source_bytes": 2430704,
+      "bytes": 1960958
+    },
+    {
+      "file": "public/assets/scenes/enemy-previews-20261031/gilded-warden.webp",
+      "sha256": "b5d747c0f406c9dcf1bd023dfb81734168b88b258b6e62c9bf14813349a60206",
+      "source_bytes": 2145908,
+      "bytes": 1737726
+    },
+    {
+      "file": "public/assets/scenes/enemy-previews-20261031/prism-core.webp",
+      "sha256": "874656d2e023fdd13bcdb0502c97e9dabb9e034378d2eccd8430c23672ce2101",
+      "source_bytes": 2062088,
+      "bytes": 1570036
+    },
+    {
+      "file": "public/assets/scenes/enemy-previews-20261031/trial-grandmaster.webp",
+      "sha256": "aeaeae32e2c1c4c3189c12c0caf1cf4d6035f2082651ce47303590a79a1cf537",
+      "source_bytes": 2076189,
+      "bytes": 1613612
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/atlas.webp",
+      "sha256": "b765d05b15a55667d95cf695dc716873196b2a2956f9973cf2a74bc12afe67d0",
+      "source_bytes": 1873179,
+      "bytes": 1333052
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/break.webp",
+      "sha256": "b0304d9921f6258a5b115a7ce527bc4f24c1bb5bbbe0cb525e72d986c178c257",
+      "source_bytes": 113473,
+      "bytes": 48136
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/confusion.webp",
+      "sha256": "24bb7680d1257fce515c8690aabfaf5ac90c7b8fd126f409516b874ea6d7bc87",
+      "source_bytes": 112380,
+      "bytes": 47318
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/elemental-attack-down.webp",
+      "sha256": "911ae0d82d020ce2dd175f379d605f5cad1153ec901bd7048a8b26097ddc9440",
+      "source_bytes": 103499,
+      "bytes": 45656
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/elemental-attack-up.webp",
+      "sha256": "badc92748a2f1dc8d6b99e3f6280a0f452851dc1c4e793c38ae5b087d3f29664",
+      "source_bytes": 106542,
+      "bytes": 46358
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/elemental-defense-down.webp",
+      "sha256": "fd2b026648a5c95fa91e2dfd88ba6481ffcdd5502b5df31a79f50ecbba65cc72",
+      "source_bytes": 110857,
+      "bytes": 46848
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/elemental-defense-up.webp",
+      "sha256": "fa354c8bacebc0524f27c5f967c67e6f4cea75833aca54a0d6f4938a71190f35",
+      "source_bytes": 116064,
+      "bytes": 48094
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/erosion.webp",
+      "sha256": "caf4096acb1e2951d109a500ee6f7eeda7ed05223be505a4d0b56392e2ad6764",
+      "source_bytes": 116320,
+      "bytes": 47996
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/evade.webp",
+      "sha256": "1cf9de01eb4ff5d135e8a5fdfaf02820c9029bc5d22985d3be8dd3d4d88fa7dc",
+      "source_bytes": 113174,
+      "bytes": 47668
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/explosion.webp",
+      "sha256": "271cbf1a6ac97a96d2149c62ede88de9276e5368aa32f29b7721abd6824bf35c",
+      "source_bytes": 112688,
+      "bytes": 48254
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/float.webp",
+      "sha256": "6548b60cd9a3553ba3befbb9d3b3c008ee4dcde7192af76fcebc18227adeaa33",
+      "source_bytes": 119417,
+      "bytes": 47670
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/guarding.webp",
+      "sha256": "53ed66d533a3761bd1d1c0951830a6cfa1ddaceaa35f979de653e3a9ea89681f",
+      "source_bytes": 123817,
+      "bytes": 52584
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/hp-regeneration.webp",
+      "sha256": "7fae1d7234f8b2acb53efeed2fe26e1b968909b4f3baf58dd18cee764b1e3f6c",
+      "source_bytes": 113966,
+      "bytes": 48532
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/manifest.json",
+      "sha256": "4c9e9d518060d562db55420e70949498d84db1b0cf5312003c61ce15a96b9b53",
+      "source_bytes": 5121,
+      "bytes": 5121
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/party-medicine.webp",
+      "sha256": "7eacbd4c8bc282ebc492be3a857d9c69ec49858e213b80c2a97a9e9313631b1c",
+      "source_bytes": 118798,
+      "bytes": 49358
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/physical-attack-down.webp",
+      "sha256": "0517dcaa7a5b3d0e900cb0df7a094677e0629efe38cc480d80e381951c1984c6",
+      "source_bytes": 104070,
+      "bytes": 44292
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/physical-attack-up.webp",
+      "sha256": "3108880e01a90cbaecc1fb26b9d955170931bfc41205cbe85e7a210a702efbb6",
+      "source_bytes": 108202,
+      "bytes": 45794
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/physical-defense-down.webp",
+      "sha256": "b671e467e5a709fe1345f744b3efe557196257611283cbc1d5924feb0bd55868",
+      "source_bytes": 109338,
+      "bytes": 44934
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/physical-defense-up.webp",
+      "sha256": "7ef8fc754292317691d1e19449da345723f0562809a3fd376351cdd6238474a5",
+      "source_bytes": 111944,
+      "bytes": 45768
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/physical-evade.webp",
+      "sha256": "085fbc4c5b515e29d3b1addc7a69f7479d7ed26c228d8e1ab18ac9366c5a5447",
+      "source_bytes": 114691,
+      "bytes": 49022
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/silence.webp",
+      "sha256": "d14898c0730f7efa745fe73a78c5ba111e0d26306cbbc1b4d120edae42895d44",
+      "source_bytes": 108002,
+      "bytes": 47084
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/sp-regeneration.webp",
+      "sha256": "42314b665e9fbaffd2b686f54a35e20cff53620000f6daeec95a72722c62a508",
+      "source_bytes": 113797,
+      "bytes": 47520
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/speed-down.webp",
+      "sha256": "3398ec324fc1f5c10152935a5b9ec5b99dbd705ca6e1dc2c4e38115f06fc4875",
+      "source_bytes": 112304,
+      "bytes": 46510
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/speed-up.webp",
+      "sha256": "714bcf631a8e5c26fe4ab6c40e9ad7842781072e9cd3329115100928a247a3d1",
+      "source_bytes": 114958,
+      "bytes": 48174
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/spell-amplification.webp",
+      "sha256": "41c207cff05add034796857c2f0ddfe80dd58b21b43cabb41f94150c46d88184",
+      "source_bytes": 120850,
+      "bytes": 52898
+    },
+    {
+      "file": "public/assets/status-icons/wood-v2/stasis.webp",
+      "sha256": "8abb70c0a904b9f91075ead0f7dde809f72f3b6b33c2347fbd520429bc0bc672",
+      "source_bytes": 124077,
+      "bytes": 49776
+    },
+    {
+      "file": "public/assets/ui/battle-entry/theatre-curtain-v1.webp",
+      "sha256": "57aa77b40326cdec1f2981db88a72e78bdac59c47cad9cd3bf2fbd7a2d3a0c4f",
+      "source_bytes": 1310545,
+      "bytes": 852570
+    },
+    {
+      "file": "public/assets/ui/battle-frames/battle-casing-ally-blunt-v12.webp",
+      "sha256": "d065ca537a601e07451ea9f86fbbc2c4e52049f75a652902274eeac1d68dd235",
+      "source_bytes": 487648,
+      "bytes": 302566
+    },
+    {
+      "file": "public/assets/ui/battle-frames/battle-casing-apothecary-v13.webp",
+      "sha256": "c216887b23dee0307e2359e30ddf8ae08f2d7e6ad42d60ffed8d89b00cb56102",
+      "source_bytes": 606434,
+      "bytes": 413480
+    },
+    {
+      "file": "public/assets/ui/battle-frames/battle-casing-cleric-v13.webp",
+      "sha256": "84c78a0ac9fa85f5c43ba49a070191af12e9a26a2f16c1618822417953d1513b",
+      "source_bytes": 562090,
+      "bytes": 357698
+    },
+    {
+      "file": "public/assets/ui/battle-frames/battle-casing-dancer-v13.webp",
+      "sha256": "6d5f9468744652526930b93f6cbda20d6fa2f99a4989905cf5290be7f51f70f3",
+      "source_bytes": 531689,
+      "bytes": 337364
+    },
+    {
+      "file": "public/assets/ui/battle-frames/battle-casing-enemy-blunt-v12.webp",
+      "sha256": "9590a09e0b1aaa0866787b06f847d34c226419bac3976651eea688e2f9b693f5",
+      "source_bytes": 483706,
+      "bytes": 298990
+    },
+    {
+      "file": "public/assets/ui/battle-frames/battle-casing-hunter-v13.webp",
+      "sha256": "ee3b021862c35514dfac2df64fee0f3ce1a9aeb0dd192d67c78b91f9a75bd554",
+      "source_bytes": 594332,
+      "bytes": 401362
+    },
+    {
+      "file": "public/assets/ui/battle-frames/battle-casing-merchant-v13.webp",
+      "sha256": "8b3603d204bf065d8718f4854e0f019bfa3083ba38901060641b929c551c0745",
+      "source_bytes": 662834,
+      "bytes": 458920
+    },
+    {
+      "file": "public/assets/ui/battle-frames/battle-casing-scholar-v13.webp",
+      "sha256": "9b25ec1308c70a658827dfdaf3e49808d0af3def4f0d7fdd20a651aafab97d7d",
+      "source_bytes": 504230,
+      "bytes": 326660
+    },
+    {
+      "file": "public/assets/ui/battle-frames/battle-casing-thief-v13.webp",
+      "sha256": "3c19081e6a3fd6effd1817980e96d9406abe0eb2410bcd61c35f66f2f970589f",
+      "source_bytes": 639158,
+      "bytes": 419596
+    },
+    {
+      "file": "public/assets/ui/battle-frames/battle-casing-warrior-v13.webp",
+      "sha256": "6a7b3967116b3b9e7e26989e98551ac3c1ea84624559013e18293c307bbf74e6",
+      "source_bytes": 546103,
+      "bytes": 339506
+    },
+    {
+      "file": "public/assets/ui/battle-frames/boss-echo-archivist-v2.webp",
+      "sha256": "b8c9d0813314a30a317946c5165213727346e95aba16b4a0fe21632d223e2453",
+      "source_bytes": 560834,
+      "bytes": 352364
+    },
+    {
+      "file": "public/assets/ui/battle-frames/boss-final-aberration-v2.webp",
+      "sha256": "860e75a3d320f96b1a06c2d5ceeeb3f5be7a05bed73a21ea23a7c89a1c01f171",
+      "source_bytes": 494675,
+      "bytes": 315606
+    },
+    {
+      "file": "public/assets/ui/battle-frames/boss-gilded-warden-v2.webp",
+      "sha256": "816f5bd3364833b286c0ede7186e9a1c87324ba1871850dec58fa1f5c438bf78",
+      "source_bytes": 550088,
+      "bytes": 366856
+    },
+    {
+      "file": "public/assets/ui/battle-frames/boss-prism-core-v2.webp",
+      "sha256": "9f6db0495e91e91e6d8406e2fbfd5737bdf001b38b02e2ac76d1ffdb637e9d11",
+      "source_bytes": 544296,
+      "bytes": 365134
+    },
+    {
+      "file": "public/assets/ui/battle-frames/boss-trial-dragon-v2.webp",
+      "sha256": "94de0199d0baebf2a8cbd9239f68b5aba6ea9c84231cf61dacd5d3934edf298f",
+      "source_bytes": 613427,
+      "bytes": 405876
+    },
+    {
+      "file": "public/assets/ui/battle-frames/status-binding-pale-gold-v1.webp",
+      "sha256": "84a57d52f8afd780fbd2fd09df30953850cf0cfe2b5d0af484b638c7e92d8c69",
+      "source_bytes": 326721,
+      "bytes": 185766
+    },
+    {
+      "file": "public/assets/ui/battle-frames/timeline-rail-pale-gold-v1.webp",
+      "sha256": "af356ac7b806d50292c082f56a5e498c1c378e6d0f87c8adfa3a1d661a43bd7f",
+      "source_bytes": 259902,
+      "bytes": 138696
+    },
+    {
+      "file": "public/assets/ui/camp-window-skins/tavern-frame.webp",
+      "sha256": "fce56c7b4392d74aa440b76a0346bdedd1fd30b877a198ef3dd4efbf5af6d35f",
+      "source_bytes": 205860,
+      "bytes": 107540
+    },
+    {
+      "file": "public/assets/ui/memory-atlas/parchment-aged-soft-v2.webp",
+      "sha256": "6873ecf4ad5039a6f4fcbc445f3678ea86a6424c947a100db584b51804a7c43d",
+      "source_bytes": 2109739,
+      "bytes": 1470492
+    },
+    {
+      "file": "public/assets/ui/camp-window-skins/textures-refined/tavern.webp",
+      "sha256": "d9b3ece6d28d999de47911614529b437c6b5279957faa747320c2c07040272d3",
+      "source_bytes": 3702574,
+      "bytes": 2296420
+    },
+    {
+      "file": "public/assets/ui/camp-window-skins/traveler-relic/leather-action.webp",
+      "sha256": "f3dd2db292be86f0664729574ef2e2bd558738b4657db034b05727aea0beba99",
+      "source_bytes": 2006569,
+      "bytes": 1041558
+    },
+    {
+      "file": "public/assets/ui/camp-window-skins/traveler-relic/paper-choice.webp",
+      "sha256": "8908ef222eb7c4edc65b7be103ecb2824b28e31309a5354cc02e3eaa6ec9f816",
+      "source_bytes": 1092253,
+      "bytes": 603252
+    },
+    {
+      "file": "public/assets/ui/camp-window-skins/traveler-relic/paper-confirm.webp",
+      "sha256": "14f2370e3b9c2d64a5fd58855c918c6af78a8fa74b559b775dc2864394caf891",
+      "source_bytes": 1584364,
+      "bytes": 871044
+    },
+    {
+      "file": "public/assets/ui/camp-window-skins/traveler-relic/paper-panel.webp",
+      "sha256": "a08364cef1ce14d17904d4d20c9c400f39d9168f24a1da087f7eb97f0a480b06",
+      "source_bytes": 2551674,
+      "bytes": 1518522
+    },
+    {
+      "file": "public/assets/ui/camp-window-skins/traveler-relic/window-frame.webp",
+      "sha256": "cdaf8d68aaeb2d929d7a236dc18884e793dfa694a95f6c01ed0c65880da088d1",
+      "source_bytes": 1235568,
+      "bytes": 604532
+    },
+    {
+      "file": "public/assets/weakness-icons/pixel-v1/axe.webp",
+      "sha256": "240181783f46bf4445a3e20c838626804cff24a13b73a53478f3179c841043ca",
+      "source_bytes": 205,
+      "bytes": 112
+    },
+    {
+      "file": "public/assets/weakness-icons/pixel-v1/bow.webp",
+      "sha256": "8fe2853043e7f404eaff36d0fdc46252239c0887e39748bb5c48a264a4f7fd00",
+      "source_bytes": 190,
+      "bytes": 108
+    },
+    {
+      "file": "public/assets/weakness-icons/pixel-v1/earth.webp",
+      "sha256": "ecda5623166db562d72c0ccdc07a533699433c8b0e29eaf790e0c75530c968b9",
+      "source_bytes": 211,
+      "bytes": 116
+    },
+    {
+      "file": "public/assets/weakness-icons/pixel-v1/fan.webp",
+      "sha256": "5c72d43efbde6d6c94fe7dc779f379e13fd0c023193099fcdc55a1bcec95e7c9",
+      "source_bytes": 228,
+      "bytes": 130
+    },
+    {
+      "file": "public/assets/weakness-icons/pixel-v1/fire.webp",
+      "sha256": "0abb71104cd003c16551ca8b61cedf1f3da47ae564f4ade0eb7ae4631540f8b9",
+      "source_bytes": 226,
+      "bytes": 126
+    },
+    {
+      "file": "public/assets/weakness-icons/pixel-v1/manifest.json",
+      "sha256": "f01c84a9e210b9b467909d06b1f625dfc75a6cbdd9550bf376055e03ff14816f",
+      "source_bytes": 934,
+      "bytes": 934
+    },
+    {
+      "file": "public/assets/weakness-icons/pixel-v1/spear.webp",
+      "sha256": "057c8966d21a5b790e61b6fe22a29bd591e40658b035d3c9a2f185f34618f3e0",
+      "source_bytes": 169,
+      "bytes": 102
+    },
+    {
+      "file": "public/assets/weakness-icons/pixel-v1/staff.webp",
+      "sha256": "a4010e57f2fd1577afb4dbab8361a2f18078eef14ac056fa906c969c80f0a48c",
+      "source_bytes": 211,
+      "bytes": 116
+    },
+    {
+      "file": "public/assets/weakness-icons/pixel-v1/sword.webp",
+      "sha256": "d36573c719a1d9fcda78134342892dfd5e4f1d1106ad691714a3cddbc3b72a4d",
+      "source_bytes": 203,
+      "bytes": 112
+    },
+    {
+      "file": "public/assets/weakness-icons/pixel-v1/thunder.webp",
+      "sha256": "de4cbf233949f15215f01947bf2d37e5de2fa1c0b79968a47751d57cb32ae0f2",
+      "source_bytes": 207,
+      "bytes": 114
+    },
+    {
+      "file": "public/assets/weakness-icons/pixel-v1/water.webp",
+      "sha256": "e59ff0e02ce17967c54069161987c6fe583cbdac5c0c99e1ee8b84ab7771cbf0",
+      "source_bytes": 218,
+      "bytes": 124
+    },
+    {
+      "file": "public/assets/weakness-icons/pixel-v1/wind.webp",
+      "sha256": "87a3d61adf155d9ceb0b1c3f413c985ace633d9c24e46056f6a3991b94ef1fbf",
+      "source_bytes": 207,
+      "bytes": 104
+    },
+    {
+      "file": "public/assets/weakness-icons/pixel-v1/wood.webp",
+      "sha256": "8f009314da5b9e77b907b6b69ec9f0a1dfada226a83d1523e05f19ad07c060eb",
+      "source_bytes": 224,
+      "bytes": 120
+    }
+  ],
+  "selection": "runtime references; complete directories for dynamic asset paths; font license retained"
+}

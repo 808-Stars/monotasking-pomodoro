@@ -1,0 +1,23 @@
+/* Only the host adapts to the real browser viewport. All game CSS still runs
+   unchanged inside a real 1920x1080 layout viewport. No per-widget zoom. */
+html[data-game-viewport-mode="host"],
+html[data-game-viewport-mode="host"] body,
+html[data-game-viewport-mode="host"] #root {
+ width:100%;height:100%;margin:0;padding:0;overflow:hidden;background:#101516;
+}
+.game-viewport-host {
+ position:fixed;inset:0;width:100%;height:100dvh;overflow:hidden;
+ background:#101516;isolation:isolate;
+}
+.game-viewport-host:fullscreen {width:100%;height:100dvh;background:#101516}
+.game-viewport-stage {
+ position:absolute;width:1920px;height:1080px;transform-origin:0 0;
+}
+.game-viewport-stage>iframe {
+ display:block;width:1920px;height:1080px;max-width:none;max-height:none;
+ margin:0;padding:0;border:0;background:#101516;
+}
+/* Keep navigation above/below a full scene reachable, without adding a second
+   visible scrollbar to the scaled canvas. Existing functional pagers remain. */
+html[data-game-viewport-mode="content"] {scrollbar-width:none}
+html[data-game-viewport-mode="content"]::-webkit-scrollbar {display:none}

@@ -1,0 +1,121 @@
+/* Sparse key poses. No permanent idle bounce, squash, stretch or screen shake. */
+.hero,
+.guardian,
+.rewards-modal {
+  position: relative;
+}
+.hero-art,
+.guardian-seal {
+  image-rendering: pixelated;
+}
+.pixel-effect {
+  pointer-events: none;
+  position: absolute;
+  z-index: 6;
+  image-rendering: pixelated;
+  width: 110px;
+  height: 110px;
+}
+.hero-fx {
+  left: 22%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+}
+.enemy-fx {
+  left: 50%;
+  top: 50%;
+  width: 165px;
+  height: 165px;
+  transform: translate(-50%, -50%);
+}
+.camp-fx {
+  position: fixed;
+  left: 50%;
+  bottom: 190px;
+  transform: translateX(-50%);
+  width: 130px;
+  height: 130px;
+  z-index: 100;
+}
+.reward-fx {
+  top: 24px;
+  right: 75px;
+  width: 100px;
+  height: 100px;
+}
+.motion-gallery-link {
+  color: #dcc79a;
+  font-size: 18px;
+  white-space: nowrap;
+}
+.hero-art[data-pose="down"] {
+  opacity: 0.7;
+}
+.hero.ko {
+  filter: none;
+}
+.hero.hit-flash,
+.arena.hit-flash {
+  animation: none;
+}
+.hero.hit-flash .hero-art {
+  filter: brightness(1.2);
+}
+.float {
+  pointer-events: none;
+  z-index: 8;
+}
+.dialogue,
+.modal,
+.camp-nav,
+.notice {
+  animation: motion-reveal 160ms steps(2, end) both;
+}
+.reward {
+  animation: motion-reveal 220ms steps(2, end) both;
+}
+@keyframes motion-reveal {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.motion-reduced *,
+.motion-reduced *::before,
+.motion-reduced *::after {
+  animation: none !important;
+  transition: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dialogue,
+  .modal,
+  .camp-nav,
+  .reward,
+  .notice {
+    animation: none;
+  }
+}
+@media (max-width: 600px) {
+  .hero-fx {
+    width: 80px;
+    height: 80px;
+  }
+  .enemy-fx {
+    width: 125px;
+    height: 125px;
+  }
+  .battle-heading .inline {
+    flex-wrap: wrap;
+  }
+}
+.advanced-reward-sprite {
+  /* Same ordinary composition, one shared static glow; no extra animation. */
+  filter: drop-shadow(0 0 5px #dfca9299);
+}
+.difficulty-tabs button[aria-pressed="true"] {
+  border-color: #c1a468;
+  color: #ecd9af;
+  background: #c1a46822;
+}

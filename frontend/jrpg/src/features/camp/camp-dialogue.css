@@ -1,0 +1,65 @@
+/* Scene-attached dialogue, separate from the camp's functional windows. */
+.camp-layout .camp-conversation {
+  --conversation-gold:#bda878;
+  bottom:30px;width:min(1440px,calc(100% - 64px));padding:30px 32px 18px;
+  color:#f0e5cb;background:rgb(19 29 27 / 76%);background-image:none;
+  border:1px solid #bda878ab;outline:1px solid #17211ed9;outline-offset:4px;
+  box-shadow:inset 0 0 0 4px #101b1859,inset 0 0 0 5px #c3af7c26,0 14px 32px #0005;
+  font-family:SimSun,"Noto Serif SC",serif;
+}
+.camp-conversation .speaker {
+  position:absolute;left:28px;top:-23px;min-height:40px;padding:5px 28px 5px 105px;
+  color:#eddbac;font-size:20px;line-height:30px;letter-spacing:4px;
+  background:#23312c;border:1px solid #bda878ab;
+  box-shadow:inset 0 0 0 3px #18251f,0 3px 10px #0003;
+}
+.camp-conversation .conversation-head {
+  position:absolute;left:7px;bottom:4px;width:88px;height:88px;
+  object-fit:contain;image-rendering:pixelated;pointer-events:none;
+}
+.camp-conversation .spoken {
+  margin:0;padding:6px 14px 22px;color:#f0e5cb;font-size:24px;
+  line-height:1.65;letter-spacing:1px;text-shadow:0 2px 3px #0009;
+}
+.camp-conversation .dialogue-options {
+  position:relative;grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:4px 16px;padding-top:13px;
+  border-top:1px solid #bda8784d;
+}
+.camp-conversation .dialogue-options button {
+  position:relative;align-items:center;justify-content:flex-start;gap:9px;
+  min-height:48px;padding:8px 12px 8px 28px;margin:0;
+  border:0;border-radius:0;background:transparent;box-shadow:none;
+  color:#e8ddc4;font:21px/1.5 SimSun,"Noto Serif SC",serif;text-shadow:0 1px 3px #0008;
+  transition:color 130ms,background-color 130ms;
+}
+.camp-conversation .dialogue-options button::before {
+  content:"";position:absolute;left:9px;top:50%;width:7px;height:7px;
+  margin-top:-4px;transform:rotate(45deg);background:#e7ce91;opacity:0;
+}
+.camp-conversation .dialogue-options button > span {
+  flex:0 1 auto;max-width:10em;min-width:0;overflow-wrap:anywhere;
+}
+.camp-conversation .dialogue-options button > small {
+  color:#b7aa8c;font-size:13px;margin-left:auto;white-space:nowrap;
+}
+.camp-conversation .dialogue-options button > small:empty { display:none; }
+.camp-conversation .dialogue-options button:hover:not(:disabled),
+.camp-conversation .dialogue-options button:focus-visible {
+  color:#ffe8ac;background:#c0a76d21;outline:1px solid #c0a76d66;outline-offset:-1px;
+}
+.camp-conversation .dialogue-options button:hover:not(:disabled)::before,
+.camp-conversation .dialogue-options button:focus-visible::before { opacity:1; }
+.camp-conversation .dialogue-options button:disabled { opacity:.48;cursor:not-allowed; }
+@media (max-width:1100px) {
+  .camp-conversation .dialogue-options { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (max-width:600px) {
+  .camp-layout .camp-conversation { bottom:18px;width:calc(100% - 32px);padding:25px 14px 12px; }
+  .camp-conversation .spoken { font-size:22px;padding-inline:8px;padding-bottom:12px; }
+  .camp-conversation .dialogue-options { gap:2px 4px; }
+  .camp-conversation .dialogue-options button { font-size:18px;padding-left:23px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .camp-conversation .dialogue-options button { transition:none; }
+}

@@ -1,0 +1,19 @@
+{
+  "version": "pixel-v1",
+  "size": 24,
+  "source": "vector-v3",
+  "icons": [
+    {"id":"sword","name":"剑","group":"六武器","file":"sword.png"},
+    {"id":"spear","name":"枪","group":"六武器","file":"spear.png"},
+    {"id":"bow","name":"弓","group":"六武器","file":"bow.png"},
+    {"id":"fan","name":"扇","group":"六武器","file":"fan.png"},
+    {"id":"axe","name":"斧","group":"六武器","file":"axe.png"},
+    {"id":"staff","name":"杖","group":"六武器","file":"staff.png"},
+    {"id":"fire","name":"火","group":"六元素","file":"fire.png"},
+    {"id":"water","name":"水","group":"六元素","file":"water.png"},
+    {"id":"wood","name":"木","group":"六元素","file":"wood.png"},
+    {"id":"wind","name":"风","group":"六元素","file":"wind.png"},
+    {"id":"earth","name":"土","group":"六元素","file":"earth.png"},
+    {"id":"thunder","name":"雷","group":"六元素","file":"thunder.png"}
+  ]
+}

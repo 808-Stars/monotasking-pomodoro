@@ -1,0 +1,72 @@
+.page-turns{display:flex;justify-content:center;align-items:center;gap:16px;flex:none;padding:8px 0 0;margin-top:8px;border-top:1px solid #a48e5b55;min-height:42px;box-sizing:border-box}
+.page-turns>span{font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap;color:inherit}
+.page-turns>button{font:inherit;font-size:16px;padding:6px 13px;margin:0;min-height:34px;border:1px solid #ac925c88;background:#a58b4e12;color:inherit;cursor:pointer}
+.page-turns>button:disabled{opacity:.35;cursor:default}
+.page-turns button:focus-visible,.book-pager:focus-visible,.item-pages:focus-visible{outline:2px solid #c9aa6a;outline-offset:2px}
+.book-pager{height:100%;min-height:0;min-width:0;display:flex;flex-direction:column;position:relative;box-sizing:border-box}
+.book-page-viewport{flex:1;min-height:0;min-width:0;overflow:clip;position:relative}
+.book-page-flow{height:100%;width:100%;column-width:100vw;column-count:auto;column-fill:auto;column-gap:32px;position:relative;box-sizing:border-box}
+.book-page-flow p,.book-page-flow li,.book-page-flow tr,.book-page-flow label,.book-page-flow button,.book-page-flow .camp-row,.book-page-flow .tavern-row,.book-page-flow .camp-confirm,.book-page-flow .camp-checkout-bar{break-inside:avoid}
+.book-page-flow h3,.book-page-flow h4{break-after:avoid}
+.book-page-flow .camp-tabs,.book-page-flow .shop-spending,.book-page-flow .camp-commerce-balance{break-inside:avoid}
+.item-pages{min-width:0;outline:none}
+.item-pages>.page-turns{break-inside:avoid}
+.book-pager[data-pages="1"]>.page-turns{visibility:hidden;pointer-events:none}
+.book-page-flow .item-pages,.book-page-flow .storage-columns,.book-page-flow .camp-character-workspace,.book-page-flow .camp-skill-ledger,.book-page-flow .tavern-compare{break-inside:avoid}
+.camp-game-window>.modal-content{overflow:hidden!important;padding:16px 22px!important}
+.camp-game-window .book-page-flow h3{margin:10px 0;font-size:23px}
+.camp-game-window .book-page-flow .camp-row{padding:10px 8px}
+.camp-game-window .book-page-flow .camp-tabs{margin-bottom:10px}
+.camp-game-window .book-page-flow .camp-craft-tools{margin:10px 0;padding:8px 12px}
+.camp-game-window .book-page-flow .camp-character-workspace{gap:18px;grid-template-columns:210px minmax(0,1fr)}
+.camp-game-window .book-page-flow .camp-hero-sheet{padding:12px}
+.camp-game-window .book-page-flow .camp-hero-portrait img{height:120px;width:120px}
+.camp-game-window .book-page-flow .camp-hero-sheet dl{margin-top:10px}
+.camp-game-window .book-page-flow .camp-hero-sheet dl>div{padding:4px 0}
+.camp-game-window .book-page-flow .camp-sheet-note{margin-top:10px}
+.camp-game-window .book-page-flow .camp-skill-ledger{min-height:0;margin:10px 0;grid-template-columns:190px minmax(0,1fr)}
+.camp-game-window .book-page-flow .camp-skill-detail{padding:14px}
+.camp-game-window .book-page-flow .camp-skill-directory button{padding:6px 10px}
+.camp-game-window .book-page-flow .camp-portrait-picker img{height:55px;width:55px}
+.book-page-flow .camp-grid,.book-page-flow .camp-shop-stock,.book-page-flow .camp-recipe-grid,.book-page-flow .camp-gem-inventory{overflow:visible;max-height:none}
+.memory-chart .memory-inspector{overflow:hidden!important;padding:14px 15px}
+.memory-chart .memory-inspector h3{margin:8px 0 12px}
+.memory-chart .memory-notice{overflow:visible;max-height:none}
+.departure-journal{height:min(580px,calc(100dvh - 270px))}
+.departure-leaf{flex:1;overflow:hidden!important;min-height:0}
+.departure-leaf .book-pager p{font-size:15px}
+.departure-leaf .page-turns{gap:8px;padding-top:6px;margin-top:4px;min-height:34px}
+.departure-leaf .page-turns>button{padding:4px 8px;font-size:13px}
+.departure-party,.departure-reward,.departure-sweeps,.departure-bag{break-inside:avoid}
+.app-shell.departure-preview-shell{height:100dvh;box-sizing:border-box;display:flex;flex-direction:column;padding:8px 16px}
+.departure-preview-shell>nav{flex:none}
+.departure-preview-shell>.dungeon-departure{flex:1;height:auto;min-height:0}
+.rewards-modal{display:flex;flex-direction:column;max-height:calc(100dvh - 40px);overflow:hidden}
+.rewards-modal .reward-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.camp-layout .camp-nav{overflow:hidden!important;max-height:none}
+.camp-nav .page-turns{gap:4px}
+.camp-nav .page-turns button{width:auto;padding:4px;font-size:12px;display:inline-block}
+.camp-skill-directory .page-turns{gap:5px}
+.camp-game-window .camp-skill-directory .page-turns button{width:auto;padding:4px;margin:0;display:inline-block;font-size:12px}
+.camp-nav .page-turns>span,.camp-skill-directory .page-turns>span{font-size:12px}
+.camp-conversation .item-pages>.page-turns{color:#d8c394;min-height:32px;margin-top:5px;padding-top:4px}
+.camp-conversation .item-pages>.page-turns button{font-size:14px;min-height:28px;padding:3px 12px}
+.camp-game-window .book-page-flow .camp-hero-sheet{position:relative;top:auto}
+.camp-game-window .book-page-flow .camp-hero-portrait{min-height:100px;height:100px}
+.camp-game-window .book-page-flow .camp-hero-portrait img{height:100px;width:100px}
+.camp-game-window .book-page-flow .camp-portrait-picker{margin-bottom:12px}
+.camp-game-window .book-page-flow .storage-cell{margin:0}
+.camp-game-window .book-page-flow .shop-spending{padding:8px 14px;margin-bottom:8px}
+.camp-game-window .book-page-flow .camp-shop-stock p{margin:5px 0;line-height:1.5}
+.camp-game-window .book-page-flow .camp-commerce-balance{padding:10px 16px;margin:6px 0}
+.camp-game-window .book-page-flow .camp-checkout-bar,.camp-game-window .book-page-flow .modal-actions{margin-top:8px;padding-top:8px}
+.camp-game-window .book-page-flow .camp-commerce-balance{position:static}
+.camp-game-window .book-page-flow .camp-checkout-bar,.camp-game-window .book-page-flow .modal-actions{position:static;bottom:auto;padding:4px 8px;margin:4px 0 0}
+@media(max-height:800px){
+ .camp-game-window>header{padding:9px 22px;min-height:68px}
+ .camp-game-window .camp-window-host{width:48px;height:48px}
+ .camp-game-window>header h2{font-size:27px}
+ .camp-game-window .storage-cell,.camp-game-window .storage-empty{min-height:94px}
+ .camp-game-window .storage-icon{height:36px}
+ .camp-game-window .storage-icon .camp-item-mark{height:34px;width:34px}
+}

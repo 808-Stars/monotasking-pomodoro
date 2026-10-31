@@ -1,0 +1,132 @@
+/* Interior furniture, not another window skin. Fixed-size corners and one
+   fine rail: no layout dimensions/padding changes, and no art over controls. */
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene] {
+ --camp-module-trim:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/paper-panel.webp');
+ --camp-module-kind:display-large;--camp-module-slice:240 fill;--camp-module-size:26px;
+}
+
+/* Explicit semantic modules only. Repeated small buttons, tabs, resources,
+   the entire page and nested fields are intentionally not framed again. */
+.modal.camp-game-window[data-camp-scene] :is(
+ .camp-hero-sheet,.gem-workbench-current,.gem-workbench-tile,
+ .formation-seat,.formation-reserves,
+ .shop-counter-shelf,.shop-counter-detail,
+ .storage-columns>section,.storage-inspect,
+ .camp-skill-directory,.camp-skill-detail,
+ .camp-codex-frontispiece,.codex-entry,
+ .camp-processing-tray>article,.camp-recipe-grid>.camp-row,
+ .camp-gem-recipes>.camp-row,.camp-qualifications>.camp-row,
+ .camp-confirm,.tavern-compare>section,.tavern-row:has(header),.tavern-code,.tavern-build,
+ .camp-archive-page,.camp-panel[data-camp-panel="stamina"]>p:has(button)
+),
+.modal.memory-modal[data-camp-scene] :is(.memory-map,.memory-inspector) {
+ position:relative;
+}
+.modal.camp-game-window[data-camp-scene] :is(
+ .camp-hero-sheet,.gem-workbench-current,.gem-workbench-tile,
+ .formation-seat,.formation-reserves,
+ .shop-counter-shelf,.shop-counter-detail,
+ .storage-columns>section,.storage-inspect,
+ .camp-skill-directory,.camp-skill-detail,
+ .camp-codex-frontispiece,.codex-entry,
+ .camp-processing-tray>article,.camp-recipe-grid>.camp-row,
+ .camp-gem-recipes>.camp-row,.camp-qualifications>.camp-row,
+ .camp-confirm,.tavern-compare>section,.tavern-row:has(header),.tavern-code,.tavern-build,
+ .camp-archive-page,.camp-panel[data-camp-panel="stamina"]>p:has(button)
+)::after,
+.modal.memory-modal[data-camp-scene] :is(.memory-map,.memory-inspector)::after {
+ content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+ box-sizing:border-box;border:var(--camp-module-size) solid transparent;
+ border-image-source:var(--camp-module-trim);border-image-slice:var(--camp-module-slice);
+ border-image-width:var(--camp-module-size);border-image-repeat:stretch;
+ opacity:.85;
+}
+/* All paper-coloured skill insets use a darker version of the same motif. */
+.modal.camp-game-window[data-camp-scene] .camp-skill-detail::after {
+ filter:brightness(.55) saturate(.55);
+}
+
+/* Smaller read-only cards get a single quiet rail, not a scaled large panel. */
+.modal.camp-game-window[data-camp-scene] :is(
+ .gem-workbench-current,.gem-workbench-tile:not(button),.storage-inspect,
+ .camp-processing-tray>article,.camp-recipe-grid>.camp-row,
+ .camp-gem-recipes>.camp-row,.camp-qualifications>.camp-row,
+ .tavern-code,.camp-panel[data-camp-panel="stamina"]>p:has(button)
+) {
+ --camp-module-kind:display-small;
+ --camp-module-trim:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/paper-choice.webp');
+ --camp-module-slice:196 fill;--camp-module-size:15px;
+}
+/* These cards are interactive even when their frame is painted on a wrapper.
+   Keep one border, and use the same side emphasis as selectable list rows. */
+.modal.camp-game-window[data-camp-scene] :is(.formation-seat,button.gem-workbench-tile) {
+ --camp-module-kind:choice;
+ --camp-module-trim:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/paper-choice.webp');
+ --camp-module-slice:196 fill;--camp-module-size:18px;
+}
+
+/* Controls get role-specific shaped edges, not printed corner ornaments.
+   Full actions use 12px corners; compact utilities use 7px brackets. Hit areas stay
+   owned by the existing layouts. Node seals and already-framed cards opt out. */
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene]
+ button:where(:not(:is(.memory-node,.gem-workbench-tile,.formation-seat>button:first-child))) {
+ position:relative;
+ --camp-button-trim:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/leather-action.webp');
+ --camp-button-trim-size:14px;
+ --camp-button-trim-inset:0px;
+ --camp-button-kind:action-regular;--camp-button-slice:240 fill;
+ --camp-button-filter:none;
+}
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene]
+ button:where(:not(:is(.memory-node,.gem-workbench-tile,.formation-seat>button:first-child)))::before {
+ content:"";position:absolute;inset:var(--camp-button-trim-inset);z-index:1;pointer-events:none;
+ box-sizing:border-box;border:var(--camp-button-trim-size) solid transparent;
+ border-image-source:var(--camp-button-trim);border-image-slice:var(--camp-button-slice);
+ border-image-width:var(--camp-button-trim-size);border-image-repeat:stretch;
+ opacity:.85;filter:var(--camp-button-filter);
+}
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene]
+ :is(.page-turns button,.shop-counter-stepper button,.camp-tabs>button,
+ .camp-portrait-picker button,.formation-seat>.seat-remove),
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene]>header>button {
+ --camp-button-kind:action-compact;
+ --camp-button-trim:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/leather-action.webp');
+ --camp-button-slice:240 fill;--camp-button-trim-size:9px;--camp-button-trim-inset:0px;
+}
+.modal.camp-game-window[data-camp-scene] :is(
+ .shop-counter-product,.formation-reserve-list>button,.camp-skill-directory button,
+ .gem-workbench-slots button,.storage-cell
+) {
+ --camp-button-kind:choice;
+ --camp-button-trim:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/paper-choice.webp');
+ --camp-button-slice:196 fill;--camp-button-trim-size:17px;--camp-button-trim-inset:0px;
+}
+/* Suppress the old straight stroke without changing its layout thickness.
+   Tabs and portrait pickers retain their existing selected underline. */
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene]
+ button:not(:is(.memory-node,.gem-workbench-tile,.formation-seat>button:first-child,
+ .camp-tabs>button,.camp-portrait-picker button)) {
+ border-color:transparent;border-radius:4px;
+}
+/* Cream selection/confirmation surfaces need darker thread, while transparent
+   selected tabs and portrait pickers retain the usual light ribbon. */
+.modal.camp-game-window[data-camp-scene] :is(
+ button.primary,.camp-confirm>button:first-of-type,.formation-confirm>button,
+ .shop-counter-add,.shop-counter-checkout,
+ .shop-counter-product[aria-pressed="true"],
+ .camp-skill-directory button[aria-pressed="true"],
+ .gem-workbench-slots button[aria-pressed="true"],
+ button[aria-pressed="true"]:not(.camp-tabs>button,.camp-portrait-picker button,.formation-reserve-list>button)
+) {
+ --camp-button-filter:none;
+}
+/* Committing a choice is visually stronger than inspecting or paging it. */
+.modal:is(.camp-game-window,.memory-modal)[data-camp-scene] :is(
+ button.primary,.camp-confirm>button:first-of-type,.formation-confirm>button,
+ .shop-counter-add,.shop-counter-checkout,.camp-skill-detail button,.memory-node-actions button
+) {
+ --camp-button-kind:action-primary;
+ --camp-button-trim:url('/jrpg/assets/ui/camp-window-skins/traveler-relic/paper-confirm.webp');
+ --camp-button-slice:280 fill;--camp-button-trim-size:18px;--camp-button-trim-inset:0px;
+ --camp-button-filter:none;
+}

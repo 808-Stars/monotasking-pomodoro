@@ -1,0 +1,15 @@
+import { mountGame } from "./presentation/GameViewport.tsx";
+import App from "./App.tsx";
+import "./style.css";
+import "./traveler-theme.css";
+import "./presentation/motion.css";
+import "./features/camp/camp-windows.css";
+import "./features/camp/camp-dialogue.css";
+import "./features/camp/world-atlas.css";
+import "./features/camp/camp-map.css";
+import "./features/camp/camp-immersive.css";
+import "./features/camp/camp-materials.css";
+import "./features/camp/camp-module-trims.css";
+import "./features/camp/camp-relic.css";
+import "./features/camp/shop-front.css";
+mountGame(<App />);

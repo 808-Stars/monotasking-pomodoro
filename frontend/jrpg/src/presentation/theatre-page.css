@@ -1,0 +1,7 @@
+.theatre-drawings { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 12px; margin-bottom: 36px; }
+.theatre-drawings article { border: 1px solid #bea06644; background: #20282ec0; padding: 12px; text-align: center; }
+.effect-specimen { width: 160px; height: 160px; margin: auto; position: relative; }
+.effect-specimen::before { content: ""; position: absolute; inset: 28px; border: 1px dashed #809eae33; }
+.effect-specimen .theatre-effect { width: 160px; height: 160px; image-rendering: pixelated; }
+.theatre-drawings h2 { font: 22px/1.4 "Noto Serif SC",SimSun,serif; margin: 5px 0; color: #d8ccb0; }
+@media(max-width:480px) { .theatre-drawings { grid-template-columns: repeat(2,minmax(0,1fr)); } .effect-specimen,.effect-specimen .theatre-effect { width: 128px; height: 128px; } }

@@ -1,0 +1,183 @@
+.modal-backdrop:has(.memory-chart) { padding:16px; }
+/* Presentation only: adopted 9×9 positions and game-state eligibility stay intact. */
+.modal.memory-modal:has(.memory-chart) {
+  width:min(100%,calc(100dvh + 320px));padding:12px;
+  height:calc(100dvh - 32px);max-height:calc(100dvh - 32px);
+  display:grid;grid-template-columns:minmax(0,1fr) 320px;
+  grid-template-rows:auto minmax(0,1fr);gap:12px 16px;
+  overflow:hidden;box-sizing:border-box;
+  background:#292c28;color:#e1d3b3;border:1px solid #7f7055;
+  box-shadow:0 24px 80px #0008,inset 0 0 0 5px #222622;
+}
+.modal.memory-modal:has(.memory-chart) > header {
+  grid-column:2;grid-row:1;min-width:0;padding:6px 8px 12px;margin:0;
+  border-color:#8d795c55;gap:10px;
+}
+.modal.memory-modal:has(.memory-chart) > header h2 { color:#e1d3b3; }
+.modal.memory-modal:has(.memory-chart) > header { flex:none; }
+.modal.memory-modal:has(.memory-chart) > .modal-content {
+  display:contents;
+}
+.modal.memory-modal:has(.memory-chart) .camp-panel {
+  display:contents;
+}
+.modal.memory-modal:has(.memory-chart) .camp-panel > [role="alert"],
+.modal.memory-modal:has(.memory-chart) .camp-panel > [role="status"] {
+  position:absolute;left:24px;bottom:20px;z-index:4;margin:0;padding:8px 16px;background:#292c28ed;
+}
+.memory-atlas.memory-chart {
+  --memory-cell:88px;--chart-ink:#514737;--chart-gold:#a58751;
+  min-height:0;display:contents;
+  color:#dfd2b4;font-family:SimSun,"Noto Serif SC",serif;
+}
+.memory-chart .memory-map-heading {
+  display:flex;flex-direction:column;align-items:stretch;gap:14px;
+  padding:0 0 18px;margin:0 0 18px;border-bottom:1px solid #a28b6938;
+}
+.memory-chart .memory-map-heading h3 { font-size:30px;letter-spacing:6px;color:#e5d7b4; }
+.memory-chart .memory-map-heading p { color:#aea38c;font-size:17px; }
+.memory-chart .memory-balance { gap:20px;justify-content:space-between; }
+.memory-chart .memory-balance dt,.memory-chart .memory-balance small { color:#b7a98c;font-size:16px; }
+.memory-chart .memory-balance dd { color:#ead7a7;font:30px/1.4 Georgia,serif; }
+.memory-chart .memory-workspace { display:contents; }
+.memory-chart .memory-map {
+  grid-column:1;grid-row:1 / -1;
+  position:relative;padding:0;min-width:0;min-height:0;display:flex;flex-direction:column;
+  color:var(--chart-ink);border:1px solid #8f9276;
+  background:#ccba95 url("/jrpg/assets/ui/memory-atlas/parchment-aged-soft-v2.webp") center / cover no-repeat;
+  box-shadow:0 7px 0 #171d1a55;
+}
+.memory-chart .memory-map::before {
+  content:none;
+}
+.memory-chart .memory-map::after {
+  content:none;
+}
+.memory-chart .memory-scroll {
+  --memory-board-scale:0;flex:1;min-height:0;max-height:none;
+  overflow:hidden;display:grid;place-items:center;contain:size;
+}
+.memory-chart .memory-board-fit {
+  position:relative;width:calc(792px * var(--memory-board-scale));height:calc(792px * var(--memory-board-scale));
+}
+.memory-chart .memory-grid {
+  position:absolute;top:0;left:0;isolation:isolate;margin:0;
+  transform-origin:top left;transform:scale(var(--memory-board-scale));
+}
+.memory-chart .memory-grid::before {
+  content:none;
+}
+.memory-chart .memory-grid::after {
+  content:none;
+}
+.memory-chart .memory-edges { stroke:#796f5352;stroke-width:1.6; }
+.memory-chart .memory-edges .traced { stroke:#96763e;stroke-width:4;stroke-linecap:square; }
+.memory-chart .memory-edges .frontier { stroke:#a18856;stroke-width:2.5;stroke-dasharray:4 5; }
+.memory-chart .memory-edges .inspected { stroke:#7d4534;stroke-width:3; }
+.memory-chart .memory-edges .traced.inspected { stroke:#ab713d;stroke-width:4; }
+.memory-chart .memory-node {
+  --seal-shape:polygon(6% 0,94% 0,100% 6%,100% 94%,94% 100%,6% 100%,0 94%,0 6%);
+  --seal-edge:#a59676;--seal-fill:#d9ccaa;--seal-ink:#827456;
+}
+.memory-atlas.memory-chart .memory-grid .memory-node {
+  display:block;position:relative;width:72px;height:72px;margin:0;padding:0;
+  border:0;border-radius:0;clip-path:none;outline:none;background:none;
+  box-shadow:none;color:var(--seal-ink);line-height:1.1;overflow:visible;
+  transition:color 160ms;
+}
+.memory-atlas.memory-chart .memory-grid .memory-node:hover,
+.memory-atlas.memory-chart .memory-grid .memory-node.owned:hover,
+.memory-atlas.memory-chart .memory-grid .memory-node.selected,
+.memory-atlas.memory-chart .memory-grid .memory-node:focus-visible {
+  background:none;box-shadow:none;outline:none;color:var(--seal-ink);
+}
+.memory-chart .memory-node-mark {
+  position:absolute;left:14px;top:14px;display:grid;place-items:center;width:44px;height:44px;
+  background:none;isolation:isolate;
+}
+.memory-chart .memory-seal-rim {
+  position:absolute;inset:0;pointer-events:none;z-index:-1;
+}
+.memory-chart .memory-seal-rim > svg { display:block;width:100%;height:100%;overflow:visible; }
+.memory-chart .memory-seal-rim .seal-outer {
+  fill:var(--seal-fill);stroke:var(--seal-edge);stroke-width:2;stroke-linejoin:miter;
+}
+.memory-chart .memory-seal-rim .seal-inner { stroke:var(--seal-edge);stroke-width:1.4;opacity:.65; }
+.memory-chart .memory-seal-rim .seal-inlay { stroke:var(--seal-edge);stroke-width:.7;opacity:.25; }
+.memory-chart .memory-seal-rim .seal-pins { fill:var(--seal-edge); }
+.memory-chart .memory-node-mark > svg { width:24px;height:24px;overflow:visible; }
+.memory-atlas.memory-chart .memory-node.function {
+  --seal-shape:polygon(50% 0,61% 23%,85% 15%,77% 39%,100% 50%,77% 61%,85% 85%,61% 77%,50% 100%,39% 77%,15% 85%,23% 61%,0 50%,23% 39%,15% 15%,39% 23%);
+}
+.memory-chart .memory-node.function .memory-node-mark { width:60px;height:60px;left:6px;top:6px; }
+.memory-chart .memory-node.function .memory-node-mark > svg { width:24px;height:24px; }
+.memory-atlas.memory-chart .memory-node.permanent { --seal-shape:polygon(50% 0,100% 50%,50% 100%,0 50%); }
+.memory-chart .memory-node.permanent .memory-node-mark { width:58px;height:58px;left:7px;top:7px; }
+.memory-atlas.memory-chart .memory-node.origin {
+  --seal-shape:polygon(50% 0,60% 24%,85% 15%,76% 40%,100% 50%,76% 60%,85% 85%,60% 76%,50% 100%,40% 76%,15% 85%,24% 60%,0 50%,24% 40%,15% 15%,40% 24%);
+  --seal-fill:#63593f;--seal-edge:#b29456;--seal-ink:#eee0b8;
+}
+.memory-chart .memory-node.origin .memory-node-mark { width:66px;height:66px;left:3px;top:3px; }
+.memory-chart .memory-node.origin .memory-node-mark > svg { width:34px;height:34px; }
+.memory-atlas.memory-chart .memory-node.reachable { --seal-edge:#a07839;--seal-fill:#f0e2bd;--seal-ink:#6b4d25; }
+.memory-atlas.memory-chart .memory-node.owned { --seal-edge:#b99b60;--seal-fill:#665b40;--seal-ink:#f1dfae; }
+.memory-chart .memory-node.owned .seal-inner { stroke:#ead6a0;opacity:.6; }
+.memory-chart .memory-node.owned .seal-pins { fill:#e3c789; }
+.memory-atlas.memory-chart .memory-node.disconnected { --seal-edge:#ad9368;--seal-fill:#6b6252; }
+.memory-chart .memory-node-retained { position:absolute;right:4px;top:3px;font-size:10px;color:#826543; }
+.memory-chart .memory-node.selected::after,.memory-chart .memory-node:focus-visible::after {
+  content:"";position:absolute;inset:1px;pointer-events:none;
+  background:linear-gradient(#89523a,#89523a) left top/12px 2px no-repeat,
+    linear-gradient(#89523a,#89523a) left top/2px 12px no-repeat,
+    linear-gradient(#89523a,#89523a) right bottom/12px 2px no-repeat,
+    linear-gradient(#89523a,#89523a) right bottom/2px 12px no-repeat;
+}
+.memory-chart .memory-node:hover .memory-node-mark { filter:brightness(1.08); }
+.memory-chart .memory-legend { gap:12px;font-size:14px;color:#716044;margin-top:14px; }
+.memory-chart .memory-legend i { border-radius:0;background:#d7c7a3;border-color:#a59676; }
+.memory-chart .memory-legend .owned { background:#665b40;border-color:#b99b60; }
+.memory-chart .memory-legend .reachable { background:#f0e2bd;border-color:#a07839; }
+.memory-atlas.memory-chart .memory-protection-warning { font-size:15px;color:#80684a;padding:0 8px; }
+.memory-chart .memory-inspector {
+  grid-column:2;grid-row:2;
+  position:relative;top:auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;
+  scrollbar-width:thin;scrollbar-color:#99805b #32352d;
+  border:1px solid #8b77554f;border-top:3px solid #ab8c52;
+  padding:22px 18px;color:#ddcfad;background:#32352d;
+  box-shadow:0 6px 0 #171d1a55;
+}
+.memory-chart .memory-selection-meta { font-size:14px;color:#b19c78; }
+.memory-chart .memory-inspector h3 { font-size:28px;color:#ead7a9;line-height:1.4;margin:16px 0 22px; }
+.memory-chart .memory-inspector h4 { color:#bba67e;font-size:17px;letter-spacing:2px; }
+.memory-chart .memory-detail-list { border-block:1px solid #a28b6938;padding:12px 0;margin-bottom:18px; }
+.memory-chart .memory-detail-list > div { font-size:17px;gap:12px; }
+.memory-chart .memory-detail-list dd { color:#ead7a9;text-align:right; }
+.memory-chart .memory-prerequisites p,.memory-chart .memory-prerequisites li { font-size:16px;color:#bfb399; }
+.memory-chart .memory-prerequisites .met { color:#bec99c; }
+.memory-chart .memory-node-preview { color:#c8b998;font-size:17px; }
+.memory-chart .memory-node-preview b { color:#eddaa7; }
+.memory-chart .memory-node-actions button {
+  border:1px solid #c2a568;background:#b49a65;color:#252b24;padding:12px 10px;
+  font:600 20px/1.4 SimSun,serif;letter-spacing:3px;box-shadow:inset 0 0 0 3px #d4bc842e;
+}
+.memory-chart .memory-node-actions button:disabled { opacity:.4; }
+.memory-chart .memory-node-actions p,.memory-chart .memory-root-note,.memory-chart .memory-footnote { color:#b3a68b;font-size:15px; }
+.memory-chart .memory-inspector .memory-protection-warning { padding:0;color:#c3b08b; }
+.memory-chart .memory-growth dl > div { color:#a99c82;font-size:16px; }
+.memory-chart .memory-growth .increased { color:#ead3a1; }
+.memory-chart .memory-notice { flex:none;max-height:90px;overflow-y:auto;color:#b7a78a;font-size:15px; }
+.memory-chart .memory-guide { border-top:1px solid #a28b6938;margin-top:20px;padding-top:16px; }
+.memory-chart .memory-guide .memory-legend {
+  display:flex;flex-direction:column;align-items:flex-start;gap:8px;
+  margin-top:12px;color:#bfb399;font-size:15px;
+}
+.memory-chart .memory-guide .memory-protection-warning { color:#b3a68b; }
+@media (max-width:1050px) {
+  .modal.memory-modal:has(.memory-chart) { grid-template-columns:minmax(0,1fr) 260px;gap:12px; }
+  .memory-chart .memory-inspector { padding:18px 14px; }
+  .memory-chart .memory-growth dl { grid-template-columns:1fr 1fr; }
+}
+@media (max-width:760px) {
+  .modal.memory-modal:has(.memory-chart) { grid-template-columns:minmax(0,1fr) 220px;gap:10px;padding:8px; }
+  .memory-chart .memory-map-heading { flex-wrap:wrap; }
+}

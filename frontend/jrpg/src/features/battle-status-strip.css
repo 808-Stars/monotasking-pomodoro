@@ -1,0 +1,422 @@
+/* A single portrait-led roster between the stage and the command menu.
+   Existing pixel portraits and wood icons provide the decoration. */
+.battle .battle-status-strip {
+  display: grid;
+  grid-template-columns: minmax(400px, 1.65fr) repeat(4, minmax(264px, 1fr));
+  align-items: start;
+  gap: 16px;
+  padding: 14px 4px 10px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #8b795a transparent;
+}
+.battle .battle-status-unit {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  align-items: start;
+  column-gap: 10px;
+  row-gap: 4px;
+  min-width: 0;
+  background: none;
+  border: 0;
+  /* Keep the existing spacing without an active-unit outline. */
+  padding: 8px;
+}
+.battle .status-portrait-column { display: contents; }
+.battle .enemy-summary { padding-right: 72px; }
+.battle .status-portrait {
+  grid-column: 1;
+  grid-row: 1;
+  display: block;
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: none;
+}
+.battle .status-portrait-column .unit-status-icons {
+  --status-icon-size: 20px;
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  min-width: 0;
+  gap: 3px 2px;
+  align-content: start;
+  /* 88px portrait + 4px AP gap + 5px AP height - 20px icon height. */
+  margin: 77px 0 0 6px;
+}
+.battle .status-portrait-column .status-icon-count { font-size: 16px; }
+.battle .status-portrait-column .status-icon-tag { font-size: 14px; }
+.battle .status-readout {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  min-height: 104px;
+  padding: 8px;
+  background: rgb(22 26 24 / 50%);
+  border: 0;
+  box-shadow: none;
+}
+.battle .status-readout .hero-heading,
+.battle .status-readout .enemy-name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 3px 6px;
+  margin: 0 0 5px;
+}
+.battle .status-readout .hero-heading > b,
+.battle .status-readout .enemy-name h2 {
+  margin: 0;
+  font: 22px/1.3 SimSun, serif;
+  letter-spacing: 1px;
+}
+.battle .status-readout .hero-heading > span,
+.battle .status-readout .enemy-name > span { font-size: 15px; }
+.battle .status-readout .enemy-name {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  flex-wrap: nowrap;
+}
+.battle .status-readout .enemy-name h2 { display: flex; align-items: baseline; gap: 4px; white-space: nowrap; }
+.battle .status-readout .enemy-stage { color: #b6a98e; font-size: 15px; font-weight: normal; letter-spacing: 0; }
+.battle .status-readout .gauge {
+  --gauge-ink:#9dae91;
+  position:relative;display:flex;justify-content:space-between;
+  gap:6px;min-height:24px;isolation:isolate;
+  flex-wrap: nowrap;
+  /* Lift HP/SP visually without moving the independently anchored AP or status icons. */
+  transform: translateY(-4px);
+}
+.battle .status-readout .gauge.sp { --gauge-ink:#82a7b7; }
+.battle .enemy-summary .gauge { --gauge-ink:#b49b77; }
+.battle .status-readout .gauge > span {
+  position:relative;z-index:1;display:grid;grid-template-columns:repeat(2,17px);
+  column-gap:3px;justify-items:center;align-items:center;width:37px;flex:0 0 37px;
+  font:600 21px/1 Georgia,"Times New Roman",serif;
+  letter-spacing:0;color:rgb(196 177 138 / 40%);
+}
+.battle .status-readout .gauge-track {
+  position:absolute;z-index:0;inset:auto 0 1px;
+  min-width:0;height:9px;overflow:hidden;background:rgb(8 14 16 / 30%);
+  clip-path:polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%);
+}
+.battle .status-readout .gauge-track::after {
+  content:"";position:absolute;inset:auto 0 0;height:1px;
+  background:rgb(196 177 138 / 28%);pointer-events:none;
+}
+.battle .status-readout .gauge-track > i {
+  height:100%;background:var(--gauge-ink);opacity:.64;
+  border-top:1px solid rgb(235 229 209 / 50%);
+  clip-path:polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%);
+}
+.battle .status-readout .gauge > b {
+  position:relative;z-index:1;min-width:0;font:600 16px/1 Arial,sans-serif;
+  white-space:nowrap;color:#e5ddca;
+  text-shadow:0 1px 1px #171c1a;
+}
+.battle .status-readout .gauge small { font-size:14px;font-weight:400;color:#b0b5aa; }
+/* Quiet letter watermarks, foreground readings, resource-specific lower marks. */
+.battle .ap-readout {
+  position:relative;display:inline-grid;place-items:center;gap:0;
+  height:24px;min-height:24px;box-sizing:border-box;padding:0;
+  grid-column:1;grid-row:1;align-self:center;margin:0;width:60px;
+}
+.battle .ap-label {
+  position:absolute;inset:0;display:grid;place-items:center;margin:0;
+  font:600 24px/1 Georgia,"Times New Roman",serif;letter-spacing:1px;
+  color:rgb(178 155 172 / 28%);pointer-events:none;
+}
+.battle .ap-percentage {
+  position:relative;
+  font:600 14px/1 Arial,sans-serif;white-space:nowrap;color:#d6c6d7;
+  font-variant-numeric:tabular-nums;
+  text-shadow:0 1px 1px #171c1a;
+}
+.battle .ap-meter { position:relative;display:grid;place-items:center;width:60px;height:24px; }
+.battle .ap-meter-track { position:absolute;inset:auto 0 0;height:2px;background:rgb(178 155 172 / 18%); }
+.battle .ap-meter-track > i { display:block;height:100%;background:#b29bac; }
+.battle .ap-meter.full .ap-meter-track > i { background:#d6c6d7; }
+.battle .ap-full-star { position:relative;width:20px;height:20px;fill:#d6c6d7;stroke:none; }
+.battle .status-readout .hero-heading {
+  display:flex;flex-wrap:nowrap;justify-content:space-between;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+}
+.battle .status-readout .hero-heading > b { flex:0 0 auto;white-space:nowrap; }
+.battle .status-readout .hero-heading > .bp {
+  position:relative;display:grid;flex:0 0 auto;place-items:center;
+  width:56px;height:24px;line-height:1;letter-spacing:0;color:#c9b37f;
+}
+.battle .bp > span:first-child {
+  position:absolute;inset:0;display:grid;place-items:center;
+  font:600 24px/1 Georgia,"Times New Roman",serif;letter-spacing:1px;
+  color:rgb(201 179 127 / 28%);pointer-events:none;
+}
+.battle .bp-pips { position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:4px;height:24px; }
+.battle .bp-pip { display:block;flex:0 0 6px;width:6px;height:6px;box-sizing:border-box;border:1px solid #b7a16c;border-radius:0;background:transparent;transform:rotate(45deg); }
+.battle .bp-pip.filled { background:#d1bd8b; }
+.battle .status-readout .hero-heading > .ap-readout {
+  flex:0 0 auto;align-self:center;align-items:center;margin:0;width:auto;min-width:0;
+}
+.battle .status-readout .hero-heading > .pp-readout { flex:0 0 auto; }
+.battle .hero-condition { grid-column: 2; grid-row: 2; display: block; margin-top: 4px; font-size: 15px; color: #b6a98e; }
+.battle .pp-readout { position:relative;display:grid;place-items:center;width:60px;height:24px; }
+.battle .pp-label {
+  position:absolute;inset:0;display:grid;place-items:center;
+  font:600 24px/1 Georgia,"Times New Roman",serif;letter-spacing:1px;
+  color:rgb(191 115 116 / 28%);pointer-events:none;
+}
+.battle .pp-meter { position:relative;display:grid;place-items:center;width:60px;height:24px; }
+.battle .pp-meter-track { position:absolute;inset:auto 0 0;height:2px;background:rgb(191 115 116 / 18%); }
+.battle .pp-meter-track > i { display:block;height:100%;background:#bf7374; }
+.battle .pp-meter.ready .pp-meter-track > i { background:#e0a09a; }
+.battle .pp-ready-star { position:relative;width:20px;height:20px;fill:#e0a09a;stroke:none; }
+.battle .pp-percentage {
+  position:relative;color:#e2bdb9;font:600 14px/1 Arial,sans-serif;
+  font-variant-numeric:tabular-nums;letter-spacing:0;white-space:nowrap;
+  text-shadow:0 1px 1px #171c1a;
+}
+.battle .status-readout .enemy-details {
+  justify-content: start;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 6px;
+  margin: 1px 0;
+}
+.battle .status-readout .shield {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: 0 0 24px;
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  color: #ddd0a9;
+  font: 18px/1 Arial, sans-serif;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.battle .status-readout .shield svg { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.1; stroke-linejoin: round; stroke-linecap: round; }
+.battle .status-readout .shield-inner-rim { stroke-width: .7; opacity: .4; }
+.battle .status-readout .shield-value {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: max-content;
+  padding: 1px 2px;
+  background: transparent;
+}
+.battle .status-readout .shield.shattered { color: #cba582; }
+.battle .status-readout .shield.shattered .shield-value { font-size: 10px; padding:0; background:transparent; }
+.battle .status-readout .weaknesses { flex: 0 0 auto; flex-wrap: nowrap; gap: 3px; }
+.battle .status-readout .weaknesses span {
+  width: 20px; height: 20px; font-size: 20px;
+  border: 0; background: none;
+  border-radius: 0;
+  outline: 1px solid #8b795a;
+  outline-offset: 0;
+}
+.battle .status-readout .weaknesses img {
+  display: block; width: 20px; height: 20px;
+  object-fit: contain; image-rendering: pixelated; filter: none;
+}
+.battle .enemy-summary .intent {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  overflow: hidden;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  text-align: right;
+  white-space: nowrap;
+}
+.battle .enemy-summary .intent > span { flex: 0 0 auto; font-size: 14px; letter-spacing: 0; }
+.battle .enemy-summary .intent > b { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 17px; letter-spacing: 0; }
+.battle .enemy-summary .intent:focus-visible { outline: 1px solid #dcc28b; outline-offset: 2px; }
+.battle .battle-status-unit.acting .hero-heading > b { color: #f3ddb0; }
+.battle .battle-status-unit.ko { opacity: .65; }
+.battle .battle-status-unit.ko .status-portrait { filter: grayscale(1); }
+/* Card-local readouts replace the bottom roster without repeating portraits.
+   Their AP and icons use normal flow, not the old portrait-relative offsets. */
+.battle-card-scene .card-unit-status .battle-status-unit {
+  position:relative;display:flex;flex-direction:column;gap:0;
+  width:90%;height:auto;box-sizing:border-box;padding:4px 8px;
+  border:1px solid transparent;background:rgb(23 29 27 / 50%);
+}
+/* Measured readouts: enemy 465.36 x 120, focus 346.95 x 120, queue 234 x 79.6.
+   Source: 2172 x 724. Preserve one 1/12 art scale on both axes: 253/12 high,
+   348/12 wide corners. Repeat rails for all widths; never stretch the art. */
+.battle-card-scene .card-unit-status .battle-status-unit::after {
+  content:"";position:absolute;inset:-16px -7px;z-index:6;pointer-events:none;
+  border:21.083333px solid transparent;border-inline-width:29px;
+  border-image-source:url("/jrpg/assets/ui/battle-frames/status-binding-pale-gold-v1.webp");
+  border-image-slice:253 348;border-image-width:21.083333px 29px;border-image-repeat:repeat;
+  image-rendering:pixelated;
+}
+.battle-card-scene .status-placement-below .battle-status-unit { margin-inline:auto;height:100%; }
+.battle-card-scene .hero-anchor .card-unit-status { display:block; }
+.battle-card-scene .card-status-scale {
+  display:flex;align-items:center;transform-origin:top left;
+  transition:transform 300ms ease;
+}
+.battle-card-scene .hero-anchor.focus-anchor .card-status-scale { justify-content:center; }
+.battle-card-scene .hero-anchor .card-status-scale .battle-status-unit {
+  flex:0 0 90%;width:90%;height:auto;margin:0;
+}
+.battle-card-scene .hero-anchor .status-portrait-column { min-height:28px; }
+@media (prefers-reduced-motion:reduce) {
+  .battle-card-scene .card-status-scale { transition:none; }
+}
+.battle-card-scene .card-unit-status .status-readout .hero-heading { gap:2px; }
+.battle-card-scene .card-unit-status .status-readout .gauge { gap:2px; }
+.battle-card-scene .card-unit-status .status-readout {
+  order:0;flex:0 0 auto;min-height:0;width:100%;padding:0;background:none;
+}
+.battle-card-scene .card-unit-status .status-portrait-column {
+  order:1;display:grid;grid-template-columns:minmax(0,1fr);
+  align-items:end;column-gap:0;width:100%;min-width:0;margin-top:4px;
+}
+.battle-card-scene .card-unit-status.status-placement-right .status-portrait-column {
+  min-height:28px;
+}
+.battle-card-scene .card-unit-status .ap-readout {
+  grid-column:1;grid-row:1;margin:0;width:100%;align-self:center;
+}
+.battle-card-scene .card-unit-status .enemy-details > .ap-readout {
+  flex:0 0 auto;width:max-content;min-width:0;margin:0 0 0 auto;align-self:center;
+}
+.battle-card-scene .card-unit-status .status-portrait-column .unit-status-icons {
+  grid-column:1;grid-row:1;margin:0;align-self:end;
+  --status-icon-size:28px;gap:3px 2px;
+}
+.battle-card-scene .card-unit-status .hero-heading {
+  display:grid;grid-template-columns:minmax(0,1fr) 44px 42px 44px;
+  grid-template-areas:"name ap bp pp";gap:4px;
+  min-height:52px;margin-bottom:2px;
+}
+.battle-card-scene .card-unit-status .hero-heading > b { grid-area:name; }
+.battle-card-scene .card-unit-status .hero-heading > .ap-readout { grid-area:ap;justify-self:center;width:44px; }
+.battle-card-scene .card-unit-status .hero-heading .ap-meter { width:44px; }
+.battle-card-scene .card-unit-status .hero-heading > .bp { grid-area:bp;justify-self:center;width:42px; }
+.battle-card-scene .card-unit-status .hero-heading .bp-pips { gap:3px; }
+.battle-card-scene .card-unit-status .hero-heading .bp-pip { flex-basis:5px;width:5px;height:5px; }
+.battle-card-scene .card-unit-status .hero-heading > .pp-readout { grid-area:pp;justify-self:end;width:44px; }
+.battle-card-scene .card-unit-status .hero-heading .pp-meter { width:44px; }
+.battle-card-scene .card-unit-status .hero-heading > b { letter-spacing:0; }
+.battle-card-scene .card-unit-status .gauge { transform:none;min-height:24px; }
+.battle-card-scene .card-unit-status .enemy-name {
+  grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px;
+}
+.battle-card-scene .card-unit-status .enemy-name h2 {
+  flex-wrap:nowrap;white-space:nowrap;letter-spacing:0;
+}
+.battle-card-scene .card-unit-status .intent { max-width:none;justify-self:end; }
+.battle-card-scene .card-unit-status .battle-live-stats {
+  display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:2px;margin:2px 0 0;padding:0;min-width:0;
+  font-family:SimSun,serif;font-size:15px;line-height:18px;min-height:36px;
+}
+.battle-card-scene .card-unit-status .live-stat {
+  position:relative;display:grid;place-items:center;min-width:0;height:36px;
+}
+.battle-card-scene .card-unit-status .live-stat dt {
+  position:absolute;inset:0;display:grid;place-items:center;margin:0;
+  color:rgb(196 177 138 / 28%);font:600 20px/1 SimSun,"Songti SC",serif;
+  letter-spacing:0;white-space:nowrap;pointer-events:none;
+}
+.battle-card-scene .card-unit-status .live-stat dd {
+  position:absolute;z-index:1;top:50%;left:50%;transform:translate(-50%,-50%);
+  display:flex;align-items:center;justify-content:center;gap:0;margin:0;white-space:nowrap;
+  background:transparent;line-height:1;letter-spacing:0;
+  color:#e0d6bf;font-variant-numeric:tabular-nums;
+}
+.battle-card-scene .card-unit-status .live-stat b {
+  font:600 15px/1 Arial,sans-serif;
+  text-shadow:1px 0 #171c1a,-1px 0 #171c1a,0 1px #171c1a,0 -1px #171c1a;
+}
+.battle-card-scene .card-unit-status .live-stat dd > span { position:absolute;left:100%;top:-6px;font-size:10px; }
+.battle-card-scene .card-unit-status .stat-up dd { color:#d8a196; }
+.battle-card-scene .card-unit-status .stat-down dd { color:#b4cba7; }
+/* Focus-only wide readout: heading + five stats, then HP + SP.
+   The resting party keeps its existing compact layout. */
+.battle-card-scene .hero-anchor.focus-anchor .card-unit-status .status-portrait-column {
+  margin-top:10px;
+}
+.battle-card-scene .hero-anchor.focus-anchor .card-unit-status .status-readout {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-rows:36px 24px;gap:4px 12px;align-items:center;
+}
+.battle-card-scene .hero-anchor.focus-anchor .card-unit-status .hero-heading {
+  grid-column:1;grid-row:1;min-height:36px;margin:0;
+}
+.battle-card-scene .hero-anchor.focus-anchor .card-unit-status .battle-live-stats {
+  grid-column:2;grid-row:1;margin:0;
+}
+.battle-card-scene .hero-anchor.focus-anchor .card-unit-status .gauge.hp {
+  grid-column:1;grid-row:2;
+}
+.battle-card-scene .hero-anchor.focus-anchor .card-unit-status .gauge.sp {
+  grid-column:2;grid-row:2;
+}
+.battle-card-scene .card-unit-status .hero-condition {
+  position:absolute;left:6px;bottom:calc(100% + 2px);margin:0;
+}
+.battle-card-scene .enemy-anchor .card-unit-status .battle-status-unit {
+  height:auto;margin-inline:auto;
+}
+.battle-card-scene .enemy-anchor .card-unit-status.status-placement-below .status-readout {
+  /* AP starts at 50% - 46px in the heading; account for this row's 16px gap. */
+  display:grid;grid-template-columns:calc(50% - 62px) minmax(0,1fr);
+  grid-template-rows:36px 24px;gap:4px 16px;align-items:center;
+  flex:0 0 auto;
+}
+.battle-card-scene .enemy-anchor .card-unit-status.status-placement-below .status-readout > * {
+  min-height:0;margin-block:0;align-self:center;
+}
+.battle-card-scene .enemy-anchor .card-unit-status .enemy-name {
+  grid-column:1 / -1;grid-row:1;
+  grid-template-columns:auto minmax(0,1fr) 44px calc(50% - 6px);gap:8px;
+}
+.battle-card-scene .enemy-anchor .enemy-name .ap-readout,
+.battle-card-scene .enemy-anchor .enemy-name .ap-meter { width:44px; }
+.battle-card-scene .enemy-anchor .enemy-name > h2 { grid-column:1;grid-row:1; }
+.battle-card-scene .enemy-anchor .enemy-name > .ap-readout { grid-column:3;grid-row:1; }
+.battle-card-scene .enemy-anchor .enemy-name .battle-live-stats { grid-column:4;grid-row:1;margin:0; }
+.battle-card-scene .enemy-anchor .enemy-name > .intent {
+  grid-column:2;grid-row:1;justify-self:stretch;justify-content:flex-start;max-width:100%;
+}
+.battle-card-scene .enemy-anchor .card-unit-status .gauge.hp { grid-column:2;grid-row:2; }
+.battle-card-scene .enemy-anchor .card-unit-status .enemy-details {
+  grid-column:1;grid-row:2;justify-content:flex-start;min-width:0;margin:0;
+}
+.battle-card-scene .enemy-anchor .card-unit-status .enemy-details .weaknesses { gap:2px; }
+.battle-card-scene .enemy-anchor .card-unit-status .status-portrait-column {
+  min-height:28px;margin-top:10px;
+}
+@container battle-canvas (max-width:760px) {
+  .battle-card-scene .card-unit-status.status-placement-below .status-portrait-column {
+    grid-template-columns:minmax(0,1fr);
+  }
+  .battle-card-scene .card-unit-status.status-placement-below .status-portrait-column .unit-status-icons {
+    grid-column:1;grid-row:1;
+  }
+  .battle-card-scene .card-unit-status .enemy-name {
+    grid-template-columns:minmax(0,1fr);
+  }
+  .battle-card-scene .card-unit-status .intent { justify-content:flex-start;max-width:100%; }
+  .battle-card-scene .card-unit-status .weaknesses { flex-wrap:wrap;flex:1 1 0; }
+}
+@container battle-canvas (max-width:760px) {
+  .battle .battle-status-strip { gap: 12px; padding-block: 10px; }
+}

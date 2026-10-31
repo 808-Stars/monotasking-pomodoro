@@ -1,0 +1,85 @@
+/* A town to enter, not a second dashboard. The art and pins share one plane. */
+.camp-layout .camp-town-map {
+  position:relative;height:100%;width:100%;overflow:hidden;isolation:isolate;
+  container-type:size;box-sizing:border-box;border:1px solid #ae966b80;
+  background:#172332;color:#f0e1bd;font-family:SimSun,"Noto Serif SC",serif;
+}
+.camp-town-plane {
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:max(100cqw,calc(100cqh * 16 / 9));
+  height:max(100cqh,calc(100cqw * 9 / 16));
+  background:url('/jrpg/assets/scenes/camp-map-roads-aligned-20261018.webp') center / 100% 100% no-repeat;
+  image-rendering:pixelated;
+}
+.camp-town-places { position:absolute;inset:0; }
+.camp-town-places .camp-town-place {
+  position:absolute;left:var(--town-x);top:var(--town-y);transform:translate(-50%,-50%);
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  width:122px;padding:6px 12px 12px;border:0;border-radius:0;cursor:pointer;
+  background:radial-gradient(ellipse,#101f2bbd,transparent 72%);box-shadow:none;
+  color:#f1dfad;text-shadow:0 2px 3px #091018;
+}
+.camp-town-place img {
+  width:54px;height:54px;object-fit:contain;image-rendering:pixelated;
+  transition:transform 160ms ease;
+}
+.camp-town-place b {
+  font:22px/1.35 SimSun,"Noto Serif SC",serif;letter-spacing:4px;
+  padding:3px 9px 5px;border-bottom:1px solid #d6b975a8;
+  background:#14212ac9;
+}
+.camp-town-pin {
+  width:5px;height:5px;margin-top:3px;transform:rotate(45deg);background:#ecd195;
+  box-shadow:0 0 0 2px #172433;
+}
+.camp-town-places .camp-town-place:hover,
+.camp-town-places .camp-town-place:focus-visible {
+  background:radial-gradient(ellipse,#1a293ad9,transparent 73%);outline:none;
+}
+.camp-town-place:hover img,.camp-town-place:focus-visible img { transform:translateY(-5px); }
+.camp-town-place:hover b,.camp-town-place:focus-visible b {
+  color:#fff0ba;border-bottom-color:#ffdc8d;outline:1px solid #f1cf8799;outline-offset:3px;
+}
+.camp-town-heading {
+  position:absolute;top:28px;left:32px;pointer-events:none;text-shadow:0 2px 5px #07111c;
+}
+.camp-town-heading > span { color:#d2bd91;font-size:15px;letter-spacing:5px; }
+.camp-town-heading h1 { margin:7px 0 10px;font:34px/1.4 SimSun,serif;letter-spacing:6px; }
+.camp-town-heading p { margin:0;color:#d2d6d0;font-size:17px; }
+.camp-town-guide {
+  position:absolute;left:28px;bottom:22px;display:flex;flex-direction:column;gap:7px;
+  padding:12px 22px;border-left:2px solid #c1a96d;
+  background:linear-gradient(90deg,#14202cde,#14202c99 70%,transparent);
+  pointer-events:none;text-shadow:0 1px 3px #0008;
+}
+.camp-town-guide strong { font-size:21px;font-weight:normal;letter-spacing:2px; }
+.camp-town-guide > span { font-size:16px;color:#d0d4cc; }
+.camp-town-map .camp-town-adventure {
+  position:absolute;right:28px;bottom:22px;z-index:1;
+  display:flex;flex-direction:column;align-items:flex-start;gap:5px;
+  padding:12px 22px;border:1px solid #c4aa7199;border-radius:0;
+  background:#14202cde;color:#f0dfb5;cursor:pointer;
+  font-family:SimSun,"Noto Serif SC",serif;text-shadow:0 1px 3px #0008;
+}
+.camp-town-adventure small { color:#d2bd91;font-size:15px;letter-spacing:3px; }
+.camp-town-adventure b { font-size:22px;font-weight:normal;letter-spacing:3px; }
+.camp-town-adventure b span { margin-left:18px; }
+.camp-town-map .camp-town-adventure:hover,
+.camp-town-map .camp-town-adventure:focus-visible {
+  color:#fff0ba;border-color:#f1cf87;outline:1px solid #f1cf8799;outline-offset:3px;
+}
+.camp-layout .camp-map-return {
+  position:absolute;top:24px;right:84px;z-index:5;min-height:38px;
+  padding:7px 14px;border:1px solid #c4aa7180;background:#14201dc9;
+  color:#ebd7a5;font:18px/1.4 SimSun,serif;cursor:pointer;
+}
+.camp-map-return:focus-visible { outline:2px solid #f1d595;outline-offset:3px; }
+@media (max-height:760px) {
+  .camp-town-place img { width:44px;height:44px; }
+  .camp-town-place b { font-size:20px; }
+  .camp-town-heading { top:18px;left:24px; }
+  .camp-town-heading h1 { font-size:28px; }
+  .camp-town-guide { bottom:14px;padding-block:8px; }
+  .camp-town-map .camp-town-adventure { bottom:14px;padding-block:8px; }
+}
+@media (prefers-reduced-motion:reduce) { .camp-town-place img { transition:none; } }

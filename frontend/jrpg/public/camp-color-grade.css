@@ -1,0 +1,31 @@
+/* Shared by the camp, shop, battle backgrounds and their galleries.
+   Grade only the image layer: text, controls and source PNGs stay unchanged. */
+:root { --camp-image-grade: none; }
+.scene .scene-art::before,
+.merchant-world::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background: inherit;
+  image-rendering: pixelated;
+  filter: var(--camp-image-grade);
+}
+.camp-art-gallery figure img { filter: var(--camp-image-grade); }
+.battle-field,
+.battle-preview {
+  position: relative;
+  isolation: isolate;
+}
+.battle-field::before,
+.battle-preview::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: inherit;
+  image-rendering: pixelated;
+  filter: var(--camp-image-grade);
+}
