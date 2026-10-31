@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import {gameViewportHost} from './gameViewport.ts';
 
-export function useBattleFullscreen(shell:RefObject<HTMLElement|null>) {
+export function useSceneFullscreen(shell:RefObject<HTMLElement|null>) {
   const [web,setWeb]=useState(false);
   const [screen,setScreen]=useState(false);
   const [requesting,setRequesting]=useState(false);

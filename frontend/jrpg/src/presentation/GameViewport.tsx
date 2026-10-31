@@ -2,6 +2,7 @@ import {useLayoutEffect,useRef,useState,type ReactNode} from 'react';
 import {createRoot} from 'react-dom/client';
 import {fitGameViewport,gameViewportFrame,type GameViewportFrame,type GameViewportHost} from './gameViewport.ts';
 import './game-viewport.css';
+import {SceneDisplayProvider} from './SceneDisplay.tsx';
 
 /** A real fixed-size browsing viewport keeps existing media queries, portals,
     keyboard coordinates and viewport units in the same 1920x1080 space. */
@@ -53,5 +54,5 @@ function GameViewport(){
 export function mountGame(content:ReactNode){
  const embedded=!!gameViewportFrame();
  document.documentElement.dataset.gameViewportMode=embedded?'content':'host';
- createRoot(document.getElementById('root')!).render(embedded?content:<GameViewport/>);
+  createRoot(document.getElementById('root')!).render(embedded?<SceneDisplayProvider>{content}</SceneDisplayProvider>:<GameViewport/>);
 }

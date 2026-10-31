@@ -1,3 +1,4 @@
+import {SceneDisplayControls,SceneOverlay,SceneSurface} from "./presentation/SceneDisplay.tsx";
 import { useEffect, useRef, useState } from "react";
 import { isEditingTarget } from "./presentation/keyboard.ts";
 import { useBattleDirector, type BattleLayoutGate } from "./presentation/useBattleDirector.ts";
@@ -670,7 +671,9 @@ export default function App() {
             <span>四门资源原型 · 本地存档</span>
             <span>本地运行 · 进度在此浏览器保存</span>
             <span>资源门与双战原型 / 酒馆可配置阵容 / 未接入效率系统</span>
+            <SceneDisplayControls />
           </nav>
+          <SceneSurface kind={page}>
           {page === "camp" ? (
             <div className="camp-layout" ref={campViewport}>
               {campView === "map" ? (
@@ -877,8 +880,10 @@ export default function App() {
               <button onClick={() => setNotice("")}>知道了</button>
             </div>
           )}
+          </SceneSurface>
         </>
       )}
+      <SceneOverlay>
       {modal && (
         <div className="modal-backdrop" onClick={closeModal}>
           <section
@@ -1476,6 +1481,7 @@ export default function App() {
           </section>
         </div>
       )}
+      </SceneOverlay>
     </div>
   );
 }

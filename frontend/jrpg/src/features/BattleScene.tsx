@@ -1,8 +1,5 @@
-import { useId, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { useBattleFullscreen } from "../presentation/useBattleFullscreen.ts";
-import { nextBattleRotation } from "../presentation/battleRotation.ts";
-import { BATTLE_CANVAS_WIDTH, BATTLE_CANVAS_HEIGHT, battleCanvasScale } from "../presentation/battleCanvas.ts";
-import { BattleCanvasContext } from "../presentation/BattleCanvasContext.ts";
+import { useId, useState, type CSSProperties, type ReactNode } from "react";
+import {SceneDisplayControls,SceneSurface} from "../presentation/SceneDisplay.tsx";
 import { BattleInfoDialog } from "./BattleInfoDialog.tsx";
 import type { BattleState } from "../game/battle.ts";
 import { poseSource } from "../presentation/motion.ts";
@@ -76,47 +73,15 @@ export function BattleScene({appearance,checkpoint,state,error,onRetry,children,
   // Only a scene mounted in its opening gets the reveal veil. Restoring an
   // already-open main scene must not replay the start effect on refresh.
   const [revealOnEntry] = useState(() => opening);
-  const background=useRef<HTMLDivElement>(null);
-  const fullscreen=useBattleFullscreen(background);
   const [logOpen,setLogOpen]=useState(false);
-  const [rotation,setRotation]=useState(0);
-  const [viewport,setViewport]=useState({width:0,height:0});
-  const [overlayHost,setOverlayHost]=useState<HTMLDivElement|null>(null);
-  const scale=battleCanvasScale(viewport.width,viewport.height,rotation);
-  useLayoutEffect(()=>{
-    const element=background.current;
-    if(!element)return;
-    // Enter at the plate, leaving app navigation / theatre tools accessible by
-    // scrolling upward. Resizing and fullscreen changes must not scroll again.
-    element.scrollIntoView({block:"start",behavior:"instant"});
-    const measure=()=>{
-      const width=element.clientWidth,height=element.clientHeight;
-      setViewport(previous=>previous.width===width&&previous.height===height?previous:{width,height});
-    };
-    measure();
-    const observer=new ResizeObserver(measure);observer.observe(element);
-    return ()=>observer.disconnect();
-  },[]);
   return <div className="battle-scene-shell">
     <header className="battle-scene-header">
       {header}
-      <div className="battle-fullscreen-controls" aria-label="战斗显示模式">
-        <button type="button" aria-label="网页全屏" aria-pressed={fullscreen.web}
-          disabled={fullscreen.expanded||fullscreen.requesting} onClick={fullscreen.enterWeb}>网页全屏</button>
-        <button type="button" aria-label="屏幕全屏" aria-pressed={fullscreen.screen}
-          disabled={fullscreen.screen||fullscreen.requesting} onClick={fullscreen.enterScreen}>屏幕全屏</button>
-        <button type="button" aria-label="屏幕旋转" title={`当前${rotation}°，点击顺时针旋转90°`}
-          onClick={()=>setRotation(nextBattleRotation)}>屏幕旋转</button>
-      </div>
+      <SceneDisplayControls />
     </header>
-    <div ref={background} tabIndex={-1} className={`battle-scene-viewport${fullscreen.expanded?" battle-expanded":""}`}>
-    <BattleCanvasContext.Provider value={{element:overlayHost,rotation,scale}}>
-    <section className="battle battle-card-scene" data-theatre="mineral-ink" data-rotation={rotation}
-    data-battle-scene={checkpoint.phase} style={{"--battle-background":`url("${appearance.background}")`,"--beat-duration":`${duration}ms`,"--tempo":"1s",
-      width:BATTLE_CANVAS_WIDTH,height:BATTLE_CANVAS_HEIGHT,
-      visibility:scale>0?"visible":"hidden",
-      transform:`translate(-50%, -50%) rotate(${rotation}deg) scale(${scale})`,
-    } as CSSProperties}>
+    <SceneSurface kind="battle">
+    <section className="battle battle-card-scene" data-theatre="mineral-ink"
+    data-battle-scene={checkpoint.phase} style={{"--battle-background":`url("${appearance.background}")`,"--beat-duration":`${duration}ms`,"--tempo":"1s"} as CSSProperties}>
     <div className="battle-scene-background" aria-hidden="true" />
     <div className="battle-scene-shade" aria-hidden="true" />
     {!opening&&battleLog&&<button type="button" className="battle-log-toggle"
@@ -129,15 +94,6 @@ export function BattleScene({appearance,checkpoint,state,error,onRetry,children,
     {!opening&&logOpen&&battleLog&&<BattleInfoDialog title="战斗记录" onClose={()=>setLogOpen(false)}>
       {battleLog}
     </BattleInfoDialog>}
-    {fullscreen.expanded&&<button type="button" className="battle-fullscreen-exit"
-      aria-label="退出全屏" title="退出全屏" disabled={fullscreen.requesting}
-      onClick={()=>{void fullscreen.exitFullscreen();}}>
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
-        <circle cx="12" cy="12" r="9" />
-        <path d="m9 9 6 6m0-6-6 6" />
-      </svg>
-    </button>}
-    {fullscreen.notice&&<div className="battle-fullscreen-notice" role="status">{fullscreen.notice}</div>}
     {opening && <>
       <link rel="preload" as="image" href={curtainLeft} />
     </>}
@@ -173,10 +129,8 @@ export function BattleScene({appearance,checkpoint,state,error,onRetry,children,
       </div>}
     </>}
     {!opening && closing}
-    <div ref={setOverlayHost} className="battle-canvas-overlays" />
     </section>
-    </BattleCanvasContext.Provider>
-    </div>
+    </SceneSurface>
     {!opening && commands && <div className="battle battle-scene-footer">
       {commands}
     </div>}
