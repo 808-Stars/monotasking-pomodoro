@@ -1,0 +1,14 @@
+.topbar .cloud-status { max-width:320px;font:16px/1.4 SimSun,serif;padding:7px 12px;color:#e2d0a3;border:1px solid #9f865988;background:#1b2520cc; }
+.cloud-status.cloud-offline,.cloud-status.cloud-conflict { color:#e7ad80; }
+.cloud-backdrop { position:absolute;inset:0;display:grid;place-items:center;background:#071015aa;z-index:10015; }
+.cloud-loading { min-height:100dvh;display:grid;place-content:center;justify-items:center;background:#172021;color:#e2d0a3; }
+.cloud-window { width:680px;max-height:950px;padding:30px 38px;background:#242b25;border:2px solid #aa8d56;color:#e5d7b5;font:20px/1.65 SimSun,serif;box-shadow:0 12px 50px #0008; }
+.cloud-window header { display:flex;align-items:center;justify-content:space-between;gap:20px; }
+.cloud-window h2 { margin:0;font-size:28px;font-weight:normal; }
+.cloud-window p { margin:16px 0;overflow-wrap:anywhere; }
+.cloud-window button { margin:8px 12px 8px 0;padding:9px 16px;font:inherit;color:#e6d5ac;border:1px solid #b39761;background:#151e19; }
+.cloud-window button:disabled { opacity:.5;cursor:wait; }
+.cloud-window label { display:grid;grid-template-columns:60px 1fr;align-items:center;gap:12px;margin:18px 0; }
+.cloud-window input { min-width:0;padding:8px 12px;font:20px/1.4 sans-serif;background:#101a17;border:1px solid #a18b63;color:#efdfb8; }
+.cloud-window small { display:block;margin-top:18px;font-size:16px;opacity:.8; }
+.cloud-window [role="alert"] { color:#f2ad9a; }

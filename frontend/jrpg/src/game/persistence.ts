@@ -6,6 +6,7 @@ import type { BattleState, BuffId, Unit } from "./battle.ts";
 import { createSceneCheckpoint, sceneKeyFor, openingDurationMs, type BattleSceneCheckpoint } from "../presentation/battleSceneState.ts";
 export interface Save {
   revision: number;
+  accountId?: string;
   game: GameState;
   battle: BattleState | null;
   battleScene?: BattleSceneCheckpoint;
@@ -147,9 +148,9 @@ export function normalizeSave(input: Save): Save {
   };
 }
 
-function open(): Promise<IDBDatabase> {
+function open(scope = "guest"): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const r = indexedDB.open(DB, 1);
+    const r = indexedDB.open(scope === "guest" ? DB : `${DB}:user:${scope}`, 1);
     r.onupgradeneeded = () => r.result.createObjectStore("checkpoint");
     r.onsuccess = () => resolve(r.result);
     r.onerror = () => reject(r.error);
@@ -157,8 +158,8 @@ function open(): Promise<IDBDatabase> {
       reject(new Error("存档被其他窗口占用，请关闭其他Demo标签页"));
   });
 }
-export async function loadSave(): Promise<Save> {
-  const db = await open();
+export async function loadLocalSave(scope = "guest"): Promise<Save> {
+  const db = await open(scope);
   try {
     return await new Promise((resolve, reject) => {
       const tx = db.transaction("checkpoint", "readwrite");
@@ -167,12 +168,13 @@ export async function loadSave(): Promise<Save> {
       let next: Save;
       r.onsuccess = () => {
         try {
-          const mirror = r.result ? null : localStorage.getItem(STORAGE_KEY);
+          const mirror = r.result ? null : localStorage.getItem(mirrorKey(scope));
           const raw: Save | undefined =
             r.result ?? (mirror ? JSON.parse(mirror) : undefined);
           next = normalizeSave(
             raw ?? { revision: 0, game: createGame(), battle: null },
           );
+          if(scope !== "guest") next.accountId = scope;
           const migrating = !!raw
             && raw.game.camp?.memoryVersion !== memoryLayoutVersion
             && next.game.camp?.memoryVersion === memoryLayoutVersion;
@@ -199,8 +201,8 @@ export async function loadSave(): Promise<Save> {
     db.close();
   }
 }
-export async function resetUnavailableSave(): Promise<Save> {
-  const db = await open();
+export async function resetLocalSave(scope = "guest"): Promise<Save> {
+  const db = await open(scope);
   try {
     const next = await new Promise<Save>((resolve, reject) => {
       const tx = db.transaction("checkpoint", "readwrite");
@@ -210,6 +212,7 @@ export async function resetUnavailableSave(): Promise<Save> {
       read.onsuccess = () => {
         fresh = {
           revision: (read.result?.revision ?? 0) + 1,
+          ...(scope === "guest" ? {} : {accountId:scope}),
           game: migrateCamp(createGame()),
           battle: null,
         };
@@ -221,7 +224,7 @@ export async function resetUnavailableSave(): Promise<Save> {
       tx.onabort = () => reject(tx.error ?? new Error("存档重置失败。"));
     });
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      localStorage.setItem(mirrorKey(scope), JSON.stringify(next));
     } catch {
       /* IndexedDB remains authoritative. */
     }
@@ -232,14 +235,17 @@ export async function resetUnavailableSave(): Promise<Save> {
 }
 // One authoritative transaction: battle settlement and game resources cannot tear.
 // localStorage is a mirror; a failed mirror cannot invalidate the committed checkpoint.
-export async function saveCheckpoint(
+export async function saveLocalCheckpoint(
   previous: Save,
   game: GameState,
   battle: BattleState | null,
   reset = false,
   scene?: BattleSceneCheckpoint | null,
+  scope = "guest",
 ): Promise<Save> {
+  if(previous.accountId !== (scope === "guest" ? undefined : scope)) throw new Error("存档所属账号已变化，请重新打开游戏。");
   const next: Save = { revision: previous.revision + 1, game, battle };
+  if(scope !== "guest") next.accountId = scope;
   if (battle && scene !== null) {
     const key = sceneKeyFor(battle);
     if (scene) {
@@ -248,7 +254,7 @@ export async function saveCheckpoint(
     } else if (previous.battleScene?.key === key) next.battleScene = previous.battleScene;
     else if (!previous.battle || sceneKeyFor(previous.battle) !== key) next.battleScene = createSceneCheckpoint(key);
   }
-  const db = await open();
+  const db = await open(scope);
   try {
     await new Promise<void>((resolve, reject) => {
       const tx = db.transaction("checkpoint", "readwrite");
@@ -267,7 +273,7 @@ export async function saveCheckpoint(
           && game.camp?.memoryVersion === memoryLayoutVersion) {
           store.put(r.result, "backup-before-memory-layout5");
         } else if (!r.result && previous.game.camp?.migrationNotice) {
-          const mirror = localStorage.getItem(STORAGE_KEY);
+          const mirror = localStorage.getItem(mirrorKey(scope));
           if (mirror) store.put(JSON.parse(mirror), "backup-before-camp-v1");
         }
         if (reset) store.clear();
@@ -285,7 +291,7 @@ export async function saveCheckpoint(
       tx.onerror = () => reject(tx.error);
     });
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      localStorage.setItem(mirrorKey(scope), JSON.stringify(next));
     } catch {
       /* IndexedDB remains authoritative. */
     }
@@ -293,4 +299,57 @@ export async function saveCheckpoint(
   } finally {
     db.close();
   }
+}
+
+function mirrorKey(scope:string){return scope === "guest" ? STORAGE_KEY : `${STORAGE_KEY}:user:${scope}`;}
+export async function localRecord<T>(scope:string,key:string):Promise<T|undefined>{
+ const db=await open(scope);
+ try{return await new Promise<T|undefined>((resolve,reject)=>{
+  const tx=db.transaction("checkpoint","readonly"),r=tx.objectStore("checkpoint").get(key);
+  r.onsuccess=()=>{
+   try{const mirror=r.result===undefined&&key==='current'?localStorage.getItem(mirrorKey(scope)):null;resolve(r.result??(mirror?JSON.parse(mirror):undefined));}
+   catch(error){reject(error);}
+  };r.onerror=()=>reject(r.error);
+ });}finally{db.close();}
+}
+export async function putLocalRecord(scope:string,key:string,value:unknown):Promise<void>{
+ const db=await open(scope);
+ try{await new Promise<void>((resolve,reject)=>{
+  const tx=db.transaction("checkpoint","readwrite");tx.objectStore("checkpoint").put(value,key);
+  tx.oncomplete=()=>resolve();tx.onabort=()=>reject(tx.error);tx.onerror=()=>reject(tx.error);
+ });}finally{db.close();}
+}
+export async function replaceLocalSave(scope:string,raw:Save):Promise<Save>{
+ let next=normalizeSave(structuredClone(raw));
+ if(scope !== "guest") next.accountId=scope;
+ const db=await open(scope);
+ try{await new Promise<void>((resolve,reject)=>{
+  const tx=db.transaction("checkpoint","readwrite"),store=tx.objectStore("checkpoint"),r=store.get("current");
+  r.onsuccess=()=>{
+   if(r.result){
+    store.put(r.result,`backup-before-cloud-${Date.now()}`);
+    const keys=store.getAllKeys();keys.onsuccess=()=>{
+     const backups=keys.result.filter(key=>typeof key==='string'&&key.startsWith('backup-before-cloud-')).sort();
+     for(const key of backups.slice(0,-2))store.delete(key);
+    };
+   }
+   // Local revisions never move backward when restoring another device's branch.
+   next={...next,revision:Math.max(r.result?.revision??-1,next.revision)+1};store.put(next,"current");
+  };
+  tx.oncomplete=()=>resolve();tx.onabort=()=>reject(tx.error);tx.onerror=()=>reject(tx.error);
+ });}finally{db.close();}
+ try{localStorage.setItem(mirrorKey(scope),JSON.stringify(next));}catch{/* IndexedDB is authoritative. */}
+ return next;
+}
+export interface SaveBackend {
+ load:()=>Promise<Save>;
+ save:(previous:Save,game:GameState,battle:BattleState|null,reset?:boolean,scene?:BattleSceneCheckpoint|null)=>Promise<Save>;
+ reset:()=>Promise<Save>;
+}
+let activeBackend:SaveBackend|null=null;
+export function setSaveBackend(backend:SaveBackend|null){activeBackend=backend;}
+export function loadSave(){return activeBackend?activeBackend.load():loadLocalSave();}
+export function resetUnavailableSave(){return activeBackend?activeBackend.reset():resetLocalSave();}
+export function saveCheckpoint(previous:Save,game:GameState,battle:BattleState|null,reset=false,scene?:BattleSceneCheckpoint|null){
+ return activeBackend?activeBackend.save(previous,game,battle,reset,scene):saveLocalCheckpoint(previous,game,battle,reset,scene);
 }
