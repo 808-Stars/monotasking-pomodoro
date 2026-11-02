@@ -14,7 +14,7 @@ import {
   supportSlots,
 } from "../../game/camp/memory.ts";
 import { jobNames, itemName } from "../../game/camp/catalog.ts";
-import { checkout,shopLevel,shopSpending,shopThresholds } from "../../game/camp/shop.ts";
+import { checkout,hasShopAccess,shopSpending } from "../../game/camp/shop.ts";
 import { recipes, craft, dismantle } from "../../game/camp/medicine.ts";
 import {
   jobSkills,
@@ -226,9 +226,8 @@ export default function CampPanel({
             <>
               <div className="shop-counter-toolbar">
               <div className="shop-spending" role="status">
-                <span>当前消费 <b>{shopSpending(g).toLocaleString("zh-CN")}</b>
-                {shopLevel(g)<2&&<> / 目标消费 <b>{shopThresholds[shopLevel(g)+1].toLocaleString("zh-CN")}</b></>}</span>
-                <small>{shopLevel(g)<2?`累计消费达到目标后开放${shopLevel(g)===0?"专业":"神秘"}商店`:"全部货架已开放"}</small>
+                <span>当前消费 <b>{shopSpending(g).toLocaleString("zh-CN")}</b></span>
+                <small>专业／神秘商店需持有对应购买凭证；普通商店出售，入库后本周目有效</small>
               </div>
               <div className="camp-tabs">
                 {["普通", "专业", "神秘"].map((name, i) => (
@@ -236,11 +235,11 @@ export default function CampPanel({
                     key={name}
                     aria-pressed={!warehouseOpen&&layer===i}
                     disabled={
-                      i > shopLevel(g)
+                      !hasShopAccess(g,i)
                     }
                     onClick={() => {setLayer(i);setWarehouseOpen(false);}}
                   >
-                    {name}商店{i>shopLevel(g)?`（累计${shopThresholds[i]}）`:layer===i&&!warehouseOpen?" ◆":""}
+                    {name}商店{!hasShopAccess(g,i)?"（需购买凭证）":layer===i&&!warehouseOpen?" ◆":""}
                   </button>
                 ))}
                 <button type="button" aria-pressed={warehouseOpen} onClick={()=>setWarehouseOpen(true)}>仓库／背包</button>

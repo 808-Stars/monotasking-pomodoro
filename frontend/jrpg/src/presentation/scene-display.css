@@ -24,14 +24,15 @@
 .scene-display-overlays { position:absolute;inset:0;z-index:10010;pointer-events:none; }
 .scene-display-overlays > * { pointer-events:auto; }
 .scene-display-overlays > .modal-backdrop { position:absolute;inset:0; }
-.scene-display-viewport > .scene-display-exit {
+.scene-display-viewport > :is(.scene-display-exit,.scene-display-rotate) {
  position:absolute;top:5px;right:5px;z-index:10020;display:grid;place-items:center;
  width:28px;height:28px;min-width:0;min-height:0;margin:0;padding:2px;
  border:0;border-radius:50%;background:#171d1b55;color:#eee5cf;opacity:.55;box-shadow:none;cursor:pointer;
 }
-.scene-display-exit svg { display:block;width:24px;height:24px;stroke:currentColor;stroke-width:1.4;stroke-linecap:round; }
-.scene-display-viewport > .scene-display-exit:hover { opacity:.95;background:#171d1b99; }
-.scene-display-exit:focus-visible { opacity:1;outline:2px solid #ead8aa;outline-offset:1px; }
+.scene-display-viewport > .scene-display-rotate {right:39px}
+:is(.scene-display-exit,.scene-display-rotate) svg { display:block;width:24px;height:24px;stroke:currentColor;stroke-width:1.4;stroke-linecap:round; }
+.scene-display-viewport > :is(.scene-display-exit,.scene-display-rotate):hover { opacity:.95;background:#171d1b99; }
+:is(.scene-display-exit,.scene-display-rotate):focus-visible { opacity:1;outline:2px solid #ead8aa;outline-offset:1px; }
 .scene-display-notice {
  position:absolute;z-index:10021;top:48px;left:50%;transform:translateX(-50%);
  max-width:calc(100% - 32px);padding:10px 18px;background:#171d1bf2;border:1px solid #b9a67a99;

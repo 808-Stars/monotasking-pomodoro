@@ -17,6 +17,8 @@ export const jobNames: Record<string, string> = {
   apothecary: "药师",
 };
 export const products: Product[] = [
+  {id:'shop-pass-professional',name:'专业购买凭证',price:3000,description:'存于仓库即可进入专业商店；不消耗，本周目有效。',tier:0},
+  {id:'shop-pass-mystery',name:'神秘购买凭证',price:15000,description:'存于仓库即可进入神秘商店；不消耗，本周目有效。',tier:0},
   {
     id: "hp",
     name: "回复药",

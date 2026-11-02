@@ -18,6 +18,8 @@
   object-fit:contain;image-rendering:pixelated;pointer-events:none;
 }
 .camp-conversation .spoken {
+  box-sizing:border-box;display:block;width:100%;min-width:100%;max-width:100%;
+  white-space:normal;word-break:normal;overflow-wrap:break-word;
   margin:0;padding:6px 14px 22px;color:#f0e5cb;font-size:24px;
   line-height:1.65;letter-spacing:1px;text-shadow:0 2px 3px #0009;
 }
@@ -27,6 +29,7 @@
   border-top:1px solid #bda8784d;
 }
 .camp-conversation .dialogue-options button {
+  display:grid;grid-template-columns:minmax(0,1fr);align-content:center;row-gap:2px;
   position:relative;align-items:center;justify-content:flex-start;gap:9px;
   min-height:48px;padding:8px 12px 8px 28px;margin:0;
   border:0;border-radius:0;background:transparent;box-shadow:none;
@@ -38,10 +41,10 @@
   margin-top:-4px;transform:rotate(45deg);background:#e7ce91;opacity:0;
 }
 .camp-conversation .dialogue-options button > span {
-  flex:0 1 auto;max-width:10em;min-width:0;overflow-wrap:anywhere;
+  width:100%;max-width:none;min-width:0;word-break:normal;overflow-wrap:break-word;
 }
 .camp-conversation .dialogue-options button > small {
-  color:#b7aa8c;font-size:13px;margin-left:auto;white-space:nowrap;
+  color:#b7aa8c;font-size:13px;margin-left:0;white-space:normal;overflow-wrap:break-word;
 }
 .camp-conversation .dialogue-options button > small:empty { display:none; }
 .camp-conversation .dialogue-options button:hover:not(:disabled),

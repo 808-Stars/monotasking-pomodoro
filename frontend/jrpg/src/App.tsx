@@ -26,7 +26,7 @@ import CampMap from "./features/camp/CampMap.tsx";
 import { CampItemMark } from "./features/camp/CampArtwork.tsx";
 import { jobNames } from "./game/camp/catalog.ts";
 import { reconcileBackpack } from "./game/camp/backpack.ts";
-import {shopLevel} from "./game/camp/shop.ts";
+import {hasShopAccess} from "./game/camp/shop.ts";
 import { migrateCamp, clampCampVitals } from "./game/camp/migrate.ts";
 import { features, hasFeature } from "./game/camp/memory.ts";
 import { isMonthExpired, rollMonth } from "./game/camp/month.ts";
@@ -519,7 +519,7 @@ export default function App() {
         <span>MONOPOMO</span>
         <h1>{error ? "存档暂不可用" : "正在点亮营地的灯火…"}</h1>
         {error && <p role="alert">{error}</p>}
-        <p>本地存档 · 不连接云数据库</p>
+        <p><CloudRuntimeNote /></p>
         {error && (
           <button disabled={busy} onClick={() => void recoverUnavailableSave()}>
             双确认重置此Demo存档
@@ -790,18 +790,18 @@ export default function App() {
                           busy ||
                           (scene === 2 &&
                             i === 2 &&
-                            shopLevel(g)<1) ||
+                            !hasShopAccess(g,1)) ||
                           (scene === 2 &&
                             i === 3 &&
-                            shopLevel(g)<2)
+                            !hasShopAccess(g,2))
                         }
                         onClick={() => option(i)}
                       >
                         <span>{text}</span>
                         <small>
                           {scene === 2 &&
-                          (i === 2 || i === 3) && shopLevel(g)<i-1
-                            ? `需累计消费${i===2?3000:15000}古币`
+                          (i === 2 || i === 3) && !hasShopAccess(g,i-1)
+                            ? `需${i===2?"专业":"神秘"}购买凭证`
                             : null}
                         </small>
                       </button>

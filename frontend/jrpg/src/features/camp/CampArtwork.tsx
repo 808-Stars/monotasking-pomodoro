@@ -30,7 +30,7 @@ export function CampItemMark({ id }: { id:string }) {
   const basic=id==='hp'||id.startsWith('hp-')?0:id==='sp'||id.startsWith('sp-')?1:id==='cleanse'||id.startsWith('cleanse-')?2:id==='revive'||id.startsWith('revive-')?3:id==='bp'?4:
     id==='gem'||id.includes('火灼玉')?5:id.includes('水澜玉')?6:id.includes('木华玉')?7:-1;
   if(basic>=0)return <span className="camp-item-mark mark-bitmap" aria-hidden="true"><i className="item-mark-bitmap" style={{backgroundImage:'url("/jrpg/assets/items/medicine-gem-atlas.webp")',backgroundSize:'400% 200%',backgroundPosition:`${(basic%4)/3*100}% ${basic>=4?100:0}%`}}/></span>;
-  const type=id.includes("certificate")?"certificate":id.includes("scroll")?"scroll":
+  const type=(id.includes("certificate")||id.startsWith("shop-pass-"))?"certificate":id.includes("scroll")?"scroll":
     id.includes("flower")?"flower":id==="coin"?"coin":id.includes("gem")||/[玉晶石]/.test(id)?"gem":
     /herb|fruit|bud|salt/.test(id)?"herb":"potion";
   const paths:Record<string,string>={

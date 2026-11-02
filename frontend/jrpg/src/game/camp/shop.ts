@@ -2,15 +2,20 @@ import type { GameState } from "../economy.ts";
 import { products } from "./catalog.ts";
 import { reconcileBackpack } from "./backpack.ts";
 import { migrateCamp } from "./migrate.ts";
-export const shopThresholds = [0, 3000, 15000] as const;
+import {warehouseQuantity} from './storage.ts';
+export const shopPasses=['','shop-pass-professional','shop-pass-mystery'] as const;
+export function hasShopAccess(g:GameState,tier:number):boolean{
+  if(tier===0)return true;
+  if(tier!==1&&tier!==2)return false;
+  return warehouseQuantity(g,shopPasses[tier])>=1;
+}
 export function shopSpending(g: GameState): number {
   const value = g.camp?.shopSpent ?? 0;
   if (!Number.isSafeInteger(value) || value < 0) throw Error("商店消费记录无效");
   return value;
 }
 export function shopLevel(g: GameState): number {
-  const spent = shopSpending(g);
-  return spent >= shopThresholds[2] ? 2 : spent >= shopThresholds[1] ? 1 : 0;
+  return hasShopAccess(g,2)?2:hasShopAccess(g,1)?1:0;
 }
 export function checkout(
   input: GameState,
@@ -24,7 +29,7 @@ export function checkout(
     if (!p) throw Error("未知商品");
     if (!Number.isSafeInteger((input.inventory[id] ?? 0) + n))
       throw Error("库存数量超出安全整数范围");
-    if (p.tier > shopLevel(input))
+    if (!hasShopAccess(input,p.tier))
       throw Error("尚未开放该货架");
     if (p.job && (input.camp?.certificatePurchases[p.job] ?? 0) + n > 7)
       throw Error("本周目该资格证累计供应7张");

@@ -1,5 +1,5 @@
-/* Only the host adapts to the real browser viewport. All game CSS still runs
-   unchanged inside a real 1920x1080 layout viewport. No per-widget zoom. */
+/* The logical viewport stays 1920x1080. Scene-only rotation and its single
+   physical scale live on the host; widgets and viewport units never reflow. */
 html[data-game-viewport-mode="host"],
 html[data-game-viewport-mode="host"] body,
 html[data-game-viewport-mode="host"] #root {
@@ -11,7 +11,7 @@ html[data-game-viewport-mode="host"] #root {
 }
 .game-viewport-host:fullscreen {width:100%;height:100dvh;background:#101516}
 .game-viewport-stage {
- position:absolute;width:1920px;height:1080px;transform-origin:0 0;
+ position:absolute;width:1920px;height:1080px;transform-origin:center;
 }
 .game-viewport-stage>iframe {
  display:block;width:1920px;height:1080px;max-width:none;max-height:none;
@@ -21,3 +21,9 @@ html[data-game-viewport-mode="host"] #root {
    visible scrollbar to the scaled canvas. Existing functional pagers remain. */
 html[data-game-viewport-mode="content"] {scrollbar-width:none}
 html[data-game-viewport-mode="content"]::-webkit-scrollbar {display:none}
+/* Mobile pinch zoom must magnify the canvas, not independently inflate or
+   reflow its text. Keep browser zoom available; don't use user-scalable=no. */
+html[data-game-viewport-mode] {
+ -webkit-text-size-adjust:none;
+ text-size-adjust:none;
+}
