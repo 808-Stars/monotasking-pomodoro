@@ -17,6 +17,13 @@ function useDisplayState(){
   wasExpanded.current=fullscreen.expanded;
  },[fullscreen.expanded]);
  const [overlays,setOverlays]=useState<HTMLDivElement|null>(null);
+ const initialDirectionApplied=useRef(false);
+ useLayoutEffect(()=>{
+  if(!overlays||initialDirectionApplied.current)return;
+  initialDirectionApplied.current=true;
+  const portrait=gameViewportHost()?.portrait??(window.innerHeight>window.innerWidth);
+  if(portrait)setRotation(90);
+ },[overlays]);
  return {...fullscreen,root,rotation,setRotation,rotate:()=>setRotation(nextBattleRotation),overlays,setOverlays};
 }
 const SceneDisplayContext=createContext<ReturnType<typeof useDisplayState>|null>(null);

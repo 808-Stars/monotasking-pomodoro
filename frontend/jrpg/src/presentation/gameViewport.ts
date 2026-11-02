@@ -15,6 +15,7 @@ export function fitGameViewport(width:number,height:number,rotation=0){
 
 export type GameViewportHost={
  readonly fullscreen:boolean;
+ readonly portrait:boolean;
  setScenePresentation:(expanded:boolean,rotation:number)=>void;
  enterFullscreen:()=>Promise<void>;
  exitFullscreen:()=>Promise<void>;

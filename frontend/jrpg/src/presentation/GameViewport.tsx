@@ -23,6 +23,7 @@ function GameViewport(){
   const sync=()=>{for(const listener of listeners)listener();};
   const controller:GameViewportHost={
    get fullscreen(){return document.fullscreenElement===element;},
+   get portrait(){return element.clientWidth>0&&element.clientHeight>element.clientWidth;},
    setScenePresentation:(expanded,angle)=>{
     const next=expanded?angle:0;if(sceneRotation===next)return;
     sceneRotation=next;setRotation(next);measure();
