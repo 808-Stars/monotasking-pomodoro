@@ -1,5 +1,6 @@
 import {SceneDisplayControls,SceneOverlay,SceneSurface} from "./presentation/SceneDisplay.tsx";
 import {CloudStatus,CloudRuntimeNote} from "./cloud/CloudGame.tsx";
+import {DialogueText} from './features/camp/DialogueText.tsx';
 import { useEffect, useRef, useState } from "react";
 import { isEditingTarget } from "./presentation/keyboard.ts";
 import { useBattleDirector, type BattleLayoutGate } from "./presentation/useBattleDirector.ts";
@@ -781,7 +782,7 @@ export default function App() {
                     <img className="conversation-head" src={`/jrpg/assets/head-logos/${current.job}.webp`} alt="" draggable={false}/>
                     <span>{names[current.job]}</span>
                   </div>
-                  <p className="spoken">{current.line}</p>
+                  <DialogueText text={current.line}/>
                   <ItemPages label="选择回复" size={4} className="dialogue-options" resetKey={scene}>
                     {current.options.map((text, i) => (
                       <button
